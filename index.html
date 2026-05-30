@@ -674,15 +674,17 @@
                     item.setAttribute('draggable', 'true');
                     item.setAttribute('data-id', f.id);
                     item.setAttribute('data-origin', 'frequent');
-                    item.addEventListener('dragstart', handleDragStart);
+
+                    // Re-bind listeners explicitly to guarantee event bubbling catch
+                    item.addEventListener('dragstart', (e) => handleDragStart.call(item, e));
                     item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'frequent', f.id));
 
                     item.innerHTML = `
-                <div>
+                <div class="pointer-events-none">
                     <p class="font-semibold text-sm">${f.name}</p>
                     <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800">${f.category}</span>
                 </div>
-                <p class="font-bold text-sm text-teal-400">${formatCurrency(f.amount)}</p>
+                <p class="font-bold text-sm text-teal-400 pointer-events-none">${formatCurrency(f.amount)}</p>
             `;
                     freqContainer.appendChild(item);
                 });
@@ -955,9 +957,13 @@
         let draggedItemOrigin = null; // 'movement' or 'planification'
 
         function handleDragStart(e) {
+            // Force set data target attributes directly into the elements configuration parameters
             draggedItemId = this.getAttribute('data-id');
             draggedItemOrigin = this.getAttribute('data-origin');
+
+            // Explicitly seed the event payload so modern browser drop zones acknowledge the action
             e.dataTransfer.setData('text/plain', draggedItemId);
+            e.dataTransfer.effectAllowed = 'copyMove';
         }
 
         function allowDrop(e) {
@@ -1125,7 +1131,7 @@
         function handleContextOpen(e, type, id) {
             e.preventDefault();
             e.stopPropagation();
-            contextTarget = { type, id };
+            contextTarget = { type: type, id: id }; // Securely cache target parameters
 
             const menu = document.getElementById('customContextMenu');
             menu.classList.remove('hidden');
