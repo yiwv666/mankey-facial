@@ -612,6 +612,14 @@
             }
             if (!state.notes) {
                 state.notes = {};
+            } else {
+                // SECURITY AUTO-MIGRATION: Convert any legacy numeric index keys to valid string properties
+                for (let i = 0; i < 12; i++) {
+                    if (state.notes[i] !== undefined && state.notes[`month_${i}`] === undefined) {
+                        state.notes[`month_${i}`] = state.notes[i];
+                        delete state.notes[i];
+                    }
+                }
             }
         }
 
@@ -1495,6 +1503,14 @@
             }
             if (!state.notes) {
                 state.notes = {};
+            } else {
+                // SECURITY AUTO-MIGRATION: Convert any legacy numeric index keys to valid string properties
+                for (let i = 0; i < 12; i++) {
+                    if (state.notes[i] !== undefined && state.notes[`month_${i}`] === undefined) {
+                        state.notes[`month_${i}`] = state.notes[i];
+                        delete state.notes[i];
+                    }
+                }
             }
         }
 
@@ -1667,9 +1683,9 @@ async function checkAndTriggerReminders() {
             });
         }
         // ========================================================
-        // MONTHLY NOTES NAVIGATION & AUTO-SAVE MANAGEMENT
+        // SECURITY-HARDENED MONTHLY NOTES ENGINE WITH CLOUD FIX
         // ========================================================
-        let selectedMonthIndex = new Date().getMonth(); // Default current active system calendar month
+        let selectedMonthIndex = new Date().getMonth();
         let autoSaveDebounceTimeout = null;
 
         const calendarMonthsNames = [
@@ -1677,23 +1693,54 @@ async function checkAndTriggerReminders() {
             "July", "August", "September", "October", "November", "December"
         ];
 
+        // DATA SANITIZATION PIPELINE: Strips risky scripting elements and enforces length limits
+        function sanitizeAndTruncateNoteString(rawInputText) {
+            if (!rawInputText) return "";
+
+            // 1. Strict 1200 character ceiling constraint execution
+            let processedText = rawInputText;
+            if (processedText.length > 1200) {
+                processedText = processedText.substring(0, 1200);
+            }
+
+            // 2. HTML Entity encoding mapping block to neutralize XSS vectors
+            return processedText
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // INVERSE DECODER: Reverts HTML entities back to raw text for user readability inside the editing textarea
+        function decodeSanitizedNoteString(encodedText) {
+            if (!encodedText) return "";
+            return encodedText
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
+                .replace(/&quot;/g, '"')
+                .replace(/&#039;/g, "'")
+                .replace(/&amp;/g, "&");
+        }
+
         function buildMonthsSelectorInterface() {
             const container = document.getElementById('monthsSelectorContainer');
+            if (!container) return;
             container.innerHTML = '';
 
             calendarMonthsNames.forEach((month, idx) => {
                 const btn = document.createElement('button');
                 btn.onclick = () => selectNotesMonth(idx);
 
-                // Highlight active calendar step node selection styling
                 if (idx === selectedMonthIndex) {
                     btn.className = "w-full flex items-center justify-between text-left px-4 py-2.5 rounded-xl font-semibold bg-blue-600 text-white shadow-md transition text-sm duration-150";
                 } else {
                     btn.className = "w-full flex items-center justify-between text-left px-4 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800/80 hover:text-gray-100 transition text-sm duration-150";
                 }
 
-                // Display a preview bullet if the target month has text content logged
-                const hasContent = state.notes && state.notes[idx] && state.notes[idx].trim().length > 0;
+                // Check content presence securely using the cloud-safe string key signature
+                const noteKey = `month_${idx}`;
+                const hasContent = state.notes && state.notes[noteKey] && state.notes[noteKey].trim().length > 0;
 
                 btn.innerHTML = `
             <span class="flex items-center gap-2">
@@ -1705,18 +1752,19 @@ async function checkAndTriggerReminders() {
                 container.appendChild(btn);
             });
 
-            // Update Notepad canvas targets
+            // Feed current text back into layout workspace canvas targets
             document.getElementById('activeNoteMonthHeader').innerText = calendarMonthsNames[selectedMonthIndex];
-            document.getElementById('monthlyNotepadTextarea').value = (state.notes && state.notes[selectedMonthIndex]) ? state.notes[selectedMonthIndex] : '';
+
+            const targetKey = `month_${selectedMonthIndex}`;
+            const cleanSavedText = (state.notes && state.notes[targetKey]) ? state.notes[targetKey] : '';
+            document.getElementById('monthlyNotepadTextarea').value = decodeSanitizedNoteString(cleanSavedText);
         }
 
         function selectNotesMonth(monthIndex) {
-            // Clear save triggers before switching notes
             if (autoSaveDebounceTimeout) {
                 clearTimeout(autoSaveDebounceTimeout);
                 commitNoteSave();
             }
-
             selectedMonthIndex = monthIndex;
             buildMonthsSelectorInterface();
         }
@@ -1725,10 +1773,22 @@ async function checkAndTriggerReminders() {
             const indicator = document.getElementById('saveStatusIndicator');
             indicator.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-amber-400"></i> Typing...`;
 
-            if (!state.notes) state.notes = {};
-            state.notes[selectedMonthIndex] = textareaElement.value;
+            let rawValue = textareaElement.value;
 
-            // Debounce structure: Wait until the user stops typing for 800ms before syncing changes
+            // UI Constraint Feedback Loop: Soft ceiling block notice if user goes beyond boundaries
+            if (rawValue.length > 1200) {
+                textareaElement.value = rawValue.substring(0, 1200);
+                rawValue = textareaElement.value;
+                indicator.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-triangle-exclamation"></i> 1200 Max Limit Hit</span>`;
+            }
+
+            if (!state.notes) state.notes = {};
+
+            // Sanitize data string inputs before committing to system memory state
+            const targetKey = `month_${selectedMonthIndex}`;
+            state.notes[targetKey] = sanitizeAndTruncateNoteString(rawValue);
+
+            // Save delay execution pipeline
             clearTimeout(autoSaveDebounceTimeout);
             autoSaveDebounceTimeout = setTimeout(() => {
                 commitNoteSave();
@@ -1737,14 +1797,14 @@ async function checkAndTriggerReminders() {
 
         function commitNoteSave() {
             const indicator = document.getElementById('saveStatusIndicator');
-            saveState(); // Commit local storage values and broadcast to Google Drive
+            saveState(); // Commit changes locally and upload to Google Drive
 
-            // Rerender selector list cleanly to add/remove little dynamic content indicators
-            const currentTextarea = document.getElementById('monthlyNotepadTextarea').value;
+            // Refresh sidebar layout dot elements
+            const currentUnsavedViewText = document.getElementById('monthlyNotepadTextarea').value;
             buildMonthsSelectorInterface();
-            document.getElementById('monthlyNotepadTextarea').value = currentTextarea;
+            document.getElementById('monthlyNotepadTextarea').value = currentUnsavedViewText;
 
-            indicator.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Saved`;
+            indicator.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Saved to Cloud`;
         }
     </script>
 </body>
