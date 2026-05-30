@@ -59,6 +59,10 @@
                     class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-tags w-5"></i> Categories
                 </button>
+                <button onclick="switchTab('notes')" data-tab="notes"
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-note-sticky w-5"></i> Monthly Notes
+                </button>
                 <button onclick="switchTab('settings')" data-tab="settings"
                     class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-cloud-arrow-up w-5"></i> Cloud Sync
@@ -334,6 +338,42 @@
                     </div>
                 </div>
             </div>
+            <div id="tab-notes" class="tab-content hidden space-y-6">
+                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <div>
+                        <h2 class="text-xl font-bold tracking-wide">Financial Memorandums</h2>
+                        <p class="text-sm text-gray-400 mt-1">Keep track of variable goals, checklist reminders, and
+                            milestones month-by-month.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6 min-h-[450px]">
+                        <div
+                            class="md:col-span-4 bg-gray-900/60 border border-gray-800 rounded-xl p-3 flex flex-col gap-1.5 max-h-[500px] overflow-y-auto">
+                            <span
+                                class="text-[10px] uppercase font-bold tracking-wider text-gray-500 px-3 mb-1">Calendar
+                                Timeline</span>
+                            <div id="monthsSelectorContainer" class="space-y-1">
+                            </div>
+                        </div>
+
+                        <div
+                            class="md:col-span-8 bg-gray-900/40 border border-gray-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
+                            <div class="flex-1 flex flex-col space-y-2">
+                                <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+                                    <h3 id="activeNoteMonthHeader" class="text-lg font-bold text-blue-400">January</h3>
+                                    <span id="saveStatusIndicator"
+                                        class="text-xs text-gray-500 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-cloud"></i> Ready
+                                    </span>
+                                </div>
+                                <textarea id="monthlyNotepadTextarea" oninput="handleNoteTyping(this)"
+                                    placeholder="Write down budget summaries, upcoming seasonal subscription shifts, tax milestones, or cash-flow checkpoints for this month..."
+                                    class="w-full flex-1 min-h-[300px] bg-transparent text-gray-100 placeholder-gray-600 text-sm focus:outline-none resize-none leading-relaxed pt-2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -541,6 +581,7 @@
             movements: [],
             planification: [],
             frequent: [],
+            notes: {},
             categories: ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"]
         };
 
@@ -568,6 +609,9 @@
             // CRITICAL FIX: Explicitly guarantee the array exists locally
             if (!state.frequent) {
                 state.frequent = [];
+            }
+            if (!state.notes) {
+                state.notes = {};
             }
         }
 
@@ -613,6 +657,7 @@
             if (tabId === 'all-movements') applyFilters();
             if (tabId === 'categories') renderCategoryStats();
             if (tabId === 'dashboard') renderAll();
+            if (tabId === 'notes') buildMonthsSelectorInterface();
 
             // Close mobile menu if responsive viewport size
             if (window.innerWidth < 768) {
@@ -1448,6 +1493,9 @@
             } catch (e) {
                 console.error("Failed to query file stream media binary data. Pushing local matrix format...", e);
             }
+            if (!state.notes) {
+                state.notes = {};
+            }
         }
 
         async function syncToGoogleDrive() {
@@ -1617,6 +1665,86 @@ async function checkAndTriggerReminders() {
                     console.error('Moneyco engine worker initialization failed: ', err);
                 }
             });
+        }
+        // ========================================================
+        // MONTHLY NOTES NAVIGATION & AUTO-SAVE MANAGEMENT
+        // ========================================================
+        let selectedMonthIndex = new Date().getMonth(); // Default current active system calendar month
+        let autoSaveDebounceTimeout = null;
+
+        const calendarMonthsNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        function buildMonthsSelectorInterface() {
+            const container = document.getElementById('monthsSelectorContainer');
+            container.innerHTML = '';
+
+            calendarMonthsNames.forEach((month, idx) => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectNotesMonth(idx);
+
+                // Highlight active calendar step node selection styling
+                if (idx === selectedMonthIndex) {
+                    btn.className = "w-full flex items-center justify-between text-left px-4 py-2.5 rounded-xl font-semibold bg-blue-600 text-white shadow-md transition text-sm duration-150";
+                } else {
+                    btn.className = "w-full flex items-center justify-between text-left px-4 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800/80 hover:text-gray-100 transition text-sm duration-150";
+                }
+
+                // Display a preview bullet if the target month has text content logged
+                const hasContent = state.notes && state.notes[idx] && state.notes[idx].trim().length > 0;
+
+                btn.innerHTML = `
+            <span class="flex items-center gap-2">
+                <i class="fa-regular ${idx === selectedMonthIndex ? 'fa-calendar-check' : 'fa-calendar'} text-xs opacity-70"></i>
+                ${month}
+            </span>
+            ${hasContent ? `<span class="w-1.5 h-1.5 rounded-full bg-teal-400 ring-4 ring-teal-500/10"></span>` : ''}
+        `;
+                container.appendChild(btn);
+            });
+
+            // Update Notepad canvas targets
+            document.getElementById('activeNoteMonthHeader').innerText = calendarMonthsNames[selectedMonthIndex];
+            document.getElementById('monthlyNotepadTextarea').value = (state.notes && state.notes[selectedMonthIndex]) ? state.notes[selectedMonthIndex] : '';
+        }
+
+        function selectNotesMonth(monthIndex) {
+            // Clear save triggers before switching notes
+            if (autoSaveDebounceTimeout) {
+                clearTimeout(autoSaveDebounceTimeout);
+                commitNoteSave();
+            }
+
+            selectedMonthIndex = monthIndex;
+            buildMonthsSelectorInterface();
+        }
+
+        function handleNoteTyping(textareaElement) {
+            const indicator = document.getElementById('saveStatusIndicator');
+            indicator.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-amber-400"></i> Typing...`;
+
+            if (!state.notes) state.notes = {};
+            state.notes[selectedMonthIndex] = textareaElement.value;
+
+            // Debounce structure: Wait until the user stops typing for 800ms before syncing changes
+            clearTimeout(autoSaveDebounceTimeout);
+            autoSaveDebounceTimeout = setTimeout(() => {
+                commitNoteSave();
+            }, 800);
+        }
+
+        function commitNoteSave() {
+            const indicator = document.getElementById('saveStatusIndicator');
+            saveState(); // Commit local storage values and broadcast to Google Drive
+
+            // Rerender selector list cleanly to add/remove little dynamic content indicators
+            const currentTextarea = document.getElementById('monthlyNotepadTextarea').value;
+            buildMonthsSelectorInterface();
+            document.getElementById('monthlyNotepadTextarea').value = currentTextarea;
+
+            indicator.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Saved`;
         }
     </script>
 </body>
