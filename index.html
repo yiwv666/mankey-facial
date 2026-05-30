@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moneyco - Dark Money Manager</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .drag-over { border: 2px dashed #3b82f6 !important; background-color: rgba(59, 130, 246, 0.1) !important; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans antialiased selection:bg-blue-600 selection:text-white">
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        
+        <nav class="w-full md:w-64 bg-gray-950 border-b md:border-b-0 md:border-r border-gray-800 p-4 shrink-0">
+            <div class="flex items-center justify-between md:justify-start gap-3 mb-6">
+                <div class="bg-blue-600 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-wallet text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Moneyco</h1>
+                <button id="mobileMenuBtn" class="md:hidden text-gray-400 hover:text-white focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="navLinks" class="hidden md:flex flex-col gap-2">
+                <button onclick="switchTab('dashboard')" data-tab="dashboard" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium bg-blue-600 text-white">
+                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                </button>
+                <button onclick="switchTab('all-movements')" data-tab="all-movements" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-list-ul w-5"></i> All Movements
+                </button>
+                <button onclick="switchTab('categories')" data-tab="categories" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-tags w-5"></i> Categories
+                </button>
+                <button onclick="switchTab('settings')" data-tab="settings" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-cloud-arrow-up w-5"></i> Cloud Sync
+                </button>
+            </div>
+        </nav>
+
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-gray-950 border border-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-xl">
+                        <div>
+                            <p class="text-sm text-gray-400 font-medium">Recent Income</p>
+                            <h3 id="dashIncome" class="text-2xl font-bold text-emerald-400 mt-1">$0.00</h3>
+                        </div>
+                        <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"><i class="fa-solid fa-arrow-trend-up text-xl"></i></div>
+                    </div>
+                    <div class="bg-gray-950 border border-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-xl">
+                        <div>
+                            <p class="text-sm text-gray-400 font-medium">Recent Expenses</p>
+                            <h3 id="dashExpense" class="text-2xl font-bold text-rose-400 mt-1">$0.00</h3>
+                        </div>
+                        <div class="p-3 bg-rose-500/10 text-rose-400 rounded-xl"><i class="fa-solid fa-arrow-trend-down text-xl"></i></div>
+                    </div>
+                    <div class="bg-gray-950 border border-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-xl">
+                        <div>
+                            <p class="text-sm text-gray-400 font-medium">Planification Pool</p>
+                            <h3 id="dashPlanTotal" class="text-2xl font-bold text-blue-400 mt-1">$0.00</h3>
+                        </div>
+                        <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl"><i class="fa-solid fa-layer-group text-xl"></i></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <div class="lg:col-span-7 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
+                        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                            <div>
+                                <h2 class="text-lg font-bold">Recent Movements</h2>
+                                <p class="text-xs text-gray-400">Past 2.5 weeks (18 days)</p>
+                            </div>
+                            <button onclick="openMovementModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
+                                <i class="fa-solid fa-plus text-xs"></i> Add Entry
+                            </button>
+                        </div>
+
+                        <div id="movementDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropToMovements(event)" class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px] overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[500px]">
+                                <thead>
+                                    <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                                        <th class="py-3 px-2">Details</th>
+                                        <th class="py-3 px-2">Category</th>
+                                        <th class="py-3 px-2">Date</th>
+                                        <th class="py-3 px-2 text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentMovementsTable">
+                                    </tbody>
+                            </table>
+                            <div id="noRecentMovements" class="hidden text-center py-12 text-gray-500 text-sm">No items in the past 18 days.</div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
+                        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                            <div>
+                                <h2 class="text-lg font-bold">Next Payment Plan</h2>
+                                <p class="text-xs text-gray-400">Draft upcoming budgets</p>
+                            </div>
+                            <button onclick="openPlanModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
+                                <i class="fa-solid fa-plus text-xs"></i> Add Plan
+                            </button>
+                        </div>
+
+                        <div id="planDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropToPlan(event)" class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]">
+                            <div class="space-y-2" id="planificationList">
+                                </div>
+                            <div id="noPlanItems" class="hidden text-center py-12 text-gray-500 text-sm">Drag movements here or add items to schedule next payment.</div>
+                        </div>
+                        
+                        <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between items-center">
+                            <span class="font-semibold text-sm tracking-wide text-gray-400">Total Planned:</span>
+                            <span id="planTotalSum" class="text-xl font-extrabold text-indigo-400">$0.00</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="tab-all-movements" class="tab-content hidden space-y-6">
+                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-xl font-bold mb-4">Complete Ledger</h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Filter Month</label>
+                            <input type="month" id="filterMonth" onchange="applyFilters()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category</label>
+                            <select id="filterCategory" onchange="applyFilters()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                                <option value="all">All Categories</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Type</label>
+                            <select id="filterType" onchange="applyFilters()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                                <option value="all">Income & Outcome</option>
+                                <option value="income">Income Only</option>
+                                <option value="outcome">Outcome Only</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Sort By Amount</label>
+                            <select id="filterSort" onchange="applyFilters()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                                <option value="date-desc">Newest First</option>
+                                <option value="date-asc">Oldest First</option>
+                                <option value="amount-desc">Highest Amount</option>
+                                <option value="amount-asc">Lowest Amount</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                                    <th class="py-3 px-3">Name</th>
+                                    <th class="py-3 px-3">Category</th>
+                                    <th class="py-3 px-3">Type</th>
+                                    <th class="py-3 px-3">Date</th>
+                                    <th class="py-3 px-3 text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allMovementsTable">
+                                </tbody>
+                        </table>
+                        <div id="allMovementsEmpty" class="hidden text-center py-12 text-gray-500 text-sm">No entries matched your selection criteria.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-categories" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl h-fit">
+                        <h2 class="text-lg font-bold mb-3">Custom Categories</h2>
+                        <form id="categoryForm" onsubmit="addCategory(event)" class="flex gap-2 mb-4">
+                            <input type="text" id="newCategoryName" placeholder="e.g., Subscriptions" required class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition shrink-0">Add</button>
+                        </form>
+                        <div id="categoryManageList" class="space-y-1.5 max-h-[400px] overflow-y-auto pr-1">
+                            </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
+                        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                            <h2 class="text-lg font-bold">Category Distribution Analytics</h2>
+                            <input type="month" id="statsMonth" onchange="renderCategoryStats()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-[500px]">
+                                <thead>
+                                    <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                                        <th class="py-3 px-3">Category</th>
+                                        <th class="py-3 px-3 text-right">Selected Month Expenses</th>
+                                        <th class="py-3 px-3 text-right">All-Time Expenses</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoryStatsTable">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-settings" class="tab-content hidden space-y-6">
+                <div class="max-w-2xl bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl space-y-6">
+                    <div>
+                        <h2 class="text-xl font-bold tracking-wide">Google Drive Automated Cloud Sync</h2>
+                        <p class="text-sm text-gray-400 mt-1">Bind your application database securely to your personal Google Drive account. Changes persist in real-time instantly.</p>
+                    </div>
+
+                    <div class="p-4 bg-gray-900/60 border border-gray-800 rounded-xl flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center gap-3">
+                            <div id="gdriveStatusIcon" class="w-3 h-3 bg-rose-500 rounded-full animate-pulse"></div>
+                            <div>
+                                <p class="text-sm font-semibold" id="gdriveStatusText">Cloud Status: Disconnected</p>
+                                <p class="text-xs text-gray-500" id="gdriveUserEmail">Using Local Storage mode</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="btnConnectDrive" onclick="handleAuthClick()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition">
+                                Connect Account
+                            </button>
+                            <button id="btnDisconnectDrive" onclick="handleSignoutClick()" class="hidden bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition">
+                                Disconnect
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2 text-sm text-gray-400">
+                        <h4 class="font-bold text-gray-200">How it works:</h4>
+                        <ul class="list-disc list-inside space-y-1 text-xs">
+                            <li>Creates a hidden, isolated config file inside your private Google Drive appData folder.</li>
+                            <li>Updates instantly whenever you add, change, drag, or drop entries.</li>
+                            <li>Allows cross-device syncing securely without exposing your broader filesystem.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="customContextMenu" class="hidden absolute bg-gray-950 border border-gray-800 shadow-2xl rounded-xl py-1 text-sm min-w-[140px] z-50">
+        <button onclick="triggerContextEdit()" class="w-full text-left px-4 py-2.5 text-gray-300 hover:bg-blue-600 hover:text-white flex items-center gap-2 transition">
+            <i class="fa-solid fa-pen-to-square text-xs"></i> Edit Item
+        </button>
+        <button onclick="triggerContextDelete()" class="w-full text-left px-4 py-2.5 text-rose-400 hover:bg-rose-600 hover:text-white flex items-center gap-2 transition">
+            <i class="fa-solid fa-trash text-xs"></i> Delete Item
+        </button>
+    </div>
+
+    <dialog id="movementModal" class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+        <div class="flex items-center justify-between mb-4">
+            <h3 id="movementModalTitle" class="text-lg font-bold">Add Movement</h3>
+            <button onclick="closeMovementModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form id="movementForm" onsubmit="saveMovementForm(event)" class="space-y-4">
+            <input type="hidden" id="editMovementId">
+            <div>
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Name</label>
+                <input type="text" id="mvName" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Type</label>
+                    <select id="mvType" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <option value="income">Income</option>
+                        <option value="outcome">Outcome</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category</label>
+                    <select id="mvCategory" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Amount</label>
+                    <input type="number" step="0.01" id="mvAmount" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Date</label>
+                    <input type="date" id="mvDate" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeMovementModal()" class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save Entry</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="planModal" class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+        <div class="flex items-center justify-between mb-4">
+            <h3 id="planModalTitle" class="text-lg font-bold">Add Planned Item</h3>
+            <button onclick="closePlanModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form id="planForm" onsubmit="savePlanForm(event)" class="space-y-4">
+            <input type="hidden" id="editPlanId">
+            <div>
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Item Title / Name</label>
+                <input type="text" id="plName" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Amount</label>
+                    <input type="number" step="0.01" id="plAmount" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Category</label>
+                    <select id="plCategory" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closePlanModal()" class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save Plan</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script>
+        // Data Models Initialization
+        let state = {
+            movements: [],
+            planification: [],
+            categories: ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"]
+        };
+
+        // Context Menu Registry Pointer
+        let contextTarget = null; // { type: 'movement'|'plan', id: 'uuid' }
+
+        // LocalStorage fallback wrappers
+        function loadState() {
+            const saved = localStorage.getItem('MONEYCO_STATE');
+            if(saved) {
+                try { state = JSON.parse(saved); } catch(e) { console.error("Error parsing localized storage state", e); }
+            }
+            // Seed defaults if empty
+            if(!state.categories || state.categories.length === 0) {
+                state.categories = ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"];
+            }
+        }
+
+        async function saveState() {
+            localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+            await syncToGoogleDrive();
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            initDatePickers();
+            populateCategorySelects();
+            renderAll();
+            setupContextMenus();
+            setupMobileMenu();
+        });
+
+        function initDatePickers() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('mvDate').value = todayStr;
+            const currentMonthStr = todayStr.substring(0, 7);
+            document.getElementById('filterMonth').value = currentMonthStr;
+            document.getElementById('statsMonth').value = currentMonthStr;
+        }
+
+        // Global Navigation Controls
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('bg-blue-600', 'text-white');
+                    btn.classList.remove('text-gray-400', 'hover:bg-gray-900', 'hover:text-white');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('text-gray-400', 'hover:bg-gray-900', 'hover:text-white');
+                }
+            });
+
+            // Re-trigger view assemblies
+            if(tabId === 'all-movements') applyFilters();
+            if(tabId === 'categories') renderCategoryStats();
+            if(tabId === 'dashboard') renderAll();
+            
+            // Close mobile menu if responsive viewport size
+            if(window.innerWidth < 768) {
+                document.getElementById('navLinks').classList.add('hidden');
+            }
+        }
+
+        function setupMobileMenu() {
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                document.getElementById('navLinks').classList.toggle('hidden');
+            });
+        }
+
+        // Utility: Element Populators
+        function populateCategorySelects() {
+            const dropdowns = ['mvCategory', 'plCategory', 'filterCategory'];
+            dropdowns.forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                
+                // Keep initial "All Categories" logic option if setup for filters
+                const initialHTML = id === 'filterCategory' ? '<option value="all">All Categories</option>' : '';
+                select.innerHTML = initialHTML + state.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+            });
+        }
+
+        // Currency Formatter Utility
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+
+        // RENDER PIPELINES
+        function renderAll() {
+            renderDashboard();
+            renderCategoryDashboard();
+        }
+
+        function renderDashboard() {
+            // Cut-off rule: past 2.5 weeks = 17.5 days -> ceiling it to 18 full calendar days coverage
+            const boundaryDate = new Date();
+            boundaryDate.setDate(boundaryDate.getDate() - 18);
+            boundaryDate.setHours(0,0,0,0);
+
+            const recentItems = state.movements.filter(m => {
+                const d = new Date(m.date);
+                return d >= boundaryDate;
+            }).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            // Dashboard Metrics Calculations
+            let incomeSum = 0;
+            let expenseSum = 0;
+            recentItems.forEach(m => {
+                if(m.type === 'income') incomeSum += parseFloat(m.amount);
+                else expenseSum += parseFloat(m.amount);
+            });
+
+            document.getElementById('dashIncome').innerText = formatCurrency(incomeSum);
+            document.getElementById('dashExpense').innerText = formatCurrency(expenseSum);
+
+            // Table Generator
+            const tableBody = document.getElementById('recentMovementsTable');
+            tableBody.innerHTML = '';
+            
+            if(recentItems.length === 0) {
+                document.getElementById('noRecentMovements').classList.remove('hidden');
+            } else {
+                document.getElementById('noRecentMovements').classList.add('hidden');
+                recentItems.forEach(m => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer transition select-none";
+                    tr.setAttribute('draggable', 'true');
+                    tr.setAttribute('data-id', m.id);
+                    tr.setAttribute('data-origin', 'movement');
+                    tr.addEventListener('dragstart', handleDragStart);
+                    tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
+                    
+                    tr.innerHTML = `
+                        <td class="py-3 px-2 font-medium">
+                            <span class="inline-block w-2 h-2 rounded-full mr-2 ${m.type === 'income' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                            ${m.name}
+                        </td>
+                        <td class="py-3 px-2 text-gray-400 text-xs">${m.category}</td>
+                        <td class="py-3 px-2 text-gray-400 text-xs">${m.date}</td>
+                        <td class="py-3 px-2 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
+                            ${m.type === 'income' ? '+' : '-'}${formatCurrency(m.amount)}
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+
+            // Planification List Assembly
+            const planContainer = document.getElementById('planificationList');
+            planContainer.innerHTML = '';
+            let planTotal = 0;
+
+            if(state.planification.length === 0) {
+                document.getElementById('noPlanItems').classList.remove('hidden');
+            } else {
+                document.getElementById('noPlanItems').classList.add('hidden');
+                state.planification.forEach(p => {
+                    planTotal += parseFloat(p.amount);
+                    const item = document.createElement('div');
+                    item.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md";
+                    item.setAttribute('draggable', 'true');
+                    item.setAttribute('data-id', p.id);
+                    item.setAttribute('data-origin', 'planification');
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'planification', p.id));
+
+                    item.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-sm">${p.name}</p>
+                            <span class="text-[10px] bg-indigo-950 text-indigo-300 font-medium px-2 py-0.5 rounded-full border border-indigo-800">${p.category}</span>
+                        </div>
+                        <p class="font-bold text-sm text-indigo-400">${formatCurrency(p.amount)}</p>
+                    `;
+                    planContainer.appendChild(item);
+                });
+            }
+
+            document.getElementById('dashPlanTotal').innerText = formatCurrency(planTotal);
+            document.getElementById('planTotalSum').innerText = formatCurrency(planTotal);
+        }
+
+        // TAB ALL MOVEMENTS LOGIC & FILTERING
+        function applyFilters() {
+            const targetMonth = document.getElementById('filterMonth').value; // YYYY-MM
+            const targetCategory = document.getElementById('filterCategory').value;
+            const targetType = document.getElementById('filterType').value;
+            const targetSort = document.getElementById('filterSort').value;
+
+            let records = [...state.movements];
+
+            // 1. Month Filter
+            if(targetMonth) {
+                records = records.filter(m => m.date.startsWith(targetMonth));
+            }
+            // 2. Category Filter
+            if(targetCategory !== 'all') {
+                records = records.filter(m => m.category === targetCategory);
+            }
+            // 3. Type Filter
+            if(targetType !== 'all') {
+                records = records.filter(m => m.type === targetType);
+            }
+
+            // 4. Sort Configurations
+            if(targetSort === 'date-desc') records.sort((a,b) => new Date(b.date) - new Date(a.date));
+            else if(targetSort === 'date-asc') records.sort((a,b) => new Date(a.date) - new Date(b.date));
+            else if(targetSort === 'amount-desc') records.sort((a,b) => b.amount - a.amount);
+            else if(targetSort === 'amount-asc') records.sort((a,b) => a.amount - b.amount);
+
+            const tableBody = document.getElementById('allMovementsTable');
+            tableBody.innerHTML = '';
+
+            if(records.length === 0) {
+                document.getElementById('allMovementsEmpty').classList.remove('hidden');
+            } else {
+                document.getElementById('allMovementsEmpty').classList.add('hidden');
+                records.forEach(m => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer select-none";
+                    tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
+                    tr.innerHTML = `
+                        <td class="py-3 px-3 font-medium">${m.name}</td>
+                        <td class="py-3 px-3 text-gray-400 text-xs"><span class="bg-gray-900 px-2 py-1 rounded-md border border-gray-800">${m.category}</span></td>
+                        <td class="py-3 px-3 text-xs uppercase font-bold tracking-wider ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${m.type}</td>
+                        <td class="py-3 px-3 text-gray-400 text-xs">${m.date}</td>
+                        <td class="py-3 px-3 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(m.amount)}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+        }
+
+        // CATEGORY ADMINISTRATION & STATS RENDERING
+        function renderCategoryDashboard() {
+            const list = document.getElementById('categoryManageList');
+            list.innerHTML = state.categories.map(cat => `
+                <div class="flex items-center justify-between bg-gray-900/80 px-3 py-2 border border-gray-800 rounded-xl text-sm">
+                    <span class="font-medium">${cat}</span>
+                    <button onclick="deleteCategory('${cat}')" class="text-gray-500 hover:text-rose-400 transition p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                </div>
+            `).join('');
+            populateCategorySelects();
+        }
+
+        function addCategory(e) {
+            e.preventDefault();
+            const input = document.getElementById('newCategoryName');
+            const catName = input.value.trim();
+            if(catName && !state.categories.includes(catName)) {
+                state.categories.push(catName);
+                input.value = '';
+                saveState();
+                renderCategoryDashboard();
+                renderCategoryStats();
+            }
+        }
+
+        function deleteCategory(catName) {
+            if(confirm(`Are you sure you want to completely remove "${catName}"? Existing movements will retain this label but you won't be able to select it.`)) {
+                state.categories = state.categories.filter(c => c !== catName);
+                saveState();
+                renderCategoryDashboard();
+                renderCategoryStats();
+            }
+        }
+
+        function renderCategoryStats() {
+            const filterMonthStr = document.getElementById('statsMonth').value; // YYYY-MM
+            const tbody = document.getElementById('categoryStatsTable');
+            tbody.innerHTML = '';
+
+            state.categories.forEach(cat => {
+                let monthlyExpenses = 0;
+                let allTimeExpenses = 0;
+
+                state.movements.forEach(m => {
+                    if(m.category === cat && m.type === 'outcome') {
+                        allTimeExpenses += parseFloat(m.amount);
+                        if(m.date.startsWith(filterMonthStr)) {
+                            monthlyExpenses += parseFloat(m.amount);
+                        }
+                    }
+                });
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50";
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-semibold text-gray-200">${cat}</td>
+                    <td class="py-3 px-3 text-right font-medium text-rose-300">${formatCurrency(monthlyExpenses)}</td>
+                    <td class="py-3 px-3 text-right font-medium text-rose-400 bg-gray-950/40">${formatCurrency(allTimeExpenses)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // DRAG AND DROP IMPLEMENTATIONS
+        let draggedItemId = null;
+        let draggedItemOrigin = null; // 'movement' or 'planification'
+
+        function handleDragStart(e) {
+            draggedItemId = this.getAttribute('data-id');
+            draggedItemOrigin = this.getAttribute('data-origin');
+            e.dataTransfer.setData('text/plain', draggedItemId);
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function dragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function dropToPlan(e) {
+            e.preventDefault();
+            const targetZone = document.getElementById('planDropZone');
+            targetZone.classList.remove('drag-over');
+
+            if (draggedItemOrigin === 'movement') {
+                const moveIdx = state.movements.findIndex(m => m.id === draggedItemId);
+                if (moveIdx !== -1) {
+                    const movement = state.movements[moveIdx];
+                    // Transition Object from Movement Ledger to Planning Framework
+                    state.planification.push({
+                        id: crypto.randomUUID(),
+                        name: movement.name,
+                        amount: movement.amount,
+                        category: movement.category
+                    });
+                    // Remove from movements array
+                    state.movements.splice(moveIdx, 1);
+                    saveState();
+                    renderAll();
+                }
+            }
+        }
+
+        function dropToMovements(event) {
+            event.preventDefault();
+            const targetZone = document.getElementById('movementDropZone');
+            targetZone.classList.remove('drag-over');
+
+            if (draggedItemOrigin === 'planification') {
+                const planIdx = state.planification.findIndex(p => p.id === draggedItemId);
+                if (planIdx !== -1) {
+                    const planItem = state.planification[planIdx];
+                    // Reassemble into standard accounting Ledger Entry object
+                    state.movements.push({
+                        id: crypto.randomUUID(),
+                        name: planItem.name,
+                        amount: planItem.amount,
+                        category: planItem.category,
+                        type: 'outcome', // default outcome assertion
+                        date: new Date().toISOString().split('T')[0]
+                    });
+                    // Splice out of planification queue
+                    state.planification.splice(planIdx, 1);
+                    saveState();
+                    renderAll();
+                }
+            }
+        }
+
+        // INTERACTIVE MODAL INTERFACES
+        function openMovementModal(editId = null) {
+            const modal = document.getElementById('movementModal');
+            const form = document.getElementById('movementForm');
+            form.reset();
+            initDatePickers();
+
+            if(editId) {
+                document.getElementById('movementModalTitle').innerText = "Edit Movement";
+                const item = state.movements.find(m => m.id === editId);
+                if(item) {
+                    document.getElementById('editMovementId').value = item.id;
+                    document.getElementById('mvName').value = item.name;
+                    document.getElementById('mvType').value = item.type;
+                    document.getElementById('mvCategory').value = item.category;
+                    document.getElementById('mvAmount').value = item.amount;
+                    document.getElementById('mvDate').value = item.date;
+                }
+            } else {
+                document.getElementById('movementModalTitle').innerText = "Add Movement";
+                document.getElementById('editMovementId').value = "";
+            }
+            modal.showModal();
+        }
+
+        function closeMovementModal() { document.getElementById('movementModal').close(); }
+
+        function saveMovementForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('editMovementId').value;
+            const data = {
+                id: id || crypto.randomUUID(),
+                name: document.getElementById('mvName').value.trim(),
+                type: document.getElementById('mvType').value,
+                category: document.getElementById('mvCategory').value,
+                amount: parseFloat(document.getElementById('mvAmount').value),
+                date: document.getElementById('mvDate').value
+            };
+
+            if(id) {
+                const idx = state.movements.findIndex(m => m.id === id);
+                if(idx !== -1) state.movements[idx] = data;
+            } else {
+                state.movements.push(data);
+            }
+            
+            saveState();
+            renderAll();
+            closeMovementModal();
+        }
+
+        function openPlanModal(editId = null) {
+            const modal = document.getElementById('planModal');
+            const form = document.getElementById('planForm');
+            form.reset();
+
+            if(editId) {
+                document.getElementById('planModalTitle').innerText = "Edit Planned Item";
+                const item = state.planification.find(p => p.id === editId);
+                if(item) {
+                    document.getElementById('editPlanId').value = item.id;
+                    document.getElementById('plName').value = item.name;
+                    document.getElementById('plCategory').value = item.category;
+                    document.getElementById('plAmount').value = item.amount;
+                }
+            } else {
+                document.getElementById('planModalTitle').innerText = "Add Planned Item";
+                document.getElementById('editPlanId').value = "";
+            }
+            modal.showModal();
+        }
+
+        function closePlanModal() { document.getElementById('planModal').close(); }
+
+        function savePlanForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('editPlanId').value;
+            const data = {
+                id: id || crypto.randomUUID(),
+                name: document.getElementById('plName').value.trim(),
+                category: document.getElementById('plCategory').value,
+                amount: parseFloat(document.getElementById('plAmount').value)
+            };
+
+            if(id) {
+                const idx = state.planification.findIndex(p => p.id === id);
+                if(idx !== -1) state.planification[idx] = data;
+            } else {
+                state.planification.push(data);
+            }
+
+            saveState();
+            renderAll();
+            closePlanModal();
+        }
+
+        // CUSTOM RIGHT CLICK ACTION MENU SYSTEM
+        function setupContextMenus() {
+            window.addEventListener('click', () => {
+                document.getElementById('customContextMenu').classList.add('hidden');
+            });
+        }
+
+        function handleContextOpen(e, type, id) {
+            e.preventDefault();
+            e.stopPropagation();
+            contextTarget = { type, id };
+            
+            const menu = document.getElementById('customContextMenu');
+            menu.classList.remove('hidden');
+            
+            const menuWidth = 150;
+            const menuHeight = 100;
+            let targetX = e.pageX;
+            let targetY = e.pageY;
+
+            if((targetX + menuWidth) > window.innerWidth) targetX -= menuWidth;
+            if((targetY + menuHeight) > window.innerHeight) targetY -= menuHeight;
+
+            menu.style.left = `${targetX}px`;
+            menu.style.top = `${targetY}px`;
+        }
+
+        function triggerContextEdit() {
+            if(!contextTarget) return;
+            if(contextTarget.type === 'movement') openMovementModal(contextTarget.id);
+            if(contextTarget.type === 'planification') openPlanModal(contextTarget.id);
+        }
+
+        function triggerContextDelete() {
+            if(!contextTarget) return;
+            if(confirm(`Permanently drop this item record parameter?`)) {
+                if(contextTarget.type === 'movement') {
+                    state.movements = state.movements.filter(m => m.id !== contextTarget.id);
+                } else {
+                    state.planification = state.planification.filter(p => p.id !== contextTarget.id);
+                }
+                saveState();
+                renderAll();
+                applyFilters();
+            }
+        }
+
+        // ==========================================
+        // AUTOMATED GOOGLE DRIVE SYNCHRONIZATION 
+        // ==========================================
+        const CLIENT_ID = '245924780137-lffhig48butnk8t7mb7smkkcc1r0sb8p.apps.googleusercontent.com'; 
+        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+        let googleUserToken = null;
+        let driveFileId = null;
+
+        function loadScript(src, callback) {
+            let script = document.createElement('script');
+            script.src = src; script.async = true; script.defer = true;
+            script.onload = callback;
+            document.head.appendChild(script);
+        }
+
+        window.addEventListener('load', () => {
+            loadScript('https://apis.google.com/js/api.js', () => gapi.load('client', initGapiClient));
+            loadScript('https://accounts.google.com/gsi/client', initGisClient);
+        });
+
+        async function initGapiClient() {
+            await gapi.client.init({});
+            await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
+            gapiInited = true;
+            checkCloudAuthStatus();
+        }
+
+        function initGisClient() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: async (resp) => {
+                    if (resp.error !== undefined) throw (resp);
+                    googleUserToken = resp;
+                    localStorage.setItem('MONEYCO_GD_AUTH_TOKEN', JSON.stringify(resp));
+                    updateDriveStatus(true);
+                    await runCloudInitialScan();
+                },
+            });
+            gisInited = true;
+            checkCloudAuthStatus();
+        }
+
+        async function checkCloudAuthStatus() {
+            if (gapiInited && gisInited) {
+                const savedToken = localStorage.getItem('MONEYCO_GD_AUTH_TOKEN');
+                if(savedToken) {
+                    googleUserToken = JSON.parse(savedToken);
+                    gapi.client.setToken(googleUserToken);
+                    updateDriveStatus(true);
+                    await runCloudInitialScan();
+                }
+            }
+        }
+
+        function handleAuthClick() {
+            if (!tokenClient) return alert("Google API Script libraries compiling. Retry in a moment.");
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken(null);
+                googleUserToken = null;
+                driveFileId = null;
+                localStorage.removeItem('MONEYCO_GD_AUTH_TOKEN');
+                updateDriveStatus(false);
+            }
+        }
+
+        function updateDriveStatus(connected) {
+            const icon = document.getElementById('gdriveStatusIcon');
+            const text = document.getElementById('gdriveStatusText');
+            const sub = document.getElementById('gdriveUserEmail');
+            const btnConnect = document.getElementById('btnConnectDrive');
+            const btnDisconnect = document.getElementById('btnDisconnectDrive');
+
+            if(connected) {
+                icon.className = "w-3 h-3 bg-emerald-500 rounded-full animate-none";
+                text.innerText = "Cloud Status: Connected and Syncing";
+                sub.innerText = "Automatic Drive configuration data container pipeline active.";
+                btnConnect.classList.add('hidden');
+                btnDisconnect.classList.remove('hidden');
+            } else {
+                icon.className = "w-3 h-3 bg-rose-500 rounded-full animate-pulse";
+                text.innerText = "Cloud Status: Disconnected";
+                sub.innerText = "Using Local Storage mode";
+                btnConnect.classList.remove('hidden');
+                btnDisconnect.classList.add('hidden');
+            }
+        }
+
+        async function runCloudInitialScan() {
+            try {
+                const response = await gapi.client.drive.files.list({
+                    spaces: 'appDataFolder',
+                    fields: 'files(id, name)',
+                    pageSize: 1
+                });
+                const files = response.result.files;
+                if (files && files.length > 0) {
+                    driveFileId = files[0].id;
+                    await pullFromCloud();
+                } else {
+                    await createCloudContainer();
+                }
+            } catch (err) { console.error('Error scanning initialization targets:', err); }
+        }
+
+        async function createCloudContainer() {
+            try {
+                const metadata = { name: 'moneyco_config.json', parents: ['appDataFolder'] };
+                const response = await gapi.client.drive.files.create({ resource: metadata, fields: 'id' });
+                driveFileId = response.result.id;
+                await syncToGoogleDrive();
+            } catch(e) { console.error("Error creating state container boundary file", e); }
+        }
+
+        async function pullFromCloud() {
+            if(!driveFileId) return;
+            try {
+                const response = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+                if(response.result && (response.result.movements || response.result.planification)) {
+                    state = response.result;
+                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+                    renderAll();
+                }
+            } catch(e) { console.error("Failed to query file stream media binary data.", e); }
+        }
+
+        async function syncToGoogleDrive() {
+            if(!googleUserToken || !driveFileId) return;
+            try {
+                await gapi.client.request({
+                    path: `/upload/drive/v3/files/${driveFileId}`,
+                    method: 'PATCH',
+                    params: { uploadType: 'media' },
+                    body: JSON.stringify(state)
+                });
+            } catch(err) { console.error('Cloud automation update error:', err); }
+        }
+    </script>
+</body>
+</html>
