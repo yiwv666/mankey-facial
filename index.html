@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Custom scrollbar for dark theme */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1f2937; }
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
@@ -196,7 +195,17 @@
                     <div class="lg:col-span-2 bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
                         <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                             <h2 class="text-lg font-bold">Category Distribution Analytics</h2>
-                            <input type="month" id="statsMonth" onchange="renderCategoryStats()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+                            <div class="flex gap-2"> <select id="statsSort" onchange="renderCategoryStats()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500 text-gray-300">
+            <option value="none">Default Order</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+            <option value="expense-month">Most Expended (Month)</option>
+            <option value="expense-all">Most Expended (All-Time)</option>
+        </select>
+        
+        <input type="month" id="statsMonth" onchange="renderCategoryStats()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+    </div>
+                            
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse min-w-[500px]">
@@ -262,8 +271,7 @@
         </button>
     </div>
 
-    <dialog id="movementModal" class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
-        <div class="flex items-center justify-between mb-4">
+<dialog id="movementModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">        <div class="flex items-center justify-between mb-4">
             <h3 id="movementModalTitle" class="text-lg font-bold">Add Movement</h3>
             <button onclick="closeMovementModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
@@ -304,7 +312,7 @@
         </form>
     </dialog>
 
-    <dialog id="planModal" class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+<dialog id="planModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
         <div class="flex items-center justify-between mb-4">
             <h3 id="planModalTitle" class="text-lg font-bold">Add Planned Item</h3>
             <button onclick="closePlanModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
