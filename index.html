@@ -115,8 +115,11 @@
                         </div>
 
                         <div id="movementDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
-                            ondrop="dropToMovements(event)"
+                            ondrop="dropToMovements(event)" data-zone="movements"
                             class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px] overflow-x-auto">
+                            ondrop="dropToMovements(event)"
+                            class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]
+                            overflow-x-auto">
                             <table class="w-full text-left border-collapse min-w-[500px]">
                                 <thead>
                                     <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
@@ -969,13 +972,16 @@
         let draggedItemOrigin = null; // 'movement' or 'planification'
 
         function handleDragStart(e) {
-            // Force set data target attributes directly into the elements configuration parameters
+            // Standardize reading target attributes directly from the source element
             draggedItemId = this.getAttribute('data-id');
             draggedItemOrigin = this.getAttribute('data-origin');
 
-            // Explicitly seed the event payload so modern browser drop zones acknowledge the action
+            // Explicitly seed the event payload using standard key-value pairs
             e.dataTransfer.setData('text/plain', draggedItemId);
-            e.dataTransfer.effectAllowed = 'copyMove';
+            e.dataTransfer.setData('item-origin', draggedItemOrigin);
+
+            // Allows both moving items (planification) and copying items (frequent templates)
+            e.dataTransfer.effectAllowed = 'all';
         }
 
         function allowDrop(e) {
