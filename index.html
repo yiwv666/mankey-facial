@@ -148,8 +148,8 @@
                         </div>
 
                         <div id="planDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
-                            ondrop="dropToPlan(event)"
-                            class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]">
+                            ondrop="dropToPlan(event)""
+                            class=" flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]">
                             <div class="space-y-2" id="planificationList">
                             </div>
                             <div id="noPlanItems" class="hidden text-center py-12 text-gray-500 text-sm">Drag movements
@@ -692,6 +692,13 @@
             const targetZone = document.getElementById('movementDropZone');
             targetZone.classList.remove('drag-over');
 
+            // Fallback protection: if global draggedItemOrigin wasn't caught cleanly by the browser state
+            if (!draggedItemOrigin && event.dataTransfer.getData('text/plain')) {
+                // Read directly from the DOM element instead
+                const draggedEl = document.querySelector(`[data-id="${draggedItemId}"]`);
+                if (draggedEl) draggedItemOrigin = draggedEl.getAttribute('data-origin');
+            }
+
             if (draggedItemOrigin === 'planification') {
                 const planIdx = state.planification.findIndex(p => p.id === draggedItemId);
                 if (planIdx !== -1) {
@@ -708,14 +715,10 @@
                     saveState();
                     renderAll();
                 }
-            }
-            // =======================================================
-            // ADD THIS CONDITIONAL CHECK FOR FREQUENT ITEMS
-            // =======================================================
-            else if (draggedItemOrigin === 'frequent') {
+            } else if (draggedItemOrigin === 'frequent') {
                 const freqItem = state.frequent.find(f => f.id === draggedItemId);
                 if (freqItem) {
-                    // Log a new instance inside standard ledger history
+                    // Log a copy as a new instance inside the movement ledger history
                     state.movements.push({
                         id: crypto.randomUUID(),
                         name: freqItem.name,
@@ -724,11 +727,15 @@
                         type: 'outcome',
                         date: new Date().toISOString().split('T')[0]
                     });
-                    // Critical Change: No splicing array action is fired here!
+                    // We do NOT slice or remove from state.frequent here
                     saveState();
                     renderAll();
                 }
             }
+
+            // Reset drag identifiers cleanly for the next action
+            draggedItemId = null;
+            draggedItemOrigin = null;
         }
 
         function openFrequentModal(editId = null) {
