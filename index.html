@@ -616,34 +616,56 @@
             }
         }
 
-        function renderCategoryStats() {
-            const filterMonthStr = document.getElementById('statsMonth').value; // YYYY-MM
-            const tbody = document.getElementById('categoryStatsTable');
-            tbody.innerHTML = '';
+function renderCategoryStats() {
+    const filterMonthStr = document.getElementById('statsMonth').value; // YYYY-MM
+    const sortMethod = document.getElementById('statsSort')?.value || 'none';
+    const tbody = document.getElementById('categoryStatsTable');
+    tbody.innerHTML = '';
 
-            state.categories.forEach(cat => {
-                let monthlyExpenses = 0;
-                let allTimeExpenses = 0;
+    // Map categories to temporary objects containing pre-calculated metrics for sorting calculation
+    let targetStats = state.categories.map(cat => {
+        let monthlyExpenses = 0;
+        let allTimeExpenses = 0;
 
-                state.movements.forEach(m => {
-                    if(m.category === cat && m.type === 'outcome') {
-                        allTimeExpenses += parseFloat(m.amount);
-                        if(m.date.startsWith(filterMonthStr)) {
-                            monthlyExpenses += parseFloat(m.amount);
-                        }
-                    }
-                });
+        state.movements.forEach(m => {
+            if(m.category === cat && m.type === 'outcome') {
+                allTimeExpenses += parseFloat(m.amount);
+                if(m.date.startsWith(filterMonthStr)) {
+                    monthlyExpenses += parseFloat(m.amount);
+                }
+            }
+        });
 
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50";
-                tr.innerHTML = `
-                    <td class="py-3 px-3 font-semibold text-gray-200">${cat}</td>
-                    <td class="py-3 px-3 text-right font-medium text-rose-300">${formatCurrency(monthlyExpenses)}</td>
-                    <td class="py-3 px-3 text-right font-medium text-rose-400 bg-gray-950/40">${formatCurrency(allTimeExpenses)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+        return {
+            name: cat,
+            monthTotal: monthlyExpenses,
+            allTimeTotal: allTimeExpenses
+        };
+    });
+
+    // NEW CODE: Apply Sorting Logic Matrix
+    if (sortMethod === 'name-asc') {
+        targetStats.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortMethod === 'name-desc') {
+        targetStats.sort((a, b) => b.name.localeCompare(a.name));
+    } else if (sortMethod === 'expense-month') {
+        targetStats.sort((a, b) => b.monthTotal - a.monthTotal);
+    } else if (sortMethod === 'expense-all') {
+        targetStats.sort((a, b) => b.allTimeTotal - a.allTimeTotal);
+    }
+
+    // Render the structured and sorted array elements directly to DOM
+    targetStats.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50";
+        tr.innerHTML = `
+            <td class="py-3 px-3 font-semibold text-gray-200">${item.name}</td>
+            <td class="py-3 px-3 text-right font-medium text-rose-300">${formatCurrency(item.monthTotal)}</td>
+            <td class="py-3 px-3 text-right font-medium text-rose-400 bg-gray-950/40">${formatCurrency(item.allTimeTotal)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
 
         // DRAG AND DROP IMPLEMENTATIONS
         let draggedItemId = null;
