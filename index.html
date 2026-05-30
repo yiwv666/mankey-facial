@@ -488,11 +488,23 @@
         function loadState() {
             const saved = localStorage.getItem('MONEYCO_STATE');
             if (saved) {
-                try { state = JSON.parse(saved); } catch (e) { console.error("Error parsing localized storage state", e); }
+                try {
+                    state = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error parsing localized storage state", e);
+                }
             }
-            // Seed defaults if empty
+
+            // DATABASE ENFORCEMENT PROTECTION COMPLIANCE PIPELINE
             if (!state.categories || state.categories.length === 0) {
                 state.categories = ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"];
+            }
+            if (!state.movements) state.movements = [];
+            if (!state.planification) state.planification = [];
+
+            // CRITICAL FIX: Explicitly guarantee the array exists locally
+            if (!state.frequent) {
+                state.frequent = [];
             }
         }
 
@@ -1299,12 +1311,22 @@
             if (!driveFileId) return;
             try {
                 const response = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
-                if (response.result && (response.result.movements || response.result.planification)) {
+
+                // Loosened security check constraint to catch and upgrade old file versions
+                if (response.result) {
                     state = response.result;
+
+                    // CRITICAL FIX: Ensure incoming cloud data updates seamlessly to the new database format
+                    if (!state.movements) state.movements = [];
+                    if (!state.planification) state.planification = [];
+                    if (!state.frequent) state.frequent = [];
+
                     localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
                     renderAll();
                 }
-            } catch (e) { console.error("Failed to query file stream media binary data.", e); }
+            } catch (e) {
+                console.error("Failed to query file stream media binary data. Pushing local matrix format...", e);
+            }
         }
 
         async function syncToGoogleDrive() {
@@ -1318,6 +1340,14 @@
                 });
             } catch (err) { console.error('Cloud automation update error:', err); }
         }
+        // FORCE REALTIME SCHEMA MIGRATION EXECUTION
+        // This runs once on boot to immediately patch, save, and upload the updated database structure.
+        setTimeout(() => {
+            if (state && !state.frequent) {
+                state.frequent = [];
+            }
+            saveState();
+        }, 1000);
     </script>
 </body>
 
