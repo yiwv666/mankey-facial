@@ -1036,11 +1036,14 @@
         function renderCategoryDashboard() {
             const list = document.getElementById('categoryManageList');
             list.innerHTML = state.categories.map(cat => `
-                <div class="flex items-center justify-between bg-gray-900/80 px-3 py-2 border border-gray-800 rounded-xl text-sm">
-                    <span class="font-medium">${cat}</span>
-                    <button onclick="deleteCategory('${cat}')" class="text-gray-500 hover:text-rose-400 transition p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                </div>
-            `).join('');
+        <div class="flex items-center justify-between bg-gray-900/80 px-3 py-2 border border-gray-800 rounded-xl text-sm">
+            <span class="font-medium">${cat}</span>
+            <div class="flex items-center gap-1">
+                <button onclick="editCategoryName('${cat}')" class="text-gray-500 hover:text-blue-400 transition p-1" title="Edit Category"><i class="fa-solid fa-pen text-xs"></i></button>
+                <button onclick="deleteCategory('${cat}')" class="text-gray-500 hover:text-rose-400 transition p-1" title="Delete Category"><i class="fa-solid fa-trash-can text-xs"></i></button>
+            </div>
+        </div>
+    `).join('');
             populateCategorySelects();
         }
 
@@ -1065,6 +1068,45 @@
                 renderCategoryStats();
             }
         }
+
+        function editCategoryName(oldName) {
+    const newName = prompt(`Enter a new name for the category "${oldName}":`, oldName);
+    if (!newName) return;
+    
+    const sanitizedNewName = newName.trim();
+    if (sanitizedNewName === "" || sanitizedNewName === oldName) return;
+
+    if (state.categories.includes(sanitizedNewName)) {
+        alert("A category with that name already exists.");
+        return;
+    }
+
+    // 1. Update the category array index reference
+    const catIdx = state.categories.indexOf(oldName);
+    if (catIdx !== -1) {
+        state.categories[catIdx] = sanitizedNewName;
+    }
+
+    // 2. Cascade Rename: Update all logged Ledger Movements matching oldName
+    state.movements.forEach(m => {
+        if (m.category === oldName) m.category = sanitizedNewName;
+    });
+
+    // 3. Cascade Rename: Update Planification items
+    state.planification.forEach(p => {
+        if (p.category === oldName) p.category = sanitizedNewName;
+    });
+
+    // 4. Cascade Rename: Update Frequent template properties
+    state.frequent.forEach(f => {
+        if (f.category === oldName) f.category = sanitizedNewName;
+    });
+
+    // Commit changes to local state storage and fire background cloud syncing
+    saveState();
+    renderAll();
+    if (typeof applyFilters === 'function') applyFilters();
+}
 
         function renderCategoryStats() {
             const filterMonthStr = document.getElementById('statsMonth').value; // YYYY-MM
