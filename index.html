@@ -115,7 +115,7 @@
                         </div>
 
                         <div id="movementDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
-                            ondrop="dropToMovements(event)" data-zone="movements"
+                            ondrop="handleGlobalDrop(event)" data-zone="movements"
                             class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px] overflow-x-auto">
                             <table class="w-full text-left border-collapse min-w-[500px]">
                                 <thead>
@@ -148,8 +148,8 @@
                         </div>
 
                         <div id="planDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
-                            ondrop="dropToPlan(event)""
-                            class=" flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]">
+                            ondrop="handleGlobalDrop(event)" data-zone="planification"
+                            class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]">
                             <div class="space-y-2" id="planificationList">
                             </div>
                             <div id="noPlanItems" class="hidden text-center py-12 text-gray-500 text-sm">Drag movements
@@ -160,6 +160,7 @@
                             <span class="font-semibold text-sm tracking-wide text-gray-400">Total Planned:</span>
                             <span id="planTotalSum" class="text-xl font-extrabold text-indigo-400">$0.00</span>
                         </div>
+
                         <div class="mt-6 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
                             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                                 <div>
@@ -172,7 +173,9 @@
                                 </button>
                             </div>
 
-                            <div class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[200px]">
+                            <div id="frequentDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
+                                ondrop="handleGlobalDrop(event)" data-zone="frequent"
+                                class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[200px]">
                                 <div class="space-y-2" id="frequentExpensesList">
                                 </div>
                                 <div id="noFrequentItems" class="hidden text-center py-8 text-gray-500 text-sm">Add
@@ -657,16 +660,17 @@
                     item.setAttribute('draggable', 'true');
                     item.setAttribute('data-id', p.id);
                     item.setAttribute('data-origin', 'planification');
+
                     item.addEventListener('dragstart', handleDragStart);
                     item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'planification', p.id));
 
                     item.innerHTML = `
-                        <div>
-                            <p class="font-semibold text-sm">${p.name}</p>
-                            <span class="text-[10px] bg-indigo-950 text-indigo-300 font-medium px-2 py-0.5 rounded-full border border-indigo-800">${p.category}</span>
-                        </div>
-                        <p class="font-bold text-sm text-indigo-400">${formatCurrency(p.amount)}</p>
-                    `;
+        <div class="select-none">
+            <p class="font-semibold text-sm select-none">${p.name}</p>
+            <span class="text-[10px] bg-indigo-950 text-indigo-300 font-medium px-2 py-0.5 rounded-full border border-indigo-800 select-none">${p.category}</span>
+        </div>
+        <p class="font-bold text-sm text-indigo-400 select-none">${formatCurrency(p.amount)}</p>
+    `;
                     planContainer.appendChild(item);
                 });
             }
@@ -687,17 +691,16 @@
                     item.setAttribute('data-id', f.id);
                     item.setAttribute('data-origin', 'frequent');
 
-                    // Re-bind listeners explicitly to guarantee event bubbling catch
-                    item.addEventListener('dragstart', (e) => handleDragStart.call(item, e));
+                    item.addEventListener('dragstart', handleDragStart);
                     item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'frequent', f.id));
 
                     item.innerHTML = `
-                <div class="pointer-events-none">
-                    <p class="font-semibold text-sm">${f.name}</p>
-                    <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800">${f.category}</span>
-                </div>
-                <p class="font-bold text-sm text-teal-400 pointer-events-none">${formatCurrency(f.amount)}</p>
-            `;
+        <div class="select-none">
+            <p class="font-semibold text-sm select-none">${f.name}</p>
+            <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
+        </div>
+        <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
+    `;
                     freqContainer.appendChild(item);
                 });
             }
@@ -991,54 +994,69 @@
             e.currentTarget.classList.remove('drag-over');
         }
 
-        function dropToPlan(e) {
-            e.preventDefault();
-            const targetZone = document.getElementById('planDropZone');
-            targetZone.classList.remove('drag-over');
-
-            if (draggedItemOrigin === 'movement') {
-                const moveIdx = state.movements.findIndex(m => m.id === draggedItemId);
-                if (moveIdx !== -1) {
-                    const movement = state.movements[moveIdx];
-                    // Transition Object from Movement Ledger to Planning Framework
-                    state.planification.push({
-                        id: crypto.randomUUID(),
-                        name: movement.name,
-                        amount: movement.amount,
-                        category: movement.category
-                    });
-                    // Remove from movements array
-                    state.movements.splice(moveIdx, 1);
-                    saveState();
-                    renderAll();
-                }
-            }
-        }
-
-        function dropToMovements(event) {
+        function handleGlobalDrop(event) {
             event.preventDefault();
-            const targetZone = document.getElementById('movementDropZone');
-            targetZone.classList.remove('drag-over');
 
-            if (draggedItemOrigin === 'planification') {
-                const planIdx = state.planification.findIndex(p => p.id === draggedItemId);
-                if (planIdx !== -1) {
-                    const planItem = state.planification[planIdx];
-                    // Reassemble into standard accounting Ledger Entry object
-                    state.movements.push({
-                        id: crypto.randomUUID(),
-                        name: planItem.name,
-                        amount: planItem.amount,
-                        category: planItem.category,
-                        type: 'outcome', // default outcome assertion
-                        date: new Date().toISOString().split('T')[0]
-                    });
-                    // Splice out of planification queue
-                    state.planification.splice(planIdx, 1);
-                    saveState();
-                    renderAll();
-                }
+            // Clear dynamic border frames
+            document.getElementById('movementDropZone').classList.remove('drag-over');
+            document.getElementById('planDropZone').classList.remove('drag-over');
+            document.getElementById('frequentDropZone').classList.remove('drag-over');
+
+            // Identify target zone container
+            const targetZone = event.currentTarget.getAttribute('data-zone');
+            const origin = event.dataTransfer.getData('item-origin') || draggedItemOrigin;
+            const id = event.dataTransfer.getData('text/plain') || draggedItemId;
+
+            if (!id || !origin || !targetZone) return;
+            if (origin === targetZone) return; // Dropped on itself? Cancel action cleanly.
+
+            // 1. EXTRACT DATA OBJECT BASE PARAMETERS
+            let sourceItem = null;
+            if (origin === 'movement') sourceItem = state.movements.find(m => m.id === id);
+            else if (origin === 'planification') sourceItem = state.planification.find(p => p.id === id);
+            else if (origin === 'frequent') sourceItem = state.frequent.find(f => f.id === id);
+
+            if (!sourceItem) return;
+
+            // 2. INJECT NEW PARAMETER INSTANCE INTO DESTINATION
+            if (targetZone === 'movements') {
+                state.movements.push({
+                    id: crypto.randomUUID(),
+                    name: sourceItem.name,
+                    amount: parseFloat(sourceItem.amount),
+                    category: sourceItem.category,
+                    type: sourceItem.type || 'outcome',
+                    date: sourceItem.date || new Date().toISOString().split('T')[0]
+                });
+            } else if (targetZone === 'planification') {
+                state.planification.push({
+                    id: crypto.randomUUID(),
+                    name: sourceItem.name,
+                    amount: parseFloat(sourceItem.amount),
+                    category: sourceItem.category
+                });
+            } else if (targetZone === 'frequent') {
+                state.frequent.push({
+                    id: crypto.randomUUID(),
+                    name: sourceItem.name,
+                    amount: parseFloat(sourceItem.amount),
+                    category: sourceItem.category
+                });
             }
+
+            // 3. CLEAN UP SOURCE CONTAINER (UNLESS ORIGINATING FROM THE FREQUENT POOL TEMPLATE ENGINE)
+            if (origin !== 'frequent') {
+                if (origin === 'movement') state.movements = state.movements.filter(m => m.id !== id);
+                else if (origin === 'planification') state.planification = state.planification.filter(p => p.id !== id);
+            }
+
+            // Save and commit global interface assets
+            saveState();
+            renderAll();
+
+            // Clean pointers
+            draggedItemId = null;
+            draggedItemOrigin = null;
         }
 
         // INTERACTIVE MODAL INTERFACES
@@ -1167,20 +1185,23 @@
         function triggerContextEdit() {
             if (!contextTarget) return;
             if (contextTarget.type === 'movement') openMovementModal(contextTarget.id);
-            if (contextTarget.type === 'planification') openPlanModal(contextTarget.id);
+            else if (contextTarget.type === 'planification') openPlanModal(contextTarget.id);
+            else if (contextTarget.type === 'frequent') openFrequentModal(contextTarget.id); // Triggers correct context configuration
         }
 
         function triggerContextDelete() {
             if (!contextTarget) return;
-            if (confirm(`Permanently drop this item record parameter?`)) {
+            if (confirm(`Permanently remove this item from its respective ledger container?`)) {
                 if (contextTarget.type === 'movement') {
                     state.movements = state.movements.filter(m => m.id !== contextTarget.id);
-                } else {
+                } else if (contextTarget.type === 'planification') {
                     state.planification = state.planification.filter(p => p.id !== contextTarget.id);
+                } else if (contextTarget.type === 'frequent') {
+                    state.frequent = state.frequent.filter(f => f.id !== contextTarget.id); // Purges from core state array
                 }
                 saveState();
                 renderAll();
-                applyFilters();
+                if (typeof applyFilters === 'function') applyFilters();
             }
         }
 
