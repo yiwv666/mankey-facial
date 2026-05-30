@@ -160,27 +160,26 @@
                             <span class="font-semibold text-sm tracking-wide text-gray-400">Total Planned:</span>
                             <span id="planTotalSum" class="text-xl font-extrabold text-indigo-400">$0.00</span>
                         </div>
-                        <div class="mt-6 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
-                            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                                <div>
-                                    <h2 class="text-lg font-bold">Frequent Expenses</h2>
-                                    <p class="text-xs text-gray-400">Templates for recurring costs</p>
-                                </div>
-                                <button onclick="openFrequentModal()"
-                                    class="bg-teal-600 hover:bg-teal-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
-                                    <i class="fa-solid fa-plus text-xs"></i> Add Template
-                                </button>
+                    </div>
+                    <div class="mt-6 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
+                        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                            <div>
+                                <h2 class="text-lg font-bold">Frequent Expenses</h2>
+                                <p class="text-xs text-gray-400">Templates for recurring costs</p>
                             </div>
+                            <button onclick="openFrequentModal()"
+                                class="bg-teal-600 hover:bg-teal-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
+                                <i class="fa-solid fa-plus text-xs"></i> Add Template
+                            </button>
+                        </div>
 
-                            <div class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[200px]">
-                                <div class="space-y-2" id="frequentExpensesList">
-                                </div>
-                                <div id="noFrequentItems" class="hidden text-center py-8 text-gray-500 text-sm">Add
-                                    templates to drag-and-drop quick entries into your movements.</div>
+                        <div class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[200px]">
+                            <div class="space-y-2" id="frequentExpensesList">
                             </div>
+                            <div id="noFrequentItems" class="hidden text-center py-8 text-gray-500 text-sm">Add
+                                templates to drag-and-drop quick entries into your movements.</div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
