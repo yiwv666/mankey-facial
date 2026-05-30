@@ -428,6 +428,22 @@
                     </select>
                 </div>
             </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Optional Reminder</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="frReminderInterval"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <option value="none">No Reminder</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                    <input type="time" id="frReminderTime"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                </div>
+                <p class="text-[10px] text-gray-500 mt-1">Requires Notification permissions to alert you when background
+                    processes run.</p>
+            </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" onclick="closeFrequentModal()"
                     class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
@@ -694,13 +710,18 @@
                     item.addEventListener('dragstart', handleDragStart);
                     item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'frequent', f.id));
 
+                    const hasReminder = f.reminderInterval && f.reminderInterval !== 'none';
+
                     item.innerHTML = `
-        <div class="select-none">
-            <p class="font-semibold text-sm select-none">${f.name}</p>
-            <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
-        </div>
-        <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
-    `;
+    <div class="select-none">
+        <p class="font-semibold text-sm select-none flex items-center gap-1.5">
+            ${f.name}
+            ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="Reminds ${f.reminderInterval} at ${f.reminderTime}"></i>` : ''}
+        </p>
+        <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
+    </div>
+    <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
+`;
                     freqContainer.appendChild(item);
                 });
             }
@@ -764,6 +785,11 @@
             form.reset();
             populateCategorySelects();
 
+            // Request browser permissions dynamically when opening the configuration module
+            if (Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+
             if (editId) {
                 document.getElementById('frequentModalTitle').innerText = "Edit Template";
                 const item = state.frequent.find(f => f.id === editId);
@@ -772,6 +798,8 @@
                     document.getElementById('frName').value = item.name;
                     document.getElementById('frCategory').value = item.category;
                     document.getElementById('frAmount').value = item.amount;
+                    document.getElementById('frReminderInterval').value = item.reminderInterval || 'none';
+                    document.getElementById('frReminderTime').value = item.reminderTime || '';
                 }
             } else {
                 document.getElementById('frequentModalTitle').innerText = "Add Frequent Expense";
@@ -786,11 +814,15 @@
             e.preventDefault();
             if (!state.frequent) state.frequent = [];
             const id = document.getElementById('editFrequentId').value;
+
             const data = {
                 id: id || crypto.randomUUID(),
                 name: document.getElementById('frName').value.trim(),
                 category: document.getElementById('frCategory').value,
-                amount: parseFloat(document.getElementById('frAmount').value)
+                amount: parseFloat(document.getElementById('frAmount').value),
+                reminderInterval: document.getElementById('frReminderInterval').value,
+                reminderTime: document.getElementById('frReminderTime').value,
+                lastNotified: id ? (state.frequent.find(f => f.id === id)?.lastNotified || null) : null
             };
 
             if (id) {
@@ -1373,6 +1405,110 @@
             }
             saveState();
         }, 1000);
+        // ========================================================
+        // BACKGROUND SERVICE WORKER & NOTIFICATION SYNC ENGINE
+        // ========================================================
+
+        const swCode = `
+self.addEventListener('periodicsync', (event) => {
+    if (event.tag === 'check-moneyco-reminders') {
+        event.waitUntil(checkAndTriggerReminders());
+    }
+});
+
+// Fallback message channel parser if PeriodicSync configuration boundaries pass
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'CHECK_REMINDERS') {
+        checkAndTriggerReminders();
+    }
+});
+
+async function checkAndTriggerReminders() {
+    // Read centralized system local state data matrix boundaries from shared local storage cache
+    const stateText = await localStorage.getItem('MONEYCO_STATE');
+    if (!stateText) return;
+    
+    try {
+        const state = JSON.parse(stateText);
+        if (!state.frequent || state.frequent.length === 0) return;
+        
+        const now = new Date();
+        const currentHHMM = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        let stateUpdated = false;
+
+        state.frequent.forEach(item => {
+            if (!item.reminderInterval || item.reminderInterval === 'none' || !item.reminderTime) return;
+            
+            // Check if current hour/minute matches target setting parameters
+            if (currentHHMM === item.reminderTime) {
+                let shouldNotify = false;
+                const lastNotifiedDate = item.lastNotified ? new Date(item.lastNotified) : null;
+                
+                if (!lastNotifiedDate) {
+                    shouldNotify = true;
+                } else {
+                    const diffTime = Math.abs(now - lastNotifiedDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (item.reminderInterval === 'daily' && diffDays >= 1) shouldNotify = true;
+                    if (item.reminderInterval === 'weekly' && diffDays >= 7) shouldNotify = true;
+                    if (item.reminderInterval === 'monthly' && diffDays >= 28) shouldNotify = true;
+                }
+
+                if (shouldNotify) {
+                    self.registration.showNotification('Moneyco Reminder', {
+                        body: \`Time to log your frequent expense: "\${item.name}" (\${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(item.amount)})?\`,
+                        icon: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/wallet.svg',
+                        badge: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/wallet.svg',
+                        tag: item.id,
+                        renotify: true
+                    });
+                    
+                    item.lastNotified = now.toISOString();
+                    stateUpdated = true;
+                }
+            }
+        });
+
+        if (stateUpdated) {
+            await localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+        }
+    } catch (e) {
+        console.error("Background notification runtime error: ", e);
+    }
+}
+`;
+
+        // Register the Service Worker inline using a Data Blob
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    const blob = new Blob([swCode], { type: 'application/javascript' });
+                    const blobURL = URL.createObjectURL(blob);
+                    const registration = await navigator.serviceWorker.register(blobURL);
+
+                    // Request Background Periodic Sync if browser platform engine supports it
+                    if ('periodicSync' in registration) {
+                        const status = await navigator.permissions.query({ name: 'periodic-background-sync' });
+                        if (status.state === 'granted') {
+                            await registration.periodicSync.register('check-moneyco-reminders', {
+                                minInterval: 60 * 1000 // Query checking resolution frame tick: 1 Minute
+                            });
+                        }
+                    }
+
+                    // Standard client-side fallback loop protection to wake worker channel while tab runs
+                    setInterval(() => {
+                        if (navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({ type: 'CHECK_REMINDERS' });
+                        }
+                    }, 60000); // Poll tracking evaluations every 60 seconds strict
+
+                } catch (err) {
+                    console.error('Moneyco engine worker initialization failed: ', err);
+                }
+            });
+        }
     </script>
 </body>
 
