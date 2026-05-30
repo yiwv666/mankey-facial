@@ -428,21 +428,65 @@
                     </select>
                 </div>
             </div>
-            <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Optional Reminder</label>
+            <div class="border-t border-gray-800 pt-3 space-y-3">
+                <label class="block text-xs font-semibold uppercase text-teal-400 tracking-wide">Reminder
+                    Configuration</label>
+
                 <div class="grid grid-cols-2 gap-4">
-                    <select id="frReminderInterval"
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1">Frequency Type</label>
+                        <select id="frReminderInterval" onchange="toggleReminderFields()"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            <option value="none">No Reminder</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="custom">Every X Custom...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1">Alert Time</label>
+                        <input type="time" id="frReminderTime"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div id="wrapperWeekly" class="hidden">
+                    <label class="block text-[11px] text-gray-400 mb-1">Day of the Week</label>
+                    <select id="frReminderWeeklyDay"
                         class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-                        <option value="none">No Reminder</option>
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                        <option value="0">Sunday</option>
                     </select>
-                    <input type="time" id="frReminderTime"
+                </div>
+
+                <div id="wrapperMonthly" class="hidden">
+                    <label class="block text-[11px] text-gray-400 mb-1">Day of the Month (1-31)</label>
+                    <input type="number" id="frReminderMonthlyDay" min="1" max="31" placeholder="e.g., 15"
                         class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                 </div>
-                <p class="text-[10px] text-gray-500 mt-1">Requires Notification permissions to alert you when background
-                    processes run.</p>
+
+                <div id="wrapperCustom" class="hidden grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1">Interval Value (X)</label>
+                        <input type="number" id="frReminderCustomValue" min="1" placeholder="e.g., 3"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1">Unit</label>
+                        <select id="frReminderCustomUnit"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            <option value="days">Days</option>
+                            <option value="weeks">Weeks</option>
+                            <option value="months">Months</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" onclick="closeFrequentModal()"
@@ -711,12 +755,23 @@
                     item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'frequent', f.id));
 
                     const hasReminder = f.reminderInterval && f.reminderInterval !== 'none';
+                    let titleNote = '';
+
+                    if (hasReminder) {
+                        if (f.reminderInterval === 'daily') titleNote = `Daily at ${f.reminderTime}`;
+                        else if (f.reminderInterval === 'weekly') {
+                            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                            titleNote = `Weekly on ${days[f.reminderWeeklyDay || 1]} at ${f.reminderTime}`;
+                        }
+                        else if (f.reminderInterval === 'monthly') titleNote = `Every ${f.reminderMonthlyDay || 1}th of the month at ${f.reminderTime}`;
+                        else if (f.reminderInterval === 'custom') titleNote = `Every ${f.reminderCustomValue || 1} ${f.reminderCustomUnit} at ${f.reminderTime}`;
+                    }
 
                     item.innerHTML = `
     <div class="select-none">
         <p class="font-semibold text-sm select-none flex items-center gap-1.5">
             ${f.name}
-            ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="Reminds ${f.reminderInterval} at ${f.reminderTime}"></i>` : ''}
+            ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="${titleNote}"></i>` : ''}
         </p>
         <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
     </div>
@@ -785,7 +840,6 @@
             form.reset();
             populateCategorySelects();
 
-            // Request browser permissions dynamically when opening the configuration module
             if (Notification.permission === 'default') {
                 Notification.requestPermission();
             }
@@ -800,11 +854,17 @@
                     document.getElementById('frAmount').value = item.amount;
                     document.getElementById('frReminderInterval').value = item.reminderInterval || 'none';
                     document.getElementById('frReminderTime').value = item.reminderTime || '';
+                    document.getElementById('frReminderWeeklyDay').value = item.reminderWeeklyDay || '1';
+                    document.getElementById('frReminderMonthlyDay').value = item.reminderMonthlyDay || '';
+                    document.getElementById('frReminderCustomValue').value = item.reminderCustomValue || '';
+                    document.getElementById('frReminderCustomUnit').value = item.reminderCustomUnit || 'days';
                 }
             } else {
                 document.getElementById('frequentModalTitle').innerText = "Add Frequent Expense";
                 document.getElementById('editFrequentId').value = "";
             }
+
+            toggleReminderFields(); // Render visibility corrections instantly on modal boot
             modal.showModal();
         }
 
@@ -822,6 +882,10 @@
                 amount: parseFloat(document.getElementById('frAmount').value),
                 reminderInterval: document.getElementById('frReminderInterval').value,
                 reminderTime: document.getElementById('frReminderTime').value,
+                reminderWeeklyDay: document.getElementById('frReminderWeeklyDay').value,
+                reminderMonthlyDay: parseInt(document.getElementById('frReminderMonthlyDay').value) || null,
+                reminderCustomValue: parseInt(document.getElementById('frReminderCustomValue').value) || null,
+                reminderCustomUnit: document.getElementById('frReminderCustomUnit').value,
                 lastNotified: id ? (state.frequent.find(f => f.id === id)?.lastNotified || null) : null
             };
 
@@ -1405,6 +1469,20 @@
             }
             saveState();
         }, 1000);
+
+        function toggleReminderFields() {
+            const val = document.getElementById('frReminderInterval').value;
+
+            // Reset structural state visibility properties
+            document.getElementById('wrapperWeekly').classList.add('hidden');
+            document.getElementById('wrapperMonthly').classList.add('hidden');
+            document.getElementById('wrapperCustom').classList.add('hidden');
+
+            if (val === 'weekly') document.getElementById('wrapperWeekly').classList.remove('hidden');
+            else if (val === 'monthly') document.getElementById('wrapperMonthly').classList.remove('hidden');
+            else if (val === 'custom') document.getElementById('wrapperCustom').classList.remove('hidden');
+        }
+
         // ========================================================
         // BACKGROUND SERVICE WORKER & NOTIFICATION SYNC ENGINE
         // ========================================================
@@ -1424,7 +1502,6 @@ self.addEventListener('message', (event) => {
 });
 
 async function checkAndTriggerReminders() {
-    // Read centralized system local state data matrix boundaries from shared local storage cache
     const stateText = await localStorage.getItem('MONEYCO_STATE');
     if (!stateText) return;
     
@@ -1439,34 +1516,66 @@ async function checkAndTriggerReminders() {
         state.frequent.forEach(item => {
             if (!item.reminderInterval || item.reminderInterval === 'none' || !item.reminderTime) return;
             
-            // Check if current hour/minute matches target setting parameters
-            if (currentHHMM === item.reminderTime) {
-                let shouldNotify = false;
-                const lastNotifiedDate = item.lastNotified ? new Date(item.lastNotified) : null;
-                
+            // Step 1: Ensure execution alignment targets matching alert hours
+            if (currentHHMM !== item.reminderTime) return;
+
+            let dateConditionMet = false;
+            const lastNotifiedDate = item.lastNotified ? new Date(item.lastNotified) : null;
+
+            // Step 2: Test Specific Structural Frequency Parameters
+            if (item.reminderInterval === 'daily') {
+                dateConditionMet = true; 
+            } 
+            else if (item.reminderInterval === 'weekly') {
+                // Match Day of the Week index integer (0-6)
+                if (now.getDay() === parseInt(item.reminderWeeklyDay)) {
+                    dateConditionMet = true;
+                }
+            } 
+            else if (item.reminderInterval === 'monthly') {
+                // Match specific calendar month number
+                if (now.getDate() === parseInt(item.reminderMonthlyDay)) {
+                    dateConditionMet = true;
+                }
+            } 
+            else if (item.reminderInterval === 'custom' && item.reminderCustomValue && item.reminderCustomUnit) {
                 if (!lastNotifiedDate) {
-                    shouldNotify = true;
+                    dateConditionMet = true; // First boot optimization
                 } else {
                     const diffTime = Math.abs(now - lastNotifiedDate);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     
-                    if (item.reminderInterval === 'daily' && diffDays >= 1) shouldNotify = true;
-                    if (item.reminderInterval === 'weekly' && diffDays >= 7) shouldNotify = true;
-                    if (item.reminderInterval === 'monthly' && diffDays >= 28) shouldNotify = true;
+                    if (item.reminderCustomUnit === 'days') {
+                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays >= item.reminderCustomValue) dateConditionMet = true;
+                    } 
+                    else if (item.reminderCustomUnit === 'weeks') {
+                        const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+                        if (diffWeeks >= item.reminderCustomValue) dateConditionMet = true;
+                    } 
+                    else if (item.reminderCustomUnit === 'months') {
+                        const diffMonths = (now.getFullYear() - lastNotifiedDate.getFullYear()) * 12 + (now.getMonth() - lastNotifiedDate.getMonth());
+                        if (diffMonths >= item.reminderCustomValue) dateConditionMet = true;
+                    }
+                }
+            }
+
+            // Step 3: Trigger push notification if timing conditions line up
+            if (dateConditionMet) {
+                // Safeguard against triggering notifications more than once during the same minute framework window
+                if (lastNotifiedDate && (now - lastNotifiedDate) < 61000) {
+                    return; 
                 }
 
-                if (shouldNotify) {
-                    self.registration.showNotification('Moneyco Reminder', {
-                        body: \`Time to log your frequent expense: "\${item.name}" (\${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(item.amount)})?\`,
-                        icon: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/wallet.svg',
-                        badge: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/wallet.svg',
-                        tag: item.id,
-                        renotify: true
-                    });
-                    
-                    item.lastNotified = now.toISOString();
-                    stateUpdated = true;
-                }
+                self.registration.showNotification('Moneyco Reminder', {
+                    body: \`Time to log your frequent expense: "\${item.name}" (\${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(item.amount)})?\`,
+                    icon: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/wallet.svg',
+                    badge: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/wallet.svg',
+                    tag: item.id,
+                    renotify: true
+                });
+                
+                item.lastNotified = now.toISOString();
+                stateUpdated = true;
             }
         });
 
@@ -1474,7 +1583,7 @@ async function checkAndTriggerReminders() {
             await localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
         }
     } catch (e) {
-        console.error("Background notification runtime error: ", e);
+        console.error("Background evaluation schedule exception caught: ", e);
     }
 }
 `;
