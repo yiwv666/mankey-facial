@@ -1515,25 +1515,15 @@
         }
 
         async function syncToGoogleDrive() {
-            if (!googleUserToken || !driveFileId) return; // Pass-through fallback to local storage mode
-
+            if (!googleUserToken || !driveFileId) return;
             try {
-                // Fix: Use a raw gapi.client.request to target the strict /upload endpoint
-                // This forces Google Drive to accept large, multiline text/JSON payloads
                 await gapi.client.request({
                     path: `/upload/drive/v3/files/${driveFileId}`,
                     method: 'PATCH',
-                    params: {
-                        uploadType: 'media'
-                    },
-                    headers: {
-                        'Content-Type': 'application/json; charset=UTF-8'
-                    },
+                    params: { uploadType: 'media' },
                     body: JSON.stringify(state)
                 });
-            } catch (err) {
-                console.error('Cloud automation sync update failure:', err);
-            }
+            } catch (err) { console.error('Cloud automation update error:', err); }
         }
         // FORCE REALTIME SCHEMA MIGRATION EXECUTION
         // This runs once on boot to immediately patch, save, and upload the updated database structure.
