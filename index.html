@@ -117,9 +117,6 @@
                         <div id="movementDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
                             ondrop="dropToMovements(event)" data-zone="movements"
                             class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px] overflow-x-auto">
-                            ondrop="dropToMovements(event)"
-                            class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]
-                            overflow-x-auto">
                             <table class="w-full text-left border-collapse min-w-[500px]">
                                 <thead>
                                     <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
@@ -711,48 +708,49 @@
             const targetZone = document.getElementById('movementDropZone');
             targetZone.classList.remove('drag-over');
 
-            // Fallback protection: if global draggedItemOrigin wasn't caught cleanly by the browser state
-            if (!draggedItemOrigin && event.dataTransfer.getData('text/plain')) {
-                // Read directly from the DOM element instead
-                const draggedEl = document.querySelector(`[data-id="${draggedItemId}"]`);
-                if (draggedEl) draggedItemOrigin = draggedEl.getAttribute('data-origin');
-            }
+            // Robust extraction: Pull origin from dataTransfer package, falling back to global state variables
+            let origin = event.dataTransfer.getData('item-origin') || draggedItemOrigin;
+            let id = event.dataTransfer.getData('text/plain') || draggedItemId;
 
-            if (draggedItemOrigin === 'planification') {
-                const planIdx = state.planification.findIndex(p => p.id === draggedItemId);
+            if (!id) return; // Fail-safe exit if identifiers are missing
+
+            // PATHWAY A: Dropping from Next Payment Plan (Moves the item)
+            if (origin === 'planification') {
+                const planIdx = state.planification.findIndex(p => p.id === id);
                 if (planIdx !== -1) {
                     const planItem = state.planification[planIdx];
                     state.movements.push({
                         id: crypto.randomUUID(),
                         name: planItem.name,
-                        amount: planItem.amount,
+                        amount: parseFloat(planItem.amount),
                         category: planItem.category,
                         type: 'outcome',
                         date: new Date().toISOString().split('T')[0]
                     });
-                    state.planification.splice(planIdx, 1);
+                    state.planification.splice(planIdx, 1); // Remove from upcoming schedule
                     saveState();
                     renderAll();
                 }
-            } else if (draggedItemOrigin === 'frequent') {
-                const freqItem = state.frequent.find(f => f.id === draggedItemId);
+            }
+            // PATHWAY B: Dropping from Frequent Expenses Templates (Copies the item)
+            else if (origin === 'frequent') {
+                const freqItem = state.frequent.find(f => f.id === id);
                 if (freqItem) {
-                    // Log a copy as a new instance inside the movement ledger history
                     state.movements.push({
                         id: crypto.randomUUID(),
                         name: freqItem.name,
-                        amount: freqItem.amount,
+                        amount: parseFloat(freqItem.amount),
                         category: freqItem.category,
                         type: 'outcome',
                         date: new Date().toISOString().split('T')[0]
                     });
-                    // We do NOT slice or remove from state.frequent here
+                    // Safe: state.frequent is left completely untouched!
                     saveState();
                     renderAll();
                 }
             }
 
-            // Reset drag identifiers cleanly for the next action
+            // Explicitly reset pointers
             draggedItemId = null;
             draggedItemOrigin = null;
         }
