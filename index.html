@@ -1896,6 +1896,7 @@
                 driveFileId = null;
                 localStorage.removeItem('MONEYCO_GD_AUTH_TOKEN');
                 updateDriveStatus(false);
+                stopLiveSyncEngine();
             }
         }
 
@@ -1932,8 +1933,10 @@
                 if (files && files.length > 0) {
                     driveFileId = files[0].id;
                     await pullFromCloud();
+                    startLiveSyncEngine(); // <-- ADD THIS LINE HERE
                 } else {
                     await createCloudContainer();
+                    startLiveSyncEngine(); // <-- ADD THIS LINE HERE
                 }
             } catch (err) { console.error('Error scanning initialization targets:', err); }
         }
@@ -2481,8 +2484,6 @@ async function checkAndTriggerReminders() {
             const sub = document.getElementById('gdriveUserEmail');
             const btnConnect = document.getElementById('btnConnectDrive');
             const btnDisconnect = document.getElementById('btnDisconnectDrive');
-
-            // NEW POINTER: Select our header navigation badge element
             const navIndicator = document.getElementById('navSyncIndicator');
 
             if (connected) {
@@ -2492,11 +2493,10 @@ async function checkAndTriggerReminders() {
                 btnConnect.classList.add('hidden');
                 btnDisconnect.classList.remove('hidden');
 
-                // Injected layout logic: Render high-contrast Cloud badge
                 if (navIndicator) {
                     navIndicator.innerHTML = `
-                <span class="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/20 tracking-wide uppercase select-none">
-                    <i class="fa-solid fa-cloud text-[8px]"></i> Cloud Sync
+                <span id="liveSyncBadge" class="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/20 tracking-wide uppercase select-none transition-all duration-300">
+                    <i class="fa-solid fa-satellite-dish text-[8px] animate-pulse"></i> Live Sync
                 </span>`;
                 }
             } else {
@@ -2506,13 +2506,75 @@ async function checkAndTriggerReminders() {
                 btnConnect.classList.remove('hidden');
                 btnDisconnect.classList.add('hidden');
 
-                // Injected layout logic: Render low-profile Local badge
                 if (navIndicator) {
                     navIndicator.innerHTML = `
                 <span class="inline-flex items-center gap-1 text-[9px] bg-amber-500/10 text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/20 tracking-wide uppercase select-none">
                     <i class="fa-solid fa-hard-drive text-[8px]"></i> Local Save
                 </span>`;
                 }
+            }
+        }
+        // ========================================================
+        // REAL-TIME CLOUD CHANGE LISTENER & POLLING ENGINE
+        // ========================================================
+        let liveSyncIntervalPointer = null;
+        let isCurrentlySyncingFlag = false; // Prevents race condition overlaps
+
+        async function startLiveSyncEngine() {
+            // Clear any existing intervals to prevent duplicate polling tracks
+            if (liveSyncIntervalPointer) clearInterval(liveSyncIntervalPointer);
+
+            // Poll the cloud file's metadata signature every 6 seconds
+            liveSyncIntervalPointer = setInterval(async () => {
+                if (!googleUserToken || !driveFileId || isCurrentlySyncingFlag) return;
+
+                // Skip checking if the user is actively typing a monthly note to avoid UI jarring
+                if (document.activeElement && document.activeElement.id === 'noteInputBox') return;
+
+                try {
+                    isCurrentlySyncingFlag = true;
+
+                    // Visual feedback: briefly highlight the badge to show a heartbeat check
+                    const badge = document.getElementById('liveSyncBadge');
+                    if (badge) badge.classList.add('border-emerald-400', 'bg-emerald-500/30');
+
+                    // 1. Fetch ONLY the cloud file's metadata modification date token (extremely lightweight)
+                    const fileMeta = await gapi.client.drive.files.get({
+                        fileId: driveFileId,
+                        fields: 'modifiedTime'
+                    });
+
+                    const cloudModifiedTime = new Date(fileMeta.result.modifiedTime).getTime();
+                    const localLastUpdatedTime = state.lastUpdated || 0;
+
+                    // 2. If the cloud file has a newer timestamp, a remote device updated it. Trigger a delta sync!
+                    if (cloudModifiedTime > localLastUpdatedTime) {
+                        console.log("Remote change detected via Live Sync heartbeat. Merging updates...");
+                        await syncToGoogleDrive();
+                    }
+
+                    // Remove visual heartbeat feedback smoothly
+                    setTimeout(() => {
+                        if (badge) badge.classList.remove('border-emerald-400', 'bg-emerald-500/30');
+                        isCurrentlySyncingFlag = false;
+                    }, 600);
+
+                } catch (err) {
+                    isCurrentlySyncingFlag = false;
+                    console.warn("Live Sync background check bypassed or rate-limited:", err);
+
+                    // If the access token expired in the background, smoothly refresh it
+                    if (err.status === 401) {
+                        checkCloudAuthStatus();
+                    }
+                }
+            }, 6000); // 6-second heartbeat check for near-instant reactivity
+        }
+
+        function stopLiveSyncEngine() {
+            if (liveSyncIntervalPointer) {
+                clearInterval(liveSyncIntervalPointer);
+                liveSyncIntervalPointer = null;
             }
         }
     </script>
