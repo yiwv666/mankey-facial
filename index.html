@@ -441,8 +441,8 @@
                 <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl">
                     <div>
                         <h2 class="text-xl font-bold tracking-wide">Financial Memorandums</h2>
-                        <p class="text-sm text-gray-400 mt-1">Keep track of variable goals, checklist reminders, and
-                            milestones month-by-month.</p>
+                        <p class="text-sm text-gray-400 mt-1">Add quick context logs, reminders, or financial checklists
+                            for each month.</p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6 min-h-[450px]">
@@ -457,7 +457,7 @@
 
                         <div
                             class="md:col-span-8 bg-gray-900/40 border border-gray-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
-                            <div class="flex-1 flex flex-col space-y-2">
+                            <div class="flex-1 flex flex-col space-y-4">
                                 <div class="flex items-center justify-between border-b border-gray-800 pb-2">
                                     <h3 id="activeNoteMonthHeader" class="text-lg font-bold text-blue-400">January</h3>
                                     <span id="saveStatusIndicator"
@@ -465,9 +465,19 @@
                                         <i class="fa-solid fa-cloud"></i> Ready
                                     </span>
                                 </div>
-                                <textarea id="monthlyNotepadTextarea" oninput="handleNoteTyping(this)"
-                                    placeholder="Write down budget summaries, upcoming seasonal subscription shifts, tax milestones, or cash-flow checkpoints for this month..."
-                                    class="w-full flex-1 min-h-[300px] bg-transparent text-gray-100 placeholder-gray-600 text-sm focus:outline-none resize-none leading-relaxed pt-2"></textarea>
+
+                                <div class="relative">
+                                    <input type="text" id="noteInputBox" onkeydown="handleNoteKeyDown(event)"
+                                        oninput="handleNoteInputCounter(this)"
+                                        placeholder="Type a note and press Enter to save..."
+                                        class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-16 py-3 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition duration-150">
+                                    <span id="noteCharCounter"
+                                        class="absolute right-4 top-3.5 text-[11px] font-mono text-gray-500">0/200</span>
+                                </div>
+
+                                <div id="monthlyNotesFeedContainer"
+                                    class="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -726,6 +736,7 @@
                 }
             }
             if (state.savingsGoal === undefined) state.savingsGoal = 0;
+            enforceNoteDatabaseStructure();
         }
 
         async function saveState() {
@@ -1794,6 +1805,7 @@
                 }
             }
             if (state.savingsGoal === undefined) state.savingsGoal = 0;
+            enforceNoteDatabaseStructure();
         }
 
         async function syncToGoogleDrive() {
@@ -1975,27 +1987,23 @@ async function checkAndTriggerReminders() {
             });
         }
         // ========================================================
-        // SECURITY-HARDENED MONTHLY NOTES ENGINE WITH CLOUD FIX
+        // REWRITTEN BULLET-STYLE MONTHLY NOTES LOGIC ENGINE
         // ========================================================
         let selectedMonthIndex = new Date().getMonth();
-        let autoSaveDebounceTimeout = null;
+        let editingNoteId = null; // Track if we are currently modifying an existing record
 
         const calendarMonthsNames = [
             "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         ];
 
-        // DATA SANITIZATION PIPELINE: Strips risky scripting elements and enforces length limits
+        // DATA SANITIZATION ENGINE: Sanitizes characters and clips content to a strict 200 character cap
         function sanitizeAndTruncateNoteString(rawInputText) {
             if (!rawInputText) return "";
-
-            // 1. Strict 1200 character ceiling constraint execution
-            let processedText = rawInputText;
-            if (processedText.length > 1200) {
-                processedText = processedText.substring(0, 1200);
+            let processedText = rawInputText.trim();
+            if (processedText.length > 200) {
+                processedText = processedText.substring(0, 200);
             }
-
-            // 2. HTML Entity encoding mapping block to neutralize XSS vectors
             return processedText
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
@@ -2004,7 +2012,6 @@ async function checkAndTriggerReminders() {
                 .replace(/'/g, "&#039;");
         }
 
-        // INVERSE DECODER: Reverts HTML entities back to raw text for user readability inside the editing textarea
         function decodeSanitizedNoteString(encodedText) {
             if (!encodedText) return "";
             return encodedText
@@ -2015,7 +2022,23 @@ async function checkAndTriggerReminders() {
                 .replace(/&amp;/g, "&");
         }
 
+        // UPGRADE PROTECTION LAYER: Safely formats legacy storage matrices into arrays on startup
+        function enforceNoteDatabaseStructure() {
+            if (!state.notes) state.notes = {};
+            for (let i = 0; i < 12; i++) {
+                const key = `month_${i}`;
+                // If it encounters an old plain string schema format, migrate it to our array wrapper framework
+                if (state.notes[key] !== undefined && !Array.isArray(state.notes[key])) {
+                    const oldString = state.notes[key];
+                    state.notes[key] = oldString.trim() ? [{ id: crypto.randomUUID(), text: oldString }] : [];
+                } else if (state.notes[key] === undefined) {
+                    state.notes[key] = [];
+                }
+            }
+        }
+
         function buildMonthsSelectorInterface() {
+            enforceNoteDatabaseStructure();
             const container = document.getElementById('monthsSelectorContainer');
             if (!container) return;
             container.innerHTML = '';
@@ -2030,9 +2053,8 @@ async function checkAndTriggerReminders() {
                     btn.className = "w-full flex items-center justify-between text-left px-4 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800/80 hover:text-gray-100 transition text-sm duration-150";
                 }
 
-                // Check content presence securely using the cloud-safe string key signature
                 const noteKey = `month_${idx}`;
-                const hasContent = state.notes && state.notes[noteKey] && state.notes[noteKey].trim().length > 0;
+                const hasContent = state.notes && state.notes[noteKey] && state.notes[noteKey].length > 0;
 
                 btn.innerHTML = `
             <span class="flex items-center gap-2">
@@ -2044,57 +2066,120 @@ async function checkAndTriggerReminders() {
                 container.appendChild(btn);
             });
 
-            // Feed current text back into layout workspace canvas targets
             document.getElementById('activeNoteMonthHeader').innerText = calendarMonthsNames[selectedMonthIndex];
+            renderMonthlyNotesFeed();
+        }
+
+        function renderMonthlyNotesFeed() {
+            const feedContainer = document.getElementById('monthlyNotesFeedContainer');
+            if (!feedContainer) return;
+            feedContainer.innerHTML = '';
 
             const targetKey = `month_${selectedMonthIndex}`;
-            const cleanSavedText = (state.notes && state.notes[targetKey]) ? state.notes[targetKey] : '';
-            document.getElementById('monthlyNotepadTextarea').value = decodeSanitizedNoteString(cleanSavedText);
+            const activeMonthNotes = state.notes[targetKey] || [];
+
+            if (activeMonthNotes.length === 0) {
+                feedContainer.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No notes logged for this calendar section.</div>`;
+                return;
+            }
+
+            activeMonthNotes.forEach(note => {
+                const noteCard = document.createElement('div');
+                noteCard.className = "bg-gray-900/50 border border-gray-800 rounded-xl p-3 flex items-start justify-between gap-4 transition group hover:border-gray-700";
+                noteCard.innerHTML = `
+            <p class="text-sm text-gray-200 break-words flex-1 pr-2 leading-relaxed">${decodeSanitizedNoteString(note.text)}</p>
+            <div class="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition duration-150 shrink-0">
+                <button onclick="startEditNote('${note.id}', '${note.text.replace(/'/g, "\\'")}')" class="text-gray-400 hover:text-blue-400 p-1 transition" title="Edit Note"><i class="fa-solid fa-pen text-xs"></i></button>
+                <button onclick="deleteNote('${note.id}')" class="text-gray-400 hover:text-rose-400 p-1 transition" title="Delete Note"><i class="fa-solid fa-trash text-xs"></i></button>
+            </div>
+        `;
+                feedContainer.appendChild(noteCard);
+            });
         }
 
         function selectNotesMonth(monthIndex) {
-            if (autoSaveDebounceTimeout) {
-                clearTimeout(autoSaveDebounceTimeout);
-                commitNoteSave();
-            }
+            cancelEditNote();
             selectedMonthIndex = monthIndex;
             buildMonthsSelectorInterface();
         }
 
-        function handleNoteTyping(textareaElement) {
-            const indicator = document.getElementById('saveStatusIndicator');
-            indicator.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-amber-400"></i> Typing...`;
-
-            let rawValue = textareaElement.value;
-
-            // UI Constraint Feedback Loop: Soft ceiling block notice if user goes beyond boundaries
-            if (rawValue.length > 1200) {
-                textareaElement.value = rawValue.substring(0, 1200);
-                rawValue = textareaElement.value;
-                indicator.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-triangle-exclamation"></i> 1200 Max Limit Hit</span>`;
+        // Tracks length validation checks instantly as the operator inputs keys
+        function handleNoteInputCounter(inputEl) {
+            let val = inputEl.value;
+            if (val.length > 200) {
+                inputEl.value = val.substring(0, 200);
+                val = inputEl.value;
             }
+            document.getElementById('noteCharCounter').innerText = `${val.length}/200`;
+        }
 
-            if (!state.notes) state.notes = {};
+        function handleNoteKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const inputEl = document.getElementById('noteInputBox');
+                const textVal = inputEl.value.trim();
 
-            // Sanitize data string inputs before committing to system memory state
-            const targetKey = `month_${selectedMonthIndex}`;
-            state.notes[targetKey] = sanitizeAndTruncateNoteString(rawValue);
+                if (!textVal) return;
 
-            // Save delay execution pipeline
-            clearTimeout(autoSaveDebounceTimeout);
-            autoSaveDebounceTimeout = setTimeout(() => {
+                const targetKey = `month_${selectedMonthIndex}`;
+                if (!state.notes[targetKey]) state.notes[targetKey] = [];
+
+                const cleanSanitizedText = sanitizeAndTruncateNoteString(textVal);
+
+                if (editingNoteId) {
+                    // Modification execution route
+                    const targetNote = state.notes[targetKey].find(n => n.id === editingNoteId);
+                    if (targetNote) targetNote.text = cleanSanitizedText;
+                    cancelEditNote();
+                } else {
+                    // New creation execution route
+                    state.notes[targetKey].push({
+                        id: crypto.randomUUID(),
+                        text: cleanSanitizedText
+                    });
+                }
+
+                inputEl.value = '';
+                document.getElementById('noteCharCounter').innerText = '0/200';
+
                 commitNoteSave();
-            }, 800);
+            }
+        }
+
+        function startEditNote(id, encodedText) {
+            editingNoteId = id;
+            const inputEl = document.getElementById('noteInputBox');
+            inputEl.value = decodeSanitizedNoteString(encodedText);
+            inputEl.focus();
+            inputEl.classList.add('border-blue-500', 'bg-blue-950/10');
+            inputEl.placeholder = "Modifying note... Press Enter to update change parameter.";
+            handleNoteInputCounter(inputEl);
+        }
+
+        function cancelEditNote() {
+            editingNoteId = null;
+            const inputEl = document.getElementById('noteInputBox');
+            if (!inputEl) return;
+            inputEl.value = '';
+            inputEl.classList.remove('border-blue-500', 'bg-blue-950/10');
+            inputEl.placeholder = "Type a note and press Enter to save...";
+            document.getElementById('noteCharCounter').innerText = '0/200';
+        }
+
+        function deleteNote(id) {
+            if (confirm("Permanently wipe this entry parameter from this calendar slot?")) {
+                const targetKey = `month_${selectedMonthIndex}`;
+                state.notes[targetKey] = state.notes[targetKey].filter(n => n.id !== id);
+                commitNoteSave();
+            }
         }
 
         function commitNoteSave() {
             const indicator = document.getElementById('saveStatusIndicator');
-            saveState(); // Commit changes locally and upload to Google Drive
+            indicator.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-amber-400"></i> Syncing...`;
 
-            // Refresh sidebar layout dot elements
-            const currentUnsavedViewText = document.getElementById('monthlyNotepadTextarea').value;
-            buildMonthsSelectorInterface();
-            document.getElementById('monthlyNotepadTextarea').value = currentUnsavedViewText;
+            saveState(); // Commit changes locally and upload to Google Drive
+            buildMonthsSelectorInterface(); // Re-render feed elements
 
             indicator.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Saved to Cloud`;
         }
