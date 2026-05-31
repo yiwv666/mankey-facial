@@ -1595,8 +1595,8 @@
             else if (targetSort === 'amount-desc') records.sort((a, b) => b.amount - a.amount);
             else if (targetSort === 'amount-asc') records.sort((a, b) => a.amount - b.amount);
 
-            const tableBody = document.getElementById('allMovementsTable');
-            tableBody.innerHTML = '';
+            const allMovementsTableBody = document.getElementById('allMovementsTable');
+            if (allMovementsTableBody) allMovementsTableBody.innerHTML = '';
 
             if (records.length === 0) {
                 document.getElementById('allMovementsEmpty').classList.remove('hidden');
@@ -1605,7 +1605,7 @@
                 records.forEach(m => {
                     const tr = document.createElement('tr');
 
-                    // PATCH HERE: Add the missing identification hooks so the teleport engine can find it
+                    // Stamp the cross-reference identification key
                     tr.setAttribute('data-id', m.id);
 
                     tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer select-none";
@@ -1617,7 +1617,7 @@
                         <td class="py-3 px-3 text-gray-400 text-xs">${m.date}</td>
                         <td class="py-3 px-3 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(m.amount)}</td>
                     `;
-                    tableBody.appendChild(tr);
+                    if (allMovementsTableBody) allMovementsTableBody.appendChild(tr);
                 });
             }
         }
