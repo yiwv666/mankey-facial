@@ -3490,24 +3490,31 @@ async function checkAndTriggerReminders() {
 
                 // Step B: Target matching DOM nodes or handle specific view updates
                 if (result.type === 'movement') {
-                    // FIX: If teleporting to the All Movements ledger tab, force the filter to match the item's month
                     if (result.tab === 'all-movements') {
                         const movementItem = state.movements.find(m => m.id === result.id);
                         if (movementItem && movementItem.date) {
-                            const itemMonthStr = movementItem.date.substring(0, 7); // Extracts "YYYY-MM"
+                            const itemMonthStr = movementItem.date.substring(0, 7);
                             const filterInput = document.getElementById('filterMonth');
-
                             if (filterInput) {
                                 filterInput.value = itemMonthStr;
-                                applyFilters(); // Re-run filtering rules so the row is generated in the DOM
+                                applyFilters();
                             }
                         }
                     }
 
-                    // Query parse the newly visible table row element
-                    targetDOMElement = document.querySelector(`tr[oncontextmenu*="${result.id}"]`) ||
-                        document.querySelector(`tr[data-id="${result.id}"]`) ||
-                        document.querySelector(`[data-id="${result.id}"]`);
+                    // UNAMBIGUOUS QUERY FIX: Target the specific tab wrapper container directly 
+                    // to ensure it selects the exact matching row from the multi-item list
+                    const tabWrapper = document.getElementById(`tab-${result.tab}`);
+                    if (tabWrapper) {
+                        targetDOMElement = tabWrapper.querySelector(`tr[data-id="${result.id}"]`) ||
+                            tabWrapper.querySelector(`[data-id="${result.id}"]`);
+                    }
+
+                    // Fallback to global search if tab container lookup fails
+                    if (!targetDOMElement) {
+                        targetDOMElement = document.querySelector(`tr[data-id="${result.id}"]`) ||
+                            document.querySelector(`[data-id="${result.id}"]`);
+                    }
                 }
                 else if (result.type === 'plan' || result.type === 'frequent') {
                     targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
