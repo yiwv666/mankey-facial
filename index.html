@@ -1638,21 +1638,22 @@
             this.addEventListener('dragend', handleDragEndCleanup, { once: true });
         }
 
-        // Hidden cleanup that slides the dock away as soon as the item is released
         function handleDragEndCleanup() {
             const mobileDock = document.getElementById('mobileDragOverlaysContainer');
             if (mobileDock) {
                 mobileDock.classList.add('translate-y-24');
                 setTimeout(() => mobileDock.classList.add('hidden'), 300);
             }
-            // Reset state highlight overlays cleanly
-            document.getElementById('mobileEditDropZone').style.backgroundColor = '';
-            document.getElementById('mobileDeleteDropZone').style.backgroundColor = '';
+
+            // CLEAN FIX: Reset the temporary brightness scaling classes seamlessly
+            const leftZone = document.getElementById('mobileEditDropZone');
+            const rightZone = document.getElementById('mobileDeleteDropZone');
+            if (leftZone) leftZone.className = leftZone.className.replace(' brightness-125 scale-105', '');
+            if (rightZone) rightZone.className = rightZone.className.replace(' brightness-125 scale-105', '');
         }
 
-        // Apply a distinct scale-up highlight effect when dragging directly over a corner choice
         function dragLeaveMobileZone(e) {
-            e.currentTarget.style.backgroundColor = '';
+            e.currentTarget.className = e.currentTarget.className.replace(' brightness-125 scale-105', '');
         }
 
         // Process the dropped item dynamically depending on which corner it landed on
@@ -1684,7 +1685,15 @@
 
         function allowDrop(e) {
             e.preventDefault();
-            e.currentTarget.classList.add('drag-over');
+
+            const currentZone = e.currentTarget;
+            currentZone.classList.add('drag-over');
+
+            // NEW INDEPENDENT OVERLAY HIGHLIGHT: Boosts color vibrance without breaking base inline styles
+            const isMobileZone = currentZone.id === 'mobileEditDropZone' || currentZone.id === 'mobileDeleteDropZone';
+            if (isMobileZone && !currentZone.className.includes('brightness-125')) {
+                currentZone.className += ' brightness-125 scale-105';
+            }
         }
 
         function dragLeave(e) {
