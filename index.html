@@ -73,33 +73,60 @@
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
 
             <div id="tab-dashboard" class="tab-content space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl">
                     <div
-                        class="bg-gray-950 border border-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-xl">
-                        <div>
-                            <p class="text-sm text-gray-400 font-medium">Recent Income</p>
-                            <h3 id="dashIncome" class="text-2xl font-bold text-emerald-400 mt-1">$0.00</h3>
+                        class="grid grid-cols-2 md:grid-cols-5 divide-y divide-gray-800 md:divide-y-0 md:divide-x divide-dashed">
+
+                        <div class="p-3 flex items-center justify-between col-span-2 sm:col-span-1">
+                            <div>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Recent
+                                    Income</p>
+                                <h3 id="dashIncome" class="text-xl font-black text-emerald-400 mt-0.5">$0.00</h3>
+                            </div>
+                            <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-sm"><i
+                                    class="fa-solid fa-arrow-trend-up"></i></div>
                         </div>
-                        <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl"><i
-                                class="fa-solid fa-arrow-trend-up text-xl"></i></div>
-                    </div>
-                    <div
-                        class="bg-gray-950 border border-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-xl">
-                        <div>
-                            <p class="text-sm text-gray-400 font-medium">Recent Expenses</p>
-                            <h3 id="dashExpense" class="text-2xl font-bold text-rose-400 mt-1">$0.00</h3>
+
+                        <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
+                            <div>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Recent
+                                    Expenses</p>
+                                <h3 id="dashExpense" class="text-xl font-black text-rose-400 mt-0.5">$0.00</h3>
+                            </div>
+                            <div class="p-2 bg-rose-500/10 text-rose-400 rounded-lg text-sm"><i
+                                    class="fa-solid fa-arrow-trend-down"></i></div>
                         </div>
-                        <div class="p-3 bg-rose-500/10 text-rose-400 rounded-xl"><i
-                                class="fa-solid fa-arrow-trend-down text-xl"></i></div>
-                    </div>
-                    <div
-                        class="bg-gray-950 border border-gray-800 p-4 rounded-2xl flex items-center justify-between shadow-xl">
-                        <div>
-                            <p class="text-sm text-gray-400 font-medium">Planification Pool</p>
-                            <h3 id="dashPlanTotal" class="text-2xl font-bold text-blue-400 mt-1">$0.00</h3>
+
+                        <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
+                            <div>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Planning
+                                    Pool</p>
+                                <h3 id="dashPlanTotal" class="text-xl font-black text-blue-400 mt-0.5">$0.00</h3>
+                            </div>
+                            <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg text-sm"><i
+                                    class="fa-solid fa-layer-group"></i></div>
                         </div>
-                        <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl"><i
-                                class="fa-solid fa-layer-group text-xl"></i></div>
+
+                        <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
+                            <div>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Total
+                                    Savings</p>
+                                <h3 id="dashSavingsTotal" class="text-xl font-black text-emerald-500 mt-0.5">$0.00</h3>
+                            </div>
+                            <div class="p-2 bg-emerald-500/15 text-emerald-500 rounded-lg text-sm"><i
+                                    class="fa-solid fa-piggy-bank"></i></div>
+                        </div>
+
+                        <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
+                            <div>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Total Debts
+                                </p>
+                                <h3 id="dashDebtsTotal" class="text-xl font-black text-rose-500 mt-0.5">$0.00</h3>
+                            </div>
+                            <div class="p-2 bg-rose-500/15 text-rose-500 rounded-lg text-sm"><i
+                                    class="fa-solid fa-hand-holding-dollar"></i></div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -795,16 +822,41 @@
                 return d >= boundaryDate;
             }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            // Dashboard Metrics Calculations
+            // INSIDE renderDashboard() -> OVERWRITE THE TOP METRICS CALCULATION AND ASSIGNMENT REGISTRY BLOCK:
             let incomeSum = 0;
             let expenseSum = 0;
+            let savingsAccumulated = 0;
+            let debtsAccumulated = 0;
+
+            // 1. Calculate past 2.5 weeks metrics limits
             recentItems.forEach(m => {
-                if (m.type === 'income') incomeSum += parseFloat(m.amount);
-                else expenseSum += parseFloat(m.amount);
+                if (m.type === 'income') incomeSum += parseFloat(m.amount) || 0;
+                else expenseSum += parseFloat(m.amount) || 0;
             });
 
+            // 2. NEW MATRIX CODE: Loop across ALL historical logs to parse historical Net Savings and Active Debts
+            state.movements.forEach(m => {
+                const amt = parseFloat(m.amount) || 0;
+                if (m.category === 'Savings') {
+                    if (m.type === 'income') savingsAccumulated += amt;
+                    else if (m.type === 'outcome') savingsAccumulated -= amt;
+                }
+                else if (m.category === 'Debts') {
+                    // Expenses log debt payments made, income could log newly acquired liabilities
+                    if (m.type === 'income') debtsAccumulated += amt;
+                    else if (m.type === 'outcome') debtsAccumulated -= amt;
+                }
+            });
+
+            // Enforce base floors so calculations don't drop below negative parameters on clean profiles
+            savingsAccumulated = Math.max(0, savingsAccumulated);
+            debtsAccumulated = Math.max(0, debtsAccumulated);
+
+            // 3. Update all 5 DOM tracking nodes live
             document.getElementById('dashIncome').innerText = formatCurrency(incomeSum);
             document.getElementById('dashExpense').innerText = formatCurrency(expenseSum);
+            document.getElementById('dashSavingsTotal').innerText = formatCurrency(savingsAccumulated);
+            document.getElementById('dashDebtsTotal').innerText = formatCurrency(debtsAccumulated);
 
             // Table Generator
             const tableBody = document.getElementById('recentMovementsTable');
