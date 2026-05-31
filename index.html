@@ -905,10 +905,15 @@
             boundaryDate.setDate(boundaryDate.getDate() - 18);
             boundaryDate.setHours(0, 0, 0, 0);
 
+            // SORTING UPDATE: Strict date arrangement keeping newest entries on top
             const recentItems = state.movements.filter(m => {
                 const d = new Date(m.date);
                 return d >= boundaryDate;
-            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+            }).sort((a, b) => {
+                const dateDiff = new Date(b.date) - new Date(a.date);
+                // Tiebreaker: If dates are identical, preserve array insertion chronology (newest on top)
+                return dateDiff !== 0 ? dateDiff : state.movements.indexOf(b) - state.movements.indexOf(a);
+            });
 
             // INSIDE renderDashboard() -> OVERWRITE THE TOP METRICS CALCULATION AND ASSIGNMENT REGISTRY BLOCK:
             let incomeSum = 0;
@@ -1328,8 +1333,18 @@
             }
 
             // 4. Sort Configurations
-            if (targetSort === 'date-desc') records.sort((a, b) => new Date(b.date) - new Date(a.date));
-            else if (targetSort === 'date-asc') records.sort((a, b) => new Date(a.date) - new Date(b.date));
+            if (targetSort === 'date-desc') {
+                records.sort((a, b) => {
+                    const dateDiff = new Date(b.date) - new Date(a.date);
+                    return dateDiff !== 0 ? dateDiff : state.movements.indexOf(b) - state.movements.indexOf(a);
+                });
+            }
+            else if (targetSort === 'date-asc') {
+                records.sort((a, b) => {
+                    const dateDiff = new Date(a.date) - new Date(b.date);
+                    return dateDiff !== 0 ? dateDiff : state.movements.indexOf(a) - state.movements.indexOf(b);
+                });
+            }
             else if (targetSort === 'amount-desc') records.sort((a, b) => b.amount - a.amount);
             else if (targetSort === 'amount-asc') records.sort((a, b) => a.amount - b.amount);
 
