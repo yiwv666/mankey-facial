@@ -1376,14 +1376,16 @@
         }
 
         function addCategory(e) {
+            e.preventDefault(); // Moved to the top to instantly stop the form from refreshing the page
+
+            const input = document.getElementById('newCategoryName');
             const catName = input.value.trim();
+
             if (catName.toLowerCase() === 'debts' || catName.toLowerCase() === 'savings') {
                 alert("This configuration title matches a protected core system parameter.");
                 return;
             }
 
-            e.preventDefault();
-            const input = document.getElementById('newCategoryName');
             if (catName && !state.categories.includes(catName)) {
                 state.categories.push(catName);
                 input.value = '';
