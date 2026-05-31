@@ -841,10 +841,10 @@
                     if (m.type === 'income') savingsAccumulated += amt;
                     else if (m.type === 'outcome') savingsAccumulated -= amt;
                 }
-                else if (m.category === 'Debts') {
-                    // Expenses log debt payments made, income could log newly acquired liabilities
-                    if (m.type === 'income') debtsAccumulated += amt;
-                    else if (m.type === 'outcome') debtsAccumulated -= amt;
+            });
+            (state.planification || []).forEach(p => {
+                if (p.category === 'Debts') {
+                    debtsAccumulated += (parseFloat(p.amount) || 0);
                 }
             });
 
