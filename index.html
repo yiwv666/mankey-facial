@@ -56,21 +56,19 @@
     <div class="flex flex-col md:flex-row min-h-screen">
 
         <nav class="w-full md:w-64 bg-gray-950 border-b md:border-b-0 md:border-r border-gray-800 p-4 shrink-0">
-            <div class="flex items-center justify-between md:justify-start gap-3 mb-6 flex-wrap">
-                <div class="flex items-center gap-2">
-                    <div class="bg-blue-600 p-2 rounded-lg text-white">
+            <div class="flex items-center justify-between md:justify-start gap-3 mb-6">
+                <div class="flex items-center gap-2.5">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white shrink-0">
                         <i class="fa-solid fa-wallet text-xl"></i>
                     </div>
-                    <h1
-                        class="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                        Moneyco
-                    </h1>
+                    <div class="flex flex-col">
+                        <h1
+                            class="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent leading-none">
+                            Moneyco</h1>
+                        <div id="navSyncIndicator" class="mt-1"></div>
+                    </div>
                 </div>
-
-                <div id="logoStorageIndicator" class="flex items-center transition-all duration-300">
-                </div>
-
-                <button id="mobileMenuBtn" class="md:hidden text-gray-400 hover:text-white focus:outline-none ml-auto">
+                <button id="mobileMenuBtn" class="md:hidden text-gray-400 hover:text-white focus:outline-none">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
             </div>
@@ -828,7 +826,7 @@
             renderAll();
             setupContextMenus();
             setupMobileMenu();
-            refreshLogoStorageIndicator();
+            updateDriveStatus(false); // Initializes to local mode fallback instantly while API checks run
         });
 
         function initDatePickers() {
@@ -1919,7 +1917,6 @@
                 btnConnect.classList.remove('hidden');
                 btnDisconnect.classList.add('hidden');
             }
-            refreshLogoStorageIndicator();
         }
 
         async function runCloudInitialScan() {
@@ -2411,31 +2408,46 @@ async function checkAndTriggerReminders() {
             const modal = document.getElementById('mobileDashboardNotesModal');
             if (modal) modal.close();
         }
-        // ========================================================
-// RE-BALANCED BRAND LOGO STORAGE STATUS INDICATOR
-// ========================================================
-function refreshLogoStorageIndicator() {
-    const indicatorEl = document.getElementById('logoStorageIndicator');
-    if (!indicatorEl) return;
+        function updateDriveStatus(connected) {
+            const icon = document.getElementById('gdriveStatusIcon');
+            const text = document.getElementById('gdriveStatusText');
+            const sub = document.getElementById('gdriveUserEmail');
+            const btnConnect = document.getElementById('btnConnectDrive');
+            const btnDisconnect = document.getElementById('btnDisconnectDrive');
 
-    const isCloudConnected = (googleUserToken !== null && driveFileId !== null);
+            // NEW POINTER: Select our header navigation badge element
+            const navIndicator = document.getElementById('navSyncIndicator');
 
-    if (isCloudConnected) {
-        // Render Emerald Connected Cloud Badge
-        indicatorEl.innerHTML = `
-            <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/20 shadow-sm" title="Synchronizing modifications to Google Drive securely">
-                <i class="fa-solid fa-cloud text-[9px]"></i> DRIVE
-            </span>
-        `;
-    } else {
-        // Render Steel Gray Offline Local Storage Badge
-        indicatorEl.innerHTML = `
-            <span class="inline-flex items-center gap-1 text-[10px] bg-gray-800 text-gray-400 font-bold px-2 py-0.5 rounded-full border border-gray-700 shadow-sm" title="Data running locally. Connect a cloud destination inside Settings.">
-                <i class="fa-solid fa-hard-drive text-[9px]"></i> LOCAL
-            </span>
-        `;
-    }
-}
+            if (connected) {
+                icon.className = "w-3 h-3 bg-emerald-500 rounded-full animate-none";
+                text.innerText = "Cloud Status: Connected and Syncing";
+                sub.innerText = "Automatic Drive configuration data container pipeline active.";
+                btnConnect.classList.add('hidden');
+                btnDisconnect.classList.remove('hidden');
+
+                // Injected layout logic: Render high-contrast Cloud badge
+                if (navIndicator) {
+                    navIndicator.innerHTML = `
+                <span class="inline-flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-400 font-bold px-1.5 py-0.5 rounded border border-emerald-500/20 tracking-wide uppercase select-none">
+                    <i class="fa-solid fa-cloud text-[8px]"></i> Cloud Sync
+                </span>`;
+                }
+            } else {
+                icon.className = "w-3 h-3 bg-rose-500 rounded-full animate-pulse";
+                text.innerText = "Cloud Status: Disconnected";
+                sub.innerText = "Using Local Storage mode";
+                btnConnect.classList.remove('hidden');
+                btnDisconnect.classList.add('hidden');
+
+                // Injected layout logic: Render low-profile Local badge
+                if (navIndicator) {
+                    navIndicator.innerHTML = `
+                <span class="inline-flex items-center gap-1 text-[9px] bg-amber-500/10 text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/20 tracking-wide uppercase select-none">
+                    <i class="fa-solid fa-hard-drive text-[8px]"></i> Local Save
+                </span>`;
+                }
+            }
+        }
     </script>
 </body>
 
