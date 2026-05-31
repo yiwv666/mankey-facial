@@ -95,6 +95,10 @@
                     class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-list-ul w-5"></i> All Movements
                 </button>
+                <button onclick="switchTab('wishlists')" data-tab="wishlists"
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-wand-magic-sparkles w-5"></i> Wishlists & Projects
+                </button>
                 <button onclick="switchTab('categories')" data-tab="categories"
                     class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-tags w-5"></i> Categories
@@ -586,6 +590,139 @@
                     <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Delete</span>
                 </div>
             </div>
+            <div id="tab-wishlists" class="tab-content hidden space-y-6 animate-fade-in">
+                <div
+                    class="bg-gray-950 border border-gray-800 rounded-2xl p-4 md:p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold tracking-wide">Wishlists & Target Projects</h2>
+                        <p class="text-sm text-gray-400 mt-1">Draft nested purchase targets, analyze capital
+                            distributions, and map acquisitions directly to active accounts.</p>
+                    </div>
+                    <button onclick="openProjectManagerModal()"
+                        class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2 shadow-lg shrink-0">
+                        <i class="fa-solid fa-folder-plus"></i> New Project Folder
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div class="lg:col-span-4 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl space-y-3">
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-gray-500 block">Available
+                            Master Folders</span>
+                        <div id="projectFoldersDeckContainer" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-8 space-y-6">
+                        <div id="projectCanvasPanel"
+                            class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl hidden relative">
+                            <div
+                                class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-800 pb-4 mb-5 gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div id="activeCanvasColorIndicator"
+                                        class="w-4 h-4 rounded-full ring-4 ring-white/10 shrink-0"></div>
+                                    <div>
+                                        <h3 id="activeCanvasTitleHeader" class="text-lg font-bold text-gray-100">Folder
+                                            Label</h3>
+                                        <p id="activeCanvasAggregatesMetrics"
+                                            class="text-xs text-gray-400 font-mono mt-0.5">0 Items • $0.00 Combined
+                                            Valuation</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                    <button onclick="openWishItemModal()"
+                                        class="bg-gray-900 hover:bg-gray-800 border border-gray-800 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-400 flex items-center gap-1.5 transition">
+                                        <i class="fa-solid fa-cart-plus text-xs"></i> Add Purchase Item
+                                    </button>
+                                    <button id="activeCanvasDeleteBtn"
+                                        class="text-gray-500 hover:text-rose-400 p-2 border border-transparent hover:border-gray-900 rounded-xl transition"
+                                        title="Wipe Folder"><i class="fa-solid fa-folder-minus"></i></button>
+                                </div>
+                            </div>
+
+                            <div id="projectWishlistItemsListDeck" class="space-y-2 max-h-[450px] overflow-y-auto pr-1">
+                            </div>
+                        </div>
+
+                        <div id="projectCanvasEmptyPlaceholderState"
+                            class="bg-gray-950/40 border border-dashed border-gray-800 rounded-2xl p-12 text-center text-gray-500 text-sm italic shadow-inner">
+                            Select an active project master folder from the left column navigation deck to inspect
+                            nested wishlist goals or log targets.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <dialog id="projectFolderManagerDialog"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-11/12 backdrop:bg-black/80">
+                <div class="flex items-center justify-between mb-4 border-b border-gray-900 pb-2">
+                    <h3 id="projectModalFolderTitle" class="text-lg font-bold">Configure Project Folder</h3>
+                    <button onclick="closeProjectManagerModal()" class="text-gray-400 hover:text-white p-1"><i
+                            class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form id="projectFolderCreationForm" onsubmit="saveProjectFolderForm(event)" class="space-y-4">
+                    <input type="hidden" id="editProjectFolderId">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Project / Wishlist
+                            Name</label>
+                        <input type="text" id="projectFolderNameInput" required
+                            placeholder="e.g., Office Upgrades, Trip to Japan"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Select Identification
+                            Color Theme</label>
+                        <div id="projectColorSwatchesMatrixSelectorGrid"
+                            class="grid grid-cols-8 gap-2.5 p-1 bg-gray-900 border border-gray-800 rounded-xl">
+                        </div>
+                        <input type="hidden" id="projectSelectedColorHexValue" value="bg-blue-600">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-900">
+                        <button type="button" onclick="closeProjectManagerModal()"
+                            class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-xl text-sm font-semibold transition shadow-md">Commit
+                            Folder</button>
+                    </div>
+                </form>
+            </dialog>
+
+            <dialog id="projectWishItemDetailsDialog"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-11/12 backdrop:bg-black/80">
+                <div class="flex items-center justify-between mb-4 border-b border-gray-900 pb-2">
+                    <h3 id="wishItemModalDisplayTitle" class="text-lg font-bold">Configure Line Item Target</h3>
+                    <button onclick="closeWishItemModal()" class="text-gray-400 hover:text-white p-1"><i
+                            class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form id="projectWishItemSubmissionForm" onsubmit="saveWishlistItemForm(event)" class="space-y-4">
+                    <input type="hidden" id="editWishItemUniqueId">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Item Name</label>
+                        <input type="text" id="wishItemNameInput" required placeholder="e.g., Mechanical Keyboard"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="col-span-1">
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Price
+                                Target</label>
+                            <input type="number" step="0.01" id="wishItemPriceInput" required placeholder="149.99"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Target Acquisition
+                                URL Link</label>
+                            <input type="url" id="wishItemUrlLinkInput" placeholder="https://amazon.com/item..."
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 border-t border-gray-900">
+                        <button type="button" onclick="closeWishItemModal()"
+                            class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 px-5 py-2 rounded-xl text-sm font-semibold transition shadow-md">Add
+                            Item Data</button>
+                    </div>
+                </form>
+            </dialog>
         </main>
     </div>
 
@@ -2678,6 +2815,353 @@ async function checkAndTriggerReminders() {
                 liveSyncIntervalPointer = null;
             }
         }
+        // ========================================================
+        // WISHLISTS & TARGET PROJECTS MANAGEMENT ARCHITECTURE ENGINE
+        // ========================================================
+        let activeProjectSelectionFolderId = null; // Track selected list view index pointer
+
+        // 16 Strict Theme Color Utilities Palettes Map Array
+        const projectPaletteColorsMap = [
+            "bg-blue-600", "bg-indigo-600", "bg-purple-600", "bg-pink-600",
+            "bg-rose-600", "bg-red-600", "bg-orange-500", "bg-amber-500",
+            "bg-yellow-500", "bg-lime-500", "bg-emerald-500", "bg-teal-500",
+            "bg-cyan-500", "bg-sky-500", "bg-violet-600", "bg-fuchsia-600"
+        ];
+
+        // Sanitize database structural baseline variables safely on initial app state tracking bootstrap loops
+        function enforceWishlistsDatabaseStructure() {
+            if (!state.projects) state.projects = [];
+
+            // Sync simple metric targets inside the navigation registry loop counters
+            const currentTabId = document.querySelector('.tab-btn.bg-blue-600')?.getAttribute('data-tab');
+            if (currentTabId === 'wishlists') buildProjectWorkspaceInterface();
+        }
+
+        // Intercept standard load hooks to automatically initialize data array properties cleanly
+        const baseAppLoadStateFallbackRef = loadState;
+        loadState = function () {
+            baseAppLoadStateFallbackRef();
+            enforceWishlistsDatabaseStructure();
+        };
+
+        function buildProjectWorkspaceInterface() {
+            enforceNoteDatabaseStructure();
+            if (!state.projects) state.projects = [];
+
+            const deckContainer = document.getElementById('projectFoldersDeckContainer');
+            if (!deckContainer) return;
+            deckContainer.innerHTML = '';
+
+            if (state.projects.length === 0) {
+                deckContainer.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No active project directories logged.</div>`;
+                document.getElementById('projectCanvasPanel').classList.add('hidden');
+                document.getElementById('projectCanvasEmptyPlaceholderState').classList.remove('hidden');
+                return;
+            }
+
+            state.projects.forEach(project => {
+                const isSelected = project.id === activeProjectSelectionFolderId;
+                const itemsCount = project.items ? project.items.length : 0;
+                let costSum = 0;
+                (project.items || []).forEach(i => costSum += (parseFloat(i.price) || 0));
+
+                const card = document.createElement('div');
+                card.onclick = () => selectActiveProjectFolderCanvas(project.id);
+
+                card.className = `p-3.5 rounded-xl border cursor-pointer transition relative group flex items-center justify-between select-none shadow-md ${isSelected
+                        ? 'bg-gray-900 border-gray-700 ring-1 ring-blue-500/30'
+                        : 'bg-gray-900/40 border-gray-900 hover:bg-gray-900/90 hover:border-gray-800'
+                    }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-3 h-3 rounded-full shrink-0 ${project.color || 'bg-blue-600'}"></div>
+                        <div class="truncate">
+                            <p class="font-bold text-sm text-gray-200 group-hover:text-white transition">${project.name}</p>
+                            <span class="text-[10px] text-gray-500 font-mono tracking-wide block mt-0.5">${itemsCount} Targets • ${formatCurrency(costSum)}</span>
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); openProjectManagerModal('${project.id}')" class="text-gray-600 hover:text-blue-400 p-1.5 transition opacity-0 group-hover:opacity-100 focus:opacity-100" title="Modify Directory"><i class="fa-solid fa-ellipsis-vertical text-xs"></i></button>
+                `;
+                deckContainer.appendChild(card);
+            });
+
+            renderFocusedProjectCanvas();
+        }
+
+        function selectActiveProjectFolderCanvas(id) {
+            activeProjectSelectionFolderId = id;
+            buildProjectWorkspaceInterface();
+        }
+
+        function renderFocusedProjectCanvas() {
+            const panel = document.getElementById('projectCanvasPanel');
+            const emptyState = document.getElementById('projectCanvasEmptyPlaceholderState');
+
+            if (!activeProjectSelectionFolderId) {
+                if (panel) panel.classList.add('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            const folder = state.projects.find(p => p.id === activeProjectSelectionFolderId);
+            if (!folder) {
+                activeProjectSelectionFolderId = null;
+                if (panel) panel.classList.add('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (panel) panel.classList.remove('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+
+            document.getElementById('activeCanvasTitleHeader').innerText = folder.name;
+            document.getElementById('activeCanvasColorIndicator').className = `w-4 h-4 rounded-full ring-4 ring-white/10 shrink-0 ${folder.color || 'bg-blue-600'}`;
+            document.getElementById('activeCanvasDeleteBtn').onclick = () => deleteProjectMasterFolder(folder.id);
+
+            const feed = document.getElementById('projectWishlistItemsListDeck');
+            feed.innerHTML = '';
+
+            const itemsList = folder.items || [];
+            let totalValuation = 0;
+            itemsList.forEach(i => totalValuation += (parseFloat(i.price) || 0));
+            document.getElementById('activeCanvasAggregatesMetrics').innerText = `${itemsList.length} Items Listed • ${formatCurrency(totalValuation)} Combined Valuation`;
+
+            if (itemsList.length === 0) {
+                feed.innerHTML = `<div class="text-center py-12 text-gray-600 text-xs italic">No purchase items logged inside this project space yet.</div>`;
+                return;
+            }
+
+            itemsList.forEach(item => {
+                const row = document.createElement('div');
+                row.className = `p-3 bg-gray-900/60 border border-gray-900 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-gray-800 transition ${item.checked ? 'opacity-40 line-through ring-1 ring-emerald-500/20 bg-emerald-950/5' : ''}`;
+
+                row.innerHTML = `
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <p class="font-semibold text-sm text-gray-200">${item.name}</p>
+                            ${item.url ? `<a href="${item.url}" target="_blank" class="text-blue-400 hover:text-blue-300 text-xs inline-flex items-center gap-0.5 underline transition" onclick="event.stopPropagation()"><i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> Link</a>` : ''}
+                        </div>
+                        <p class="text-xs font-bold font-mono tracking-wide mt-1 text-indigo-400">${formatCurrency(item.price)}</p>
+                    </div>
+                    <div class="flex items-center gap-1 sm:justify-end flex-wrap">
+                        <button onclick="toggleWishItemCheckStatus('${item.id}')" class="p-1.5 rounded-lg border border-gray-800 bg-gray-950 hover:bg-emerald-600/20 hover:text-emerald-400 transition text-xs flex items-center gap-1 ${item.checked ? 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20' : 'text-gray-400'}" title="Toggle Complete"><i class="fa-solid ${item.checked ? 'fa-square-check' : 'fa-square'}"></i></button>
+                        <button onclick="routeWishItemToFinancialLedger('${item.id}', 'spend')" class="p-1.5 rounded-lg border border-gray-800 bg-gray-950 hover:bg-emerald-600/10 hover:text-emerald-400 text-gray-400 transition text-xs" title="Send Straight to Spending Entry"><i class="fa-solid fa-receipt text-[11px]"></i> Spend</button>
+                        <button onclick="routeWishItemToFinancialLedger('${item.id}', 'plan')" class="p-1.5 rounded-lg border border-gray-800 bg-gray-950 hover:bg-indigo-600/10 hover:text-indigo-400 text-gray-400 transition text-xs" title="Send directly to Upcoming Payment Plan Schedule"><i class="fa-solid fa-calendar-plus text-[11px]"></i> Plan</button>
+                        <button onclick="openWishItemModal('${item.id}')" class="p-1.5 rounded-lg border border-gray-800 bg-gray-950 hover:bg-blue-600/10 hover:text-blue-400 text-gray-400 transition text-xs" title="Edit Properties"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                        <button onclick="deleteWishlistItem('${item.id}')" class="p-1.5 rounded-lg border border-gray-800 bg-gray-950 hover:bg-rose-600/10 hover:text-rose-400 text-gray-400 transition text-xs" title="Purge Item"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </div>
+                `;
+                feed.appendChild(row);
+            });
+        }
+
+        // FOLDER FOCUSED CREATION WINDOW INTERFACES
+        function openProjectManagerModal(editFolderId = null) {
+            const modal = document.getElementById('projectFolderManagerDialog');
+            const form = document.getElementById('projectFolderCreationForm');
+            form.reset();
+
+            // Symmetrically draw the 16 swatch circle grid cells
+            const grid = document.getElementById('projectColorSwatchesMatrixSelectorGrid');
+            grid.innerHTML = projectPaletteColorsMap.map(colorClass => `
+                <button type="button" onclick="selectProjectFormColorSwatch(this, '${colorClass}')" class="w-5 h-5 rounded-full transition transform hover:scale-115 focus:outline-none ring-offset-2 ring-offset-gray-950 swatch-target-btn ${colorClass}"></button>
+            `).join('');
+
+            if (editFolderId) {
+                document.getElementById('projectModalFolderTitle').innerText = "Modify Project Folder Properties";
+                const target = state.projects.find(p => p.id === editFolderId);
+                if (target) {
+                    document.getElementById('editProjectFolderId').value = target.id;
+                    document.getElementById('projectFolderNameInput').value = target.name;
+                    document.getElementById('projectSelectedColorHexValue').value = target.color || 'bg-blue-600';
+                }
+            } else {
+                document.getElementById('projectModalFolderTitle').innerText = "Create New Project Folder";
+                document.getElementById('editProjectFolderId').value = "";
+                document.getElementById('projectSelectedColorHexValue').value = "bg-blue-600";
+            }
+
+            // Fire active boundary layer highlights trigger onto the selected swatch element node frame
+            const targetColorHex = document.getElementById('projectSelectedColorHexValue').value;
+            const buttons = grid.querySelectorAll('.swatch-target-btn');
+            buttons.forEach(btn => {
+                if (btn.classList.contains(targetColorHex)) btn.classList.add('ring-2', 'ring-white');
+            });
+
+            modal.showModal();
+        }
+
+        function closeProjectManagerModal() { document.getElementById('projectFolderManagerDialog').close(); }
+
+        function selectProjectFormColorSwatch(buttonElement, targetColorClassString) {
+            const grid = document.getElementById('projectColorSwatchesMatrixSelectorGrid');
+            grid.querySelectorAll('.swatch-target-btn').forEach(btn => btn.classList.remove('ring-2', 'ring-white'));
+            buttonElement.classList.add('ring-2', 'ring-white');
+            document.getElementById('projectSelectedColorHexValue').value = targetColorClassString;
+        }
+
+        function saveProjectFolderForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('editProjectFolderId').value;
+            const folderName = document.getElementById('projectFolderNameInput').value.trim();
+            const chosenColor = document.getElementById('projectSelectedColorHexValue').value;
+
+            if (!id) {
+                // Creation lane routing setup parameter injection
+                const newId = crypto.randomUUID();
+                state.projects.push({
+                    id: newId,
+                    name: folderName,
+                    color: chosenColor,
+                    items: []
+                });
+                activeProjectSelectionFolderId = newId;
+            } else {
+                // In-line collection adjustments mapping cascade tracking metrics
+                const directory = state.projects.find(p => p.id === id);
+                if (directory) {
+                    directory.name = folderName;
+                    directory.color = chosenColor;
+                }
+            }
+
+            saveState();
+            buildProjectWorkspaceInterface();
+            closeProjectManagerModal();
+        }
+
+        function deleteProjectMasterFolder(id) {
+            if (confirm("Permanently wipe this project folder directory, including all logged target line items?")) {
+                state.projects = state.projects.filter(p => p.id !== id);
+                activeProjectSelectionFolderId = state.projects.length > 0 ? state.projects[0].id : null;
+                saveState();
+                buildProjectWorkspaceInterface();
+            }
+        }
+
+        // CHILD NESTED LINE ACQUISITIONS SUBMODAL CHANNELS
+        function openWishItemModal(editItemId = null) {
+            const modal = document.getElementById('projectWishItemDetailsDialog');
+            const form = document.getElementById('projectWishItemSubmissionForm');
+            form.reset();
+
+            if (editItemId) {
+                document.getElementById('wishItemModalDisplayTitle').innerText = "Edit Line Item Properties";
+                const folder = state.projects.find(p => p.id === activeProjectSelectionFolderId);
+                const item = folder ? folder.items.find(i => i.id === editItemId) : null;
+                if (item) {
+                    document.getElementById('editWishItemUniqueId').value = item.id;
+                    document.getElementById('wishItemNameInput').value = item.name;
+                    document.getElementById('wishItemPriceInput').value = item.price;
+                    document.getElementById('wishItemUrlLinkInput').value = item.url || '';
+                }
+            } else {
+                document.getElementById('wishItemModalDisplayTitle').innerText = "Add New Target Purchase Item";
+                document.getElementById('editWishItemUniqueId').value = "";
+            }
+            modal.showModal();
+        }
+
+        function closeWishItemModal() { document.getElementById('projectWishItemDetailsDialog').close(); }
+
+        function saveWishlistItemForm(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('editWishItemUniqueId').value;
+            const folder = state.projects.find(p => p.id === activeProjectSelectionFolderId);
+            if (!folder) return;
+
+            const nameVal = document.getElementById('wishItemNameInput').value.trim();
+            const priceVal = parseFloat(document.getElementById('wishItemPriceInput').value) || 0;
+            const urlVal = document.getElementById('wishItemUrlLinkInput').value.trim();
+
+            if (!itemId) {
+                if (!folder.items) folder.items = [];
+                folder.items.push({
+                    id: crypto.randomUUID(),
+                    name: nameVal,
+                    price: priceVal,
+                    url: urlVal,
+                    checked: false
+                });
+            } else {
+                const lineItem = folder.items.find(i => i.id === itemId);
+                if (lineItem) {
+                    lineItem.name = nameVal;
+                    lineItem.price = priceVal;
+                    lineItem.url = urlVal;
+                }
+            }
+
+            saveState();
+            buildProjectWorkspaceInterface();
+            closeWishItemModal();
+        }
+
+        function toggleWishItemCheckStatus(itemId) {
+            const folder = state.projects.find(p => p.id === activeProjectSelectionFolderId);
+            const lineItem = folder ? folder.items.find(i => i.id === itemId) : null;
+            if (lineItem) {
+                lineItem.checked = !lineItem.checked;
+                saveState();
+                buildProjectWorkspaceInterface();
+            }
+        }
+
+        function deleteWishlistItem(itemId) {
+            if (confirm("Remove this specific item record parameter from this file folder?")) {
+                const folder = state.projects.find(p => p.id === activeProjectSelectionFolderId);
+                if (folder) {
+                    folder.items = folder.items.filter(i => i.id !== itemId);
+                    saveState();
+                    buildProjectWorkspaceInterface();
+                }
+            }
+        }
+
+        // CROSSLINK INTER-ACCOUNTING LEDGER PIPELINE ROUTERS
+        function routeWishItemToFinancialLedger(itemId, targetAccountChannelString) {
+            const folder = state.projects.find(p => p.id === activeProjectSelectionFolderId);
+            const lineItem = folder ? folder.items.find(i => i.id === itemId) : null;
+            if (!lineItem) return;
+
+            if (targetAccountChannelString === 'spend') {
+                // Route straight as an immediate finished ledger settlement transaction outcome block
+                state.movements.push({
+                    id: crypto.randomUUID(),
+                    name: `Purchased: ${lineItem.name}`,
+                    amount: parseFloat(lineItem.price) || 0,
+                    category: state.categories.includes("Leisure") ? "Leisure" : state.categories[0],
+                    type: 'outcome',
+                    date: new Date().toISOString().split('T')[0]
+                });
+                alert(`Successfully executed! "${lineItem.name}" has been logged into your Recent Movements tracking registry.`);
+            }
+            else if (targetAccountChannelString === 'plan') {
+                // Route seamlessly into the planning draft queue pipeline wrapper array
+                state.planification.push({
+                    id: crypto.randomUUID(),
+                    name: lineItem.name,
+                    amount: parseFloat(lineItem.price) || 0,
+                    category: state.categories.includes("Leisure") ? "Leisure" : state.categories[0]
+                });
+                alert(`Successfully scheduled! "${lineItem.name}" has been deployed straight to your Next Payment Plan workflow dashboard.`);
+            }
+
+            // Flag item complete as it's now funded/processed
+            lineItem.checked = true;
+
+            saveState();
+            renderAll();
+            buildProjectWorkspaceInterface();
+        }
+
+        // Append workspace render listeners onto global tab router switches
+        const baselineSwitchTabReferenceContainerRoute = switchTab;
+        switchTab = function (tabId) {
+            baselineSwitchTabReferenceContainerRoute(tabId);
+            if (tabId === 'wishlists') buildProjectWorkspaceInterface();
+        };
     </script>
 </body>
 
