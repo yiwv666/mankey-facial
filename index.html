@@ -39,6 +39,19 @@
             animation-play-state: paused;
         }
 
+        /* Secure mobile drop zone interactions without JS collision */
+        #mobileEditDropZone.drag-over {
+            background-color: var(--color-blue-500) !important;
+            filter: brightness(1.25) !important;
+            transform: scale(1.05) !important;
+        }
+
+        #mobileDeleteDropZone.drag-over {
+            background-color: var(--color-rose-500) !important;
+            filter: brightness(1.25) !important;
+            transform: scale(1.05) !important;
+        }
+
         @keyframes marqueeScroll {
             0% {
                 transform: translateX(0%);
@@ -1645,15 +1658,13 @@
                 setTimeout(() => mobileDock.classList.add('hidden'), 300);
             }
 
-            // CLEAN FIX: Reset the temporary brightness scaling classes seamlessly
-            const leftZone = document.getElementById('mobileEditDropZone');
-            const rightZone = document.getElementById('mobileDeleteDropZone');
-            if (leftZone) leftZone.className = leftZone.className.replace(' brightness-125 scale-105', '');
-            if (rightZone) rightZone.className = rightZone.className.replace(' brightness-125 scale-105', '');
+            // Cleanly strip the drag-over state from both elements
+            document.getElementById('mobileEditDropZone')?.classList.remove('drag-over');
+            document.getElementById('mobileDeleteDropZone')?.classList.remove('drag-over');
         }
 
         function dragLeaveMobileZone(e) {
-            e.currentTarget.className = e.currentTarget.className.replace(' brightness-125 scale-105', '');
+            e.currentTarget.classList.remove('drag-over');
         }
 
         // Process the dropped item dynamically depending on which corner it landed on
@@ -1685,15 +1696,7 @@
 
         function allowDrop(e) {
             e.preventDefault();
-
-            const currentZone = e.currentTarget;
-            currentZone.classList.add('drag-over');
-
-            // NEW INDEPENDENT OVERLAY HIGHLIGHT: Boosts color vibrance without breaking base inline styles
-            const isMobileZone = currentZone.id === 'mobileEditDropZone' || currentZone.id === 'mobileDeleteDropZone';
-            if (isMobileZone && !currentZone.className.includes('brightness-125')) {
-                currentZone.className += ' brightness-125 scale-105';
-            }
+            e.currentTarget.classList.add('drag-over');
         }
 
         function dragLeave(e) {
