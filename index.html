@@ -438,47 +438,57 @@
                 </div>
             </div>
             <div id="tab-notes" class="tab-content hidden space-y-6">
-                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl">
-                    <div>
-                        <h2 class="text-xl font-bold tracking-wide">Financial Memorandums</h2>
-                        <p class="text-sm text-gray-400 mt-1">Add quick context logs, reminders, or financial checklists
-                            for each month.</p>
+                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 md:p-6 shadow-xl">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                            <h2 class="text-xl font-bold tracking-wide">Financial Memorandums</h2>
+                            <p class="text-sm text-gray-400 mt-1">Add quick context logs, reminders, or financial
+                                checklists for each month.</p>
+                        </div>
+                        <span id="saveStatusIndicator"
+                            class="text-xs text-gray-500 flex items-center gap-1.5 bg-gray-900 px-3 py-1.5 rounded-xl border border-gray-800">
+                            <i class="fa-solid fa-cloud"></i> Ready
+                        </span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6 min-h-[450px]">
-                        <div
-                            class="md:col-span-4 bg-gray-900/60 border border-gray-800 rounded-xl p-3 flex flex-col gap-1.5 max-h-[500px] overflow-y-auto">
+                    <div class="mt-6 border-b border-gray-800 pb-4">
+                        <div class="block md:hidden">
+                            <label class="block text-xs uppercase font-bold tracking-wider text-gray-500 mb-1.5">Select
+                                Active Month</label>
+                            <select id="monthsMobileDropdown" onchange="selectNotesMonth(parseInt(this.value))"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            </select>
+                        </div>
+
+                        <div class="hidden md:block">
                             <span
-                                class="text-[10px] uppercase font-bold tracking-wider text-gray-500 px-3 mb-1">Calendar
+                                class="text-[10px] uppercase font-bold tracking-wider text-gray-500 block mb-2">Calendar
                                 Timeline</span>
-                            <div id="monthsSelectorContainer" class="space-y-1">
+                            <div id="monthsSelectorContainer" class="grid grid-cols-6 lg:grid-cols-12 gap-2">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-gray-900/30 border border-gray-800 rounded-xl p-4 md:p-5 flex flex-col space-y-5 mt-6">
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex items-center justify-between">
+                                <h3 id="activeNoteMonthHeader" class="text-lg font-bold text-blue-400">January</h3>
+                                <span id="noteCharCounter" class="text-[11px] font-mono text-gray-500">0/200</span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" id="noteInputBox" onkeydown="handleNoteKeyDown(event)"
+                                    oninput="handleNoteInputCounter(this)"
+                                    placeholder="Type a note and press Enter to save..."
+                                    class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition duration-150 shadow-inner">
+                                <button onclick="triggerNoteSubmitFromButton()"
+                                    class="absolute right-3 top-2.5 text-gray-500 hover:text-blue-400 p-1 transition"><i
+                                        class="fa-solid fa-arrow-turn-down rotate-90 text-sm"></i></button>
                             </div>
                         </div>
 
-                        <div
-                            class="md:col-span-8 bg-gray-900/40 border border-gray-800 rounded-xl p-5 flex flex-col justify-between space-y-4">
-                            <div class="flex-1 flex flex-col space-y-4">
-                                <div class="flex items-center justify-between border-b border-gray-800 pb-2">
-                                    <h3 id="activeNoteMonthHeader" class="text-lg font-bold text-blue-400">January</h3>
-                                    <span id="saveStatusIndicator"
-                                        class="text-xs text-gray-500 flex items-center gap-1.5">
-                                        <i class="fa-solid fa-cloud"></i> Ready
-                                    </span>
-                                </div>
-
-                                <div class="relative">
-                                    <input type="text" id="noteInputBox" onkeydown="handleNoteKeyDown(event)"
-                                        oninput="handleNoteInputCounter(this)"
-                                        placeholder="Type a note and press Enter to save..."
-                                        class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-16 py-3 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition duration-150">
-                                    <span id="noteCharCounter"
-                                        class="absolute right-4 top-3.5 text-[11px] font-mono text-gray-500">0/200</span>
-                                </div>
-
-                                <div id="monthlyNotesFeedContainer"
-                                    class="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                                </div>
-                            </div>
+                        <div id="monthlyNotesFeedContainer"
+                            class="flex flex-wrap gap-2 items-start max-h-[350px] overflow-y-auto pr-1 pt-1">
                         </div>
                     </div>
                 </div>
@@ -2039,33 +2049,47 @@ async function checkAndTriggerReminders() {
 
         function buildMonthsSelectorInterface() {
             enforceNoteDatabaseStructure();
+
+            // 1. RE-DESIGNED DESKTOP SCREEN RENDERING PIPELINE
             const container = document.getElementById('monthsSelectorContainer');
-            if (!container) return;
-            container.innerHTML = '';
+            if (container) {
+                container.innerHTML = '';
+                calendarMonthsNames.forEach((month, idx) => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => selectNotesMonth(idx);
 
-            calendarMonthsNames.forEach((month, idx) => {
-                const btn = document.createElement('button');
-                btn.onclick = () => selectNotesMonth(idx);
+                    // Clean block design mapping text adjustments
+                    if (idx === selectedMonthIndex) {
+                        btn.className = "flex flex-col items-center justify-center text-center p-2 rounded-xl font-bold bg-blue-600 text-white shadow-md transition text-xs duration-150 relative border border-blue-500";
+                    } else {
+                        btn.className = "flex flex-col items-center justify-center text-center p-2 rounded-xl text-gray-400 bg-gray-900/60 border border-gray-800/80 hover:bg-gray-800/80 hover:text-gray-100 transition text-xs duration-150 relative";
+                    }
 
-                if (idx === selectedMonthIndex) {
-                    btn.className = "w-full flex items-center justify-between text-left px-4 py-2.5 rounded-xl font-semibold bg-blue-600 text-white shadow-md transition text-sm duration-150";
-                } else {
-                    btn.className = "w-full flex items-center justify-between text-left px-4 py-2.5 rounded-xl text-gray-400 hover:bg-gray-800/80 hover:text-gray-100 transition text-sm duration-150";
-                }
+                    const noteKey = `month_${idx}`;
+                    const hasContent = state.notes && state.notes[noteKey] && state.notes[noteKey].length > 0;
 
-                const noteKey = `month_${idx}`;
-                const hasContent = state.notes && state.notes[noteKey] && state.notes[noteKey].length > 0;
+                    // Shorten naming values for maximum column tracking cleanliness
+                    const shortName = month.substring(0, 3);
 
-                btn.innerHTML = `
-            <span class="flex items-center gap-2">
-                <i class="fa-regular ${idx === selectedMonthIndex ? 'fa-calendar-check' : 'fa-calendar'} text-xs opacity-70"></i>
-                ${month}
-            </span>
-            ${hasContent ? `<span class="w-1.5 h-1.5 rounded-full bg-teal-400 ring-4 ring-teal-500/10"></span>` : ''}
-        `;
-                container.appendChild(btn);
-            });
+                    btn.innerHTML = `
+                <span class="tracking-wide">${shortName}</span>
+                ${hasContent ? `<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-teal-400 ring-2 ring-teal-500/10"></span>` : ''}
+            `;
+                    container.appendChild(btn);
+                });
+            }
 
+            // 2. NEW MOBILE VIEW DROPDOWN SYNC SELECTOR
+            const dropdown = document.getElementById('monthsMobileDropdown');
+            if (dropdown) {
+                dropdown.innerHTML = calendarMonthsNames.map((month, idx) => {
+                    const noteKey = `month_${idx}`;
+                    const hasContent = state.notes && state.notes[noteKey] && state.notes[noteKey].length > 0;
+                    return `<option value="${idx}" ${idx === selectedMonthIndex ? 'selected' : ''}>${month} ${hasContent ? '•' : ''}</option>`;
+                }).join('');
+            }
+
+            // Update main text context headers
             document.getElementById('activeNoteMonthHeader').innerText = calendarMonthsNames[selectedMonthIndex];
             renderMonthlyNotesFeed();
         }
@@ -2079,22 +2103,32 @@ async function checkAndTriggerReminders() {
             const activeMonthNotes = state.notes[targetKey] || [];
 
             if (activeMonthNotes.length === 0) {
-                feedContainer.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No notes logged for this calendar section.</div>`;
+                feedContainer.className = "block w-full text-center py-8 text-gray-600 text-xs italic";
+                feedContainer.innerHTML = `No notes logged for this calendar section.`;
                 return;
             }
 
+            // Reassign flexible grid class properties so children sit fluidly side-by-side matching widths
+            feedContainer.className = "flex flex-wrap gap-2 items-start max-h-[350px] overflow-y-auto pr-1 pt-1";
+
             activeMonthNotes.forEach(note => {
                 const noteCard = document.createElement('div');
-                noteCard.className = "bg-gray-900/50 border border-gray-800 rounded-xl p-3 flex items-start justify-between gap-4 transition group hover:border-gray-700";
+
+                // Critical visual transformation: using w-fit inline flex structures instead of broad flex-1 block boxes
+                noteCard.className = "w-fit max-w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2 flex items-center justify-between gap-3 transition group hover:border-gray-700 shadow-md animate-fade-in";
                 noteCard.innerHTML = `
-            <p class="text-sm text-gray-200 break-words flex-1 pr-2 leading-relaxed">${decodeSanitizedNoteString(note.text)}</p>
-            <div class="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition duration-150 shrink-0">
-                <button onclick="startEditNote('${note.id}', '${note.text.replace(/'/g, "\\'")}')" class="text-gray-400 hover:text-blue-400 p-1 transition" title="Edit Note"><i class="fa-solid fa-pen text-xs"></i></button>
-                <button onclick="deleteNote('${note.id}')" class="text-gray-400 hover:text-rose-400 p-1 transition" title="Delete Note"><i class="fa-solid fa-trash text-xs"></i></button>
+            <p class="text-sm text-gray-200 break-words leading-relaxed select-text">${decodeSanitizedNoteString(note.text)}</p>
+            <div class="flex items-center gap-0.5 opacity-20 group-hover:opacity-100 transition duration-150 shrink-0 border-l border-gray-800 pl-1.5">
+                <button onclick="startEditNote('${note.id}', '${note.text.replace(/'/g, "\\'")}')" class="text-gray-400 hover:text-blue-400 p-1 transition" title="Edit Note"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                <button onclick="deleteNote('${note.id}')" class="text-gray-400 hover:text-rose-400 p-1 transition" title="Delete Note"><i class="fa-solid fa-xmark text-xs"></i></button>
             </div>
         `;
                 feedContainer.appendChild(noteCard);
             });
+        }
+
+        function triggerNoteSubmitFromButton() {
+            handleNoteKeyDown({ key: 'Enter', preventDefault: () => { } });
         }
 
         function selectNotesMonth(monthIndex) {
