@@ -56,14 +56,21 @@
     <div class="flex flex-col md:flex-row min-h-screen">
 
         <nav class="w-full md:w-64 bg-gray-950 border-b md:border-b-0 md:border-r border-gray-800 p-4 shrink-0">
-            <div class="flex items-center justify-between md:justify-start gap-3 mb-6">
-                <div class="bg-blue-600 p-2 rounded-lg text-white">
-                    <i class="fa-solid fa-wallet text-xl"></i>
+            <div class="flex items-center justify-between md:justify-start gap-3 mb-6 flex-wrap">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                    <h1
+                        class="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                        Moneyco
+                    </h1>
                 </div>
-                <h1
-                    class="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                    Moneyco</h1>
-                <button id="mobileMenuBtn" class="md:hidden text-gray-400 hover:text-white focus:outline-none">
+
+                <div id="logoStorageIndicator" class="flex items-center transition-all duration-300">
+                </div>
+
+                <button id="mobileMenuBtn" class="md:hidden text-gray-400 hover:text-white focus:outline-none ml-auto">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
             </div>
@@ -821,6 +828,7 @@
             renderAll();
             setupContextMenus();
             setupMobileMenu();
+            refreshLogoStorageIndicator();
         });
 
         function initDatePickers() {
@@ -1911,6 +1919,7 @@
                 btnConnect.classList.remove('hidden');
                 btnDisconnect.classList.add('hidden');
             }
+            refreshLogoStorageIndicator();
         }
 
         async function runCloudInitialScan() {
@@ -2402,6 +2411,31 @@ async function checkAndTriggerReminders() {
             const modal = document.getElementById('mobileDashboardNotesModal');
             if (modal) modal.close();
         }
+        // ========================================================
+// RE-BALANCED BRAND LOGO STORAGE STATUS INDICATOR
+// ========================================================
+function refreshLogoStorageIndicator() {
+    const indicatorEl = document.getElementById('logoStorageIndicator');
+    if (!indicatorEl) return;
+
+    const isCloudConnected = (googleUserToken !== null && driveFileId !== null);
+
+    if (isCloudConnected) {
+        // Render Emerald Connected Cloud Badge
+        indicatorEl.innerHTML = `
+            <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/20 shadow-sm" title="Synchronizing modifications to Google Drive securely">
+                <i class="fa-solid fa-cloud text-[9px]"></i> DRIVE
+            </span>
+        `;
+    } else {
+        // Render Steel Gray Offline Local Storage Badge
+        indicatorEl.innerHTML = `
+            <span class="inline-flex items-center gap-1 text-[10px] bg-gray-800 text-gray-400 font-bold px-2 py-0.5 rounded-full border border-gray-700 shadow-sm" title="Data running locally. Connect a cloud destination inside Settings.">
+                <i class="fa-solid fa-hard-drive text-[9px]"></i> LOCAL
+            </span>
+        `;
+    }
+}
     </script>
 </body>
 
