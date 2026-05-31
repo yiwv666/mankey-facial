@@ -634,7 +634,7 @@
                                 </div>
                                 <button onclick="openWishItemModal()"
                                     class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-semibold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
-                                    <i class="fa-solid fa-cart-plus text-blue-400"></i> Append Item
+                                    <i class="fa-solid fa-cart-plus text-blue-400"></i> Add Item
                                 </button>
                             </div>
 
@@ -2981,25 +2981,25 @@ async function checkAndTriggerReminders() {
 
             items.forEach(item => {
                 const row = document.createElement('div');
-                row.className = `border rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition ${item.completed ? 'bg-gray-900/10 border-gray-900/80 opacity-40' : 'bg-gray-900/40 border-gray-800 hover:border-gray-700'}`;
+                row.className = `border rounded-xl px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition ${item.completed ? 'bg-gray-900/10 border-gray-900/80 opacity-40' : 'bg-gray-900/40 border-gray-800 hover:border-gray-700'}`;
 
                 row.innerHTML = `
             <div class="flex-1 truncate">
                 <div class="flex items-center gap-2 max-w-full">
                     <p class="font-bold text-sm text-gray-200 truncate ${item.completed ? 'line-through text-gray-500' : ''}">${item.name}</p>
-                    ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 text-xs shrink-0" title="Visit Link Checkout Source"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
+                    ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-blue-400 text-xs shrink-0 transition p-0.5" title="Visit Link Checkout Source"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
                 </div>
                 <p class="text-xs font-mono font-semibold text-gray-400 mt-0.5">${formatCurrency(item.price)}</p>
             </div>
             
-            <div class="flex items-center gap-1 self-end sm:self-center shrink-0">
-                <button onclick="toggleWishItemCompletedState('${item.id}')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 hover:text-emerald-400 transition" title="Toggle Completed State">
-                    <i class="fa-solid ${item.completed ? 'fa-square-check text-emerald-400' : 'fa-regular fa-square'}"></i>
+            <div class="flex items-center gap-1.5 self-end sm:self-center shrink-0 border-t border-gray-800/40 pt-2 sm:pt-0 sm:border-t-0 sm:pl-2">
+                <button onclick="toggleWishItemCompletedState('${item.id}')" class="text-gray-500 hover:text-emerald-400 transition p-1" title="${item.completed ? 'Mark Active' : 'Mark Completed'}">
+                    <i class="fa-solid ${item.completed ? 'fa-square-check text-emerald-500' : 'fa-regular fa-square'} text-sm"></i>
                 </button>
-                <button onclick="dispatchItemToCoreLedger('${item.id}', 'spend')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-emerald-500 hover:bg-emerald-950/20 transition" title="Add as a movement"><i class="fa-solid fa-receipt"></i></button>
-                <button onclick="dispatchItemToCoreLedger('${item.id}', 'planning')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-indigo-400 hover:bg-indigo-950/20 transition" title="Add to the payment plan"><i class="fa-solid fa-calendar-plus"></i></button>
-                <button onclick="openWishItemModal('${item.id}')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-blue-400 hover:bg-gray-700 transition" title="Modify details"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                <button onclick="deleteWishItemFromFolder('${item.id}')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-rose-400 hover:bg-rose-950/20 transition" title="Delete record"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="dispatchItemToCoreLedger('${item.id}', 'spend')" class="text-gray-500 hover:text-emerald-400 transition p-1" title="Send to Spend (Log Transaction Outcome)"><i class="fa-solid fa-receipt text-xs"></i></button>
+                <button onclick="dispatchItemToCoreLedger('${item.id}', 'planning')" class="text-gray-500 hover:text-indigo-400 transition p-1" title="Send to Planning (Schedule Budget)"><i class="fa-solid fa-calendar-plus text-xs"></i></button>
+                <button onclick="openWishItemModal('${item.id}')" class="text-gray-500 hover:text-blue-400 transition p-1" title="Edit Item Spec"><i class="fa-solid fa-pen text-xs"></i></button>
+                <button onclick="deleteWishItemFromFolder('${item.id}')" class="text-gray-500 hover:text-rose-400 transition p-1" title="Delete Item Spec"><i class="fa-solid fa-trash-can text-xs"></i></button>
             </div>
         `;
                 feed.appendChild(row);
