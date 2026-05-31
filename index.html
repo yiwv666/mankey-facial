@@ -26,6 +26,28 @@
             border: 2px dashed #3b82f6 !important;
             background-color: rgba(59, 130, 246, 0.1) !important;
         }
+
+        /* Custom infinite horizontal marquee animation */
+        .marquee-container {
+            display: flex;
+            width: max-content;
+            animation: marqueeScroll 25s linear infinite;
+        }
+
+        /* Pause the animation instantly on mouse hover */
+        .marquee-container:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes marqueeScroll {
+            0% {
+                transform: translateX(0%);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
     </style>
 </head>
 
@@ -140,10 +162,11 @@
                             </button>
                         </div>
 
-                        <div class="hidden md:flex items-center w-full overflow-x-auto gap-2 pb-1 scroll-smooth"
-                            id="dashDesktopNotesScrollWrapper" style="scrollbar-width: thin;">
+                        <div class="hidden md:block w-full overflow-hidden relative bg-gray-900/20 rounded-xl p-1.5">
+                            <div class="flex items-center gap-2" id="dashDesktopNotesScrollWrapper">
+                            </div>
                         </div>
-                        <div id="dashDesktopNotesEmptyState" class="hidden text-xs text-gray-600 italic py-1">No
+                        <div id="dashDesktopNotesEmptyState" class="hidden text-xs text-gray-600 italic py-1 pl-2">No
                             reminders logged for this month.</div>
                     </div>
 
@@ -1057,19 +1080,23 @@
             } else {
                 if (desktopEmpty) desktopEmpty.classList.add('hidden');
 
+                // Create the moving marquee track container element
+                const marqueeTrack = document.createElement('div');
+                marqueeTrack.className = "marquee-container gap-2";
+
+                // Build out the raw elements array list
+                const fragmentCards = [];
                 activeLiveNotes.forEach(note => {
                     const rawText = decodeSanitizedNoteString(note.text);
 
-                    // A. Desktop Builder: Using whitespace-nowrap & w-max to guarantee true infinite horizontal scrolling
-                    if (desktopWrapper) {
-                        const noteBadge = document.createElement('div');
-                        noteBadge.className = "w-max max-w-xs shrink-0 bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-300 whitespace-nowrap overflow-hidden text-ellipsis select-none shadow-sm";
-                        noteBadge.innerText = rawText;
-                        noteBadge.title = rawText; // Hover tooltip for reading cropped long blocks
-                        desktopWrapper.appendChild(noteBadge);
-                    }
+                    const noteBadge = document.createElement('div');
+                    noteBadge.className = "w-max max-w-xs shrink-0 bg-gray-900/90 border border-gray-800 rounded-xl px-3.5 py-1.5 text-xs text-gray-300 select-none shadow-sm cursor-help transition hover:border-gray-700";
+                    noteBadge.innerText = rawText;
+                    noteBadge.title = rawText;
 
-                    // B. Mobile Popup Builder: Clean vertical cards fitted perfectly for vertical swiping
+                    fragmentCards.push(noteBadge);
+
+                    // B. Keep Mobile Popup Builder mapping behavior completely untouched
                     if (mobileContainer) {
                         const noteBlock = document.createElement('div');
                         noteBlock.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 text-xs text-gray-200 break-words leading-relaxed shadow-md";
@@ -1077,6 +1104,21 @@
                         mobileContainer.appendChild(noteBlock);
                     }
                 });
+
+                // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
+                if (desktopWrapper) {
+                    fragmentCards.forEach(card => marqueeTrack.appendChild(card));
+
+                    // Only double the track and scroll if there are enough notes to warrant an animation loop
+                    if (fragmentCards.length > 2) {
+                        fragmentCards.forEach(card => marqueeTrack.appendChild(card.cloneNode(true)));
+                    } else {
+                        // If there are only 1 or 2 notes, disable the movement so it doesn't run unnecessarily
+                        marqueeTrack.style.animation = 'none';
+                    }
+
+                    desktopWrapper.appendChild(marqueeTrack);
+                }
             }
         }
 
