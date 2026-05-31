@@ -766,7 +766,8 @@
             frequent: [],
             notes: {},
             savingGoal: 0,
-            categories: ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"]
+            categories: ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"],
+            lastUpdated: 0 // <-- ADD THIS: Tracks Epoch Unix time milliseconds
         };
 
         // Context Menu Registry Pointer
@@ -814,6 +815,7 @@
         }
 
         async function saveState() {
+            state.lastUpdated = Date.now();
             localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
             await syncToGoogleDrive();
         }
@@ -1981,24 +1983,89 @@
         }
 
         async function syncToGoogleDrive() {
-            if (!googleUserToken || !driveFileId) return; // Pass-through fallback to local storage mode
+            if (!googleUserToken || !driveFileId) return;
+
             try {
-                // FORCE MEDIA PAYLOAD UPLOAD STRUCTURE
-                // This overrides standard metadata parsing to force complete multi-line JSON text acceptance
-                await gapi.client.request({
-                    path: `/upload/drive/v3/files/${driveFileId}`,
-                    method: 'PATCH',
-                    params: {
-                        uploadType: 'media'
-                    },
-                    headers: {
-                        'Content-Type': 'application/json; charset=UTF-8'
-                    },
-                    body: JSON.stringify(state)
-                });
+                // 1. FETCH THE ABSOLUTE LATEST VERSION DIRECTLY FROM CLOUD STORAGE
+                const cloudResponse = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+                let cloudState = cloudResponse.result;
+
+                // If the cloud file is empty or corrupted, default to standard upload pass-through
+                if (!cloudState || typeof cloudState !== 'object') {
+                    await uploadFinalMergedStateToCloud(state);
+                    return;
+                }
+
+                const localTime = state.lastUpdated || 0;
+                const cloudTime = cloudState.lastUpdated || 0;
+
+                // 2. DATA INTEGRITY MATRIX: CHOOSE WINNING DATA DATASETS BASELINE
+                if (cloudTime > localTime) {
+                    console.log("Cloud version is newer. Resolving changes...");
+
+                    // Symmetrical Merging Strategy: Combine data arrays using unique IDs to prevent data loss
+                    state.movements = mergeDataArrays(state.movements, cloudState.movements || []);
+                    state.planification = mergeDataArrays(state.planification, cloudState.planification || []);
+                    state.frequent = mergeDataArrays(state.frequent, cloudState.frequent || []);
+
+                    // Merge Monthly Notes dictionaries safely
+                    if (!state.notes) state.notes = {};
+                    const incomingNotes = cloudState.notes || {};
+                    for (let i = 0; i < 12; i++) {
+                        const key = `month_${i}`;
+                        state.notes[key] = mergeDataArrays(state.notes[key] || [], incomingNotes[key] || []);
+                    }
+
+                    // Sync simple metric targets
+                    state.savingsGoal = Math.max(state.savingsGoal, cloudState.savingsGoal || 0);
+                    state.categories = Array.from(new Set([...state.categories, ...(cloudState.categories || [])]));
+                    state.lastUpdated = cloudTime;
+
+                    // Commit updates to local view cache
+                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+                    renderAll();
+                } else {
+                    console.log("Local version is newer or identical. Uploading to cloud...");
+                }
+
+                // 3. BROADCAST DEFINITIVE MERGED MATRIX BACK TO THE CLOUD
+                await uploadFinalMergedStateToCloud(state);
+
             } catch (err) {
-                console.error('Cloud automation update error:', err);
+                console.error('Cloud automation sync update failure:', err);
             }
+        }
+
+        // Helper Function: Uploads raw content streams to the Google Drive AppData folder media endpoint
+        async function uploadFinalMergedStateToCloud(statePayload) {
+            await gapi.client.request({
+                path: `/upload/drive/v3/files/${driveFileId}`,
+                method: 'PATCH',
+                params: {
+                    uploadType: 'media'
+                },
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8'
+                },
+                body: JSON.stringify(statePayload)
+            });
+        }
+
+        // Helper Function: Compares two data arrays by item ID and combines them seamlessly
+        function mergeDataArrays(localArray, cloudArray) {
+            const mergedMap = new Map();
+
+            // Add all local entries to the map
+            localArray.forEach(item => {
+                if (item && item.id) mergedMap.set(item.id, item);
+            });
+
+            // Merge cloud entries. If an ID matches, the cloud entry wins (acting as the authoritative backup)
+            cloudArray.forEach(item => {
+                if (item && item.id) mergedMap.set(item.id, item);
+            });
+
+            return Array.from(mergedMap.values());
         }
 
         // FORCE REALTIME SCHEMA MIGRATION EXECUTION
