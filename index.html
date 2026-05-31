@@ -252,8 +252,43 @@
             </div>
 
             <div id="tab-categories" class="tab-content hidden space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl h-fit">
+                <div
+                    class="bg-gradient-to-br from-emerald-950/40 to-gray-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 text-emerald-400 pointer-events-none">
+                        <i class="fa-solid fa-piggy-bank text-7xl"></i>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+                        <div>
+                            <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">Total Asset
+                                Reserve</span>
+                            <h2 id="savingsAllTimeTotal" class="text-3xl sm:text-4xl font-black text-emerald-400 mt-1">
+                                $0.00</h2>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            <input type="number" id="savingsGoalInput" placeholder="Set Savings Goal"
+                                onchange="updateSavingsGoal(this.value)"
+                                class="bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-emerald-500 w-36 text-center">
+                            <span id="savingsGoalTargetLabel"
+                                class="text-[10px] text-gray-400 font-semibold tracking-wide hidden pr-1"></span>
+                        </div>
+                    </div>
+                    <div id="savingsProgressWrapper" class="mt-4 hidden space-y-1.5 relative z-10">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span id="savingsProgressPercent" class="text-emerald-400">0% achieved</span>
+                            <span id="savingsProgressMetrics" class="text-gray-500"></span>
+                        </div>
+                        <div class="w-full bg-gray-900 border border-gray-800 rounded-full h-2.5 overflow-hidden">
+                            <div id="savingsProgressBar"
+                                class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
+                                style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col lg:grid lg:grid-cols-12 gap-6">
+
+                    <div
+                        class="lg:col-span-4 bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl h-fit w-full">
                         <h2 class="text-lg font-bold mb-3">Custom Categories</h2>
                         <form id="categoryForm" onsubmit="addCategory(event)" class="flex gap-2 mb-4">
                             <input type="text" id="newCategoryName" placeholder="e.g., Subscriptions" required
@@ -261,89 +296,64 @@
                             <button type="submit"
                                 class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition shrink-0">Add</button>
                         </form>
-                        <div id="categoryManageList" class="space-y-1.5 max-h-[400px] overflow-y-auto pr-1">
+                        <div id="categoryManageList"
+                            class="space-y-1.5 max-h-[300px] lg:max-h-[400px] overflow-y-auto pr-1">
                         </div>
                     </div>
 
-                    <div class="lg:col-span-2 space-y-6">
+                    <div class="lg:col-span-8 space-y-6 w-full">
 
-                        <div
-                            class="bg-gradient-to-br from-emerald-950/40 to-gray-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-6 opacity-10 text-emerald-400 pointer-events-none">
-                                <i class="fa-solid fa-piggy-bank text-7xl"></i>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">Total
-                                        Asset Reserve</span>
-                                    <h2 id="savingsAllTimeTotal" class="text-4xl font-black text-emerald-400 mt-1">$0.00
-                                    </h2>
-                                </div>
-                                <div class="flex flex-col items-end gap-1">
-                                    <input type="number" id="savingsGoalInput" placeholder="Set Savings Goal"
-                                        onchange="updateSavingsGoal(this.value)"
-                                        class="bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-emerald-500 w-36 text-center">
-                                    <span id="savingsGoalTargetLabel"
-                                        class="text-[10px] text-gray-400 font-semibold tracking-wide hidden pr-1"></span>
-                                </div>
-                            </div>
-                            <div id="savingsProgressWrapper" class="mt-4 hidden space-y-1.5">
-                                <div class="flex justify-between text-xs font-semibold">
-                                    <span id="savingsProgressPercent" class="text-emerald-400">0% achieved</span>
-                                    <span id="savingsProgressMetrics" class="text-gray-500"></span>
-                                </div>
-                                <div
-                                    class="w-full bg-gray-900 border border-gray-800 rounded-full h-2.5 overflow-hidden">
-                                    <div id="savingsProgressBar"
-                                        class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
-                                        style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
-                            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl flex flex-col">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                                 <h2 class="text-lg font-bold">Category Distribution Analytics</h2>
-                                <div class="flex gap-2">
+                                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                                     <select id="statsSort" onchange="renderCategoryStats()"
-                                        class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500 text-gray-300">
+                                        class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1.5 text-xs sm:text-sm focus:outline-none focus:border-blue-500 text-gray-300 flex-1 sm:flex-none">
                                         <option value="none">Default Order</option>
                                         <option value="name-asc">Name (A-Z)</option>
                                         <option value="name-desc">Name (Z-A)</option>
-                                        <option value="expense-month">Most Expended (Month)</option>
-                                        <option value="expense-all">Most Expended (All-Time)</option>
+                                        <option value="expense-month">Highest Expense (Month)</option>
+                                        <option value="expense-all">Highest Expense (All-Time)</option>
                                     </select>
                                     <input type="month" id="statsMonth" onchange="renderCategoryStats()"
-                                        class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                        class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1.5 text-xs sm:text-sm focus:outline-none focus:border-blue-500 flex-1 sm:flex-none">
                                 </div>
                             </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse min-w-[500px]">
+
+                            <div class="overflow-x-auto -mx-5 sm:mx-0">
+                                <div class="inline-block min-w-full align-middle px-5 sm:px-0>
+                        <table class=" w-full text-left border-collapse min-w-[650px]">
                                     <thead>
                                         <tr
                                             class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
                                             <th class="py-3 px-3">Category</th>
-                                            <th class="py-3 px-3 text-right">Selected Month Expenses</th>
-                                            <th class="py-3 px-3 text-right">All-Time Expenses</th>
+                                            <th class="py-3 px-2 text-right text-emerald-400 bg-emerald-500/5">Month Inc
+                                            </th>
+                                            <th class="py-3 px-2 text-right text-emerald-500 bg-emerald-500/5">All-Time
+                                                Inc</th>
+                                            <th class="py-3 px-2 text-right text-rose-400 bg-rose-500/5">Month Exp</th>
+                                            <th class="py-3 px-2 text-right text-rose-500 bg-rose-500/5">All-Time Exp
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody id="categoryStatsTable">
                                     </tbody>
-                                </table>
+                                    </table>
+                                </div>
                             </div>
                         </div>
 
                         <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
-                            <div class="flex items-center justify-between mb-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                                 <div>
                                     <h2 class="text-lg font-bold text-rose-400 flex items-center gap-2">
                                         <i class="fa-solid fa-hand-holding-dollar text-sm"></i> Planned Debt Commitments
                                     </h2>
-                                    <p class="text-xs text-gray-500">Items currently tracked inside your active Next
-                                        Payment Plan matching 'Debts'</p>
+                                    <p class="text-xs text-gray-500">Items tracked inside your Next Payment Plan
+                                        matching 'Debts'</p>
                                 </div>
                                 <span id="plannedDebtTotalBadge"
-                                    class="text-xs bg-rose-500/10 text-rose-400 font-bold px-2.5 py-1 rounded-full border border-rose-500/20">$0.00
+                                    class="text-xs bg-rose-500/10 text-rose-400 font-bold px-2.5 py-1 rounded-full border border-rose-500/20 self-start sm:self-center">$0.00
                                     Total</span>
                             </div>
                             <div class="overflow-x-auto">
@@ -1217,42 +1227,52 @@
 
             let savingsAllTimeAccumulated = 0;
 
-            // 1. Process All-Time and Monthly Metrics Matrix
+            // 1. Process Symmetrical Metrics Matrix (Income vs Expenses)
             let targetStats = state.categories.map(cat => {
                 let monthlyExpenses = 0;
                 let allTimeExpenses = 0;
+                let monthlyIncome = 0;
+                let allTimeIncome = 0;
 
                 state.movements.forEach(m => {
                     if (m.category === cat) {
                         const amt = parseFloat(m.amount) || 0;
 
-                        // Track standard expense types
+                        // Route Outcomes
                         if (m.type === 'outcome') {
                             allTimeExpenses += amt;
                             if (m.date.startsWith(filterMonthStr)) {
                                 monthlyExpenses += amt;
                             }
                         }
-                        // Custom Handling: Savings accumulated through positive history logs
-                        if (cat === 'Savings' && m.type === 'income') {
-                            savingsAllTimeAccumulated += amt;
+                        // Route Incomes
+                        else if (m.type === 'income') {
+                            allTimeIncome += amt;
+                            if (m.date.startsWith(filterMonthStr)) {
+                                monthlyIncome += amt;
+                            }
+                            if (cat === 'Savings') {
+                                savingsAllTimeAccumulated += amt;
+                            }
                         }
                     }
                 });
 
-                // Balance adjustment counter calculation metric for net tracking metrics
+                // Deduct expenses from cumulative savings targets
                 if (cat === 'Savings') {
                     savingsAllTimeAccumulated = Math.max(0, savingsAllTimeAccumulated - allTimeExpenses);
                 }
 
                 return {
                     name: cat,
-                    monthTotal: monthlyExpenses,
-                    allTimeTotal: allTimeExpenses
+                    monthInc: monthlyIncome,
+                    allTimeInc: allTimeIncome,
+                    monthExp: monthlyExpenses,
+                    allTimeExp: allTimeExpenses
                 };
             });
 
-            // 2. Render Fullwidth Savings Area Calculations Live
+            // 2. Render Fullwidth Savings Area Card Live
             document.getElementById('savingsAllTimeTotal').innerText = formatCurrency(savingsAllTimeAccumulated);
 
             const goalVal = parseFloat(state.savingsGoal) || 0;
@@ -1268,8 +1288,6 @@
                     goalLabelEl.innerText = `Goal: ${formatCurrency(goalVal)}`;
                     goalLabelEl.classList.remove('hidden');
                 }
-
-                // Progress bar percentage math computations
                 const pct = Math.min(100, Math.round((savingsAllTimeAccumulated / goalVal) * 100)) || 0;
                 document.getElementById('savingsProgressBar').style.width = `${pct}%`;
                 document.getElementById('savingsProgressPercent').innerText = `${pct}% achieved`;
@@ -1279,7 +1297,7 @@
                 if (goalLabelEl) goalLabelEl.classList.add('hidden');
             }
 
-            // 3. Render Planned Debts Dynamic Summary Table
+            // 3. Render Planned Debts Panel Summary
             const debtBody = document.getElementById('plannedDebtsTableBody');
             debtBody.innerHTML = '';
             let totalPlannedDebtsAmt = 0;
@@ -1305,24 +1323,27 @@
             }
             document.getElementById('plannedDebtTotalBadge').innerText = `${formatCurrency(totalPlannedDebtsAmt)} Total`;
 
-            // 4. Sort and Append standard Category Distributions
+            // 4. Sort Configurations Sorting Matrix Options
             if (sortMethod === 'name-asc') {
                 targetStats.sort((a, b) => a.name.localeCompare(b.name));
             } else if (sortMethod === 'name-desc') {
                 targetStats.sort((a, b) => b.name.localeCompare(a.name));
             } else if (sortMethod === 'expense-month') {
-                targetStats.sort((a, b) => b.monthTotal - a.monthTotal);
+                targetStats.sort((a, b) => b.monthExp - a.monthExp);
             } else if (sortMethod === 'expense-all') {
-                targetStats.sort((a, b) => b.allTimeTotal - a.allTimeTotal);
+                targetStats.sort((a, b) => b.allTimeExp - a.allTimeExp);
             }
 
+            // 5. Build Symmetrical Dynamic Table Structure
             targetStats.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50";
+                tr.className = "border-b border-gray-900 text-xs sm:text-sm hover:bg-gray-900/50 transition";
                 tr.innerHTML = `
             <td class="py-3 px-3 font-semibold text-gray-200">${item.name}</td>
-            <td class="py-3 px-3 text-right font-medium text-rose-300">${formatCurrency(item.monthTotal)}</td>
-            <td class="py-3 px-3 text-right font-medium text-rose-400 bg-gray-950/40">${formatCurrency(item.allTimeTotal)}</td>
+            <td class="py-3 px-2 text-right font-medium text-emerald-400 bg-emerald-500/[0.01]">${formatCurrency(item.monthInc)}</td>
+            <td class="py-3 px-2 text-right font-medium text-emerald-500 bg-emerald-500/[0.01]">${formatCurrency(item.allTimeInc)}</td>
+            <td class="py-3 px-2 text-right font-medium text-rose-400 bg-rose-500/[0.01]">${formatCurrency(item.monthExp)}</td>
+            <td class="py-3 px-2 text-right font-medium text-rose-500 bg-rose-500/[0.01]">${formatCurrency(item.allTimeExp)}</td>
         `;
                 tbody.appendChild(tr);
             });
