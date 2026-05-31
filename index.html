@@ -1106,18 +1106,27 @@
                 });
 
                 // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
+                // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
                 if (desktopWrapper) {
                     fragmentCards.forEach(card => marqueeTrack.appendChild(card));
 
-                    // Only double the track and scroll if there are enough notes to warrant an animation loop
-                    if (fragmentCards.length > 2) {
-                        fragmentCards.forEach(card => marqueeTrack.appendChild(card.cloneNode(true)));
-                    } else {
-                        // If there are only 1 or 2 notes, disable the movement so it doesn't run unnecessarily
-                        marqueeTrack.style.animation = 'none';
-                    }
+                    // Double the track list to prepare the continuous scrolling loop sequence
+                    fragmentCards.forEach(card => marqueeTrack.appendChild(card.cloneNode(true)));
 
                     desktopWrapper.appendChild(marqueeTrack);
+
+                    //Least lines change fix: Measure if the full element width overflows the browser's view depth
+                    //Using a micro-timeout guarantees the browser has fully drawn the text parameters before we check the width
+                    setTimeout(() => {
+                        const parentWidth = desktopWrapper.offsetWidth;
+                        const trackWidth = marqueeTrack.scrollWidth / 2; // Split by 2 because we cloned the notes
+
+                        if (trackWidth <= parentWidth) {
+                            // Turn off the movement loop completely if the items fit cleanly on the screen
+                            marqueeTrack.style.animation = 'none';
+                            marqueeTrack.style.width = '100%';
+                        }
+                    }, 50);
                 }
             }
         }
