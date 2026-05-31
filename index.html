@@ -557,6 +557,22 @@
                     </div>
                 </div>
             </div>
+            <div id="mobileDragOverlaysContainer"
+                class="hidden fixed bottom-4 left-4 right-4 z-50 md:hidden flex justify-between gap-4 pointer-events-none transition-all duration-300 transform translate-y-24">
+                <div id="mobileEditDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)"
+                    ondrop="handleMobileActionDrop(event, 'edit')" data-action="edit"
+                    class="pointer-events-auto flex-1 bg-blue-600/95 border-2 border-dashed border-blue-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
+                    <i class="fa-solid fa-pen-to-square text-lg animate-bounce"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Edit</span>
+                </div>
+
+                <div id="mobileDeleteDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)"
+                    ondrop="handleMobileActionDrop(event, 'delete')" data-action="delete"
+                    class="pointer-events-auto flex-1 bg-rose-600/95 border-2 border-dashed border-rose-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
+                    <i class="fa-solid fa-trash text-lg animate-bounce"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Delete</span>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -1605,16 +1621,65 @@
         let draggedItemOrigin = null; // 'movement' or 'planification'
 
         function handleDragStart(e) {
-            // Standardize reading target attributes directly from the source element
             draggedItemId = this.getAttribute('data-id');
             draggedItemOrigin = this.getAttribute('data-origin');
 
-            // Explicitly seed the event payload using standard key-value pairs
             e.dataTransfer.setData('text/plain', draggedItemId);
             e.dataTransfer.setData('item-origin', draggedItemOrigin);
-
-            // Allows both moving items (planification) and copying items (frequent templates)
             e.dataTransfer.effectAllowed = 'all';
+
+            Reveal the action overlays layout box smoothly on mobile / touch screens
+            const mobileDock = document.getElementById('mobileDragOverlaysContainer');
+            if (mobileDock) {
+                mobileDock.classList.remove('hidden', 'translate-y-24');
+            }
+
+            // Bind a global dragend cleanup listener so the buttons slide away if dropped anywhere else
+            this.addEventListener('dragend', handleDragEndCleanup, { once: true });
+        }
+
+        // Hidden cleanup that slides the dock away as soon as the item is released
+        function handleDragEndCleanup() {
+            const mobileDock = document.getElementById('mobileDragOverlaysContainer');
+            if (mobileDock) {
+                mobileDock.classList.add('translate-y-24');
+                setTimeout(() => mobileDock.classList.add('hidden'), 300);
+            }
+            // Reset state highlight overlays cleanly
+            document.getElementById('mobileEditDropZone').style.backgroundColor = '';
+            document.getElementById('mobileDeleteDropZone').style.backgroundColor = '';
+        }
+
+        // Apply a distinct scale-up highlight effect when dragging directly over a corner choice
+        function dragLeaveMobileZone(e) {
+            e.currentTarget.style.backgroundColor = '';
+        }
+
+        // Process the dropped item dynamically depending on which corner it landed on
+        function handleMobileActionDrop(event, actionType) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Hide the dock layout overlay right away
+            handleDragEndCleanup();
+
+            let origin = event.dataTransfer.getData('item-origin') || draggedItemOrigin;
+            let id = event.dataTransfer.getData('text/plain') || draggedItemId;
+
+            if (!id || !origin) return;
+
+            // Fake out the contextTarget pointer so it links directly to your core execution engines
+            contextTarget = { type: origin, id: id };
+
+            if (actionType === 'edit') {
+                triggerContextEdit();
+            } else if (actionType === 'delete') {
+                triggerContextDelete();
+            }
+
+            // Clear global pointer references
+            draggedItemId = null;
+            draggedItemOrigin = null;
         }
 
         function allowDrop(e) {
@@ -1627,6 +1692,7 @@
         }
 
         function handleGlobalDrop(event) {
+            handleDragEndCleanup();
             event.preventDefault();
 
             // Clear dynamic border frames
