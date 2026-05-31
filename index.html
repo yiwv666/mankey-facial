@@ -3367,41 +3367,37 @@ async function checkAndTriggerReminders() {
                 return;
             }
 
-            // 1. COLLECT AND QUERY PARSE ACROSS THE 5 SYSTEM DATA DOMAINS
-            // Domain A: All movements data registry tracks
-            state.movements.forEach(m => {
-                if (m.name.toLowerCase().includes(query) || m.category.toLowerCase().includes(query)) {
-                    currentSearchResultsArray.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements' });
-                }
-            });
+            // ========================================================
+            // UNIVERSAL COLLECTION TRACKS WITH WEIGHT ASSIGNMENT
+            // ========================================================
 
-            // Domain B: Next Payment Plan budgets pool
-            (state.planification || []).forEach(p => {
-                if (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)) {
-                    currentSearchResultsArray.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard' });
-                }
-            });
-
-            // Domain C: Frequent templates records
+            // Priority 1: Frequent Expenses Templates (Weight: 10)
             (state.frequent || []).forEach(f => {
                 if (f.name.toLowerCase().includes(query) || f.category.toLowerCase().includes(query)) {
-                    currentSearchResultsArray.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Expense Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard' });
+                    currentSearchResultsArray.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Expense Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', weight: 10 });
                 }
             });
 
-            // Domain D: Blueprints projects and nested check-items checklist
+            // Priority 2: Next Payment Plan (Weight: 20)
+            (state.planification || []).forEach(p => {
+                if (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)) {
+                    currentSearchResultsArray.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', weight: 20 });
+                }
+            });
+
+            // Priority 3: Wishlists & Projects (Weight: 30)
             (state.projects || []).forEach(proj => {
                 if (proj.name.toLowerCase().includes(query)) {
-                    currentSearchResultsArray.push({ type: 'project', id: proj.id, title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', tab: 'wishlists', targetProjId: proj.id });
+                    currentSearchResultsArray.push({ type: 'project', id: proj.id, title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', tab: 'wishlists', targetProjId: proj.id, weight: 30 });
                 }
                 (proj.items || []).forEach(item => {
                     if (item.name.toLowerCase().includes(query)) {
-                        currentSearchResultsArray.push({ type: 'wishitem', id: item.id, title: item.name, sub: `Project Spec Item • Inside "${proj.name}"`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: proj.id });
+                        currentSearchResultsArray.push({ type: 'wishitem', id: item.id, title: item.name, sub: `Project Spec Item • Inside "${proj.name}"`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: proj.id, weight: 35 });
                     }
                 });
             });
 
-            // Domain E: Calendar monthly notes text components
+            // Priority 4: Monthly Notes (Weight: 40)
             if (state.notes) {
                 Object.keys(state.notes).forEach(monthKey => {
                     const idx = parseInt(monthKey.replace('month_', ''));
@@ -3409,19 +3405,35 @@ async function checkAndTriggerReminders() {
                     notesList.forEach(note => {
                         const decoded = decodeSanitizedNoteString(note.text);
                         if (decoded.toLowerCase().includes(query)) {
-                            currentSearchResultsArray.push({ type: 'note', id: note.id, title: decoded, sub: `Monthly Note Memorandum • ${calendarMonthsNames[idx]} Line`, meta: 'Note', tab: 'notes', targetMonthIdx: idx });
+                            currentSearchResultsArray.push({ type: 'note', id: note.id, title: decoded, sub: `Monthly Note Memorandum • ${calendarMonthsNames[idx]} Line`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, weight: 40 });
                         }
                     });
                 });
             }
 
-            // 2. BUILD THE SEARCH VIEW RESULTS GRID DOM NODES
+            // Priority 5: All Movements (Weight: 50)
+            state.movements.forEach(m => {
+                if (m.name.toLowerCase().includes(query) || m.category.toLowerCase().includes(query)) {
+                    currentSearchResultsArray.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', weight: 50 });
+                }
+            });
+
+            // ========================================================
+            // CRITICAL FIX: EXPLICIT MATHEMATICAL SORT ALGORITHM
+            // ========================================================
+            // This forces items with LOWER weights (Frequent Templates = 10) to bubble to the top,
+            // completely bypassing any browser collection sorting quirks.
+            currentSearchResultsArray.sort((a, b) => a.weight - b.weight);
+
+            // ========================================================
+            // RENDER PROCESSING FEED PIPELINE
+            // ========================================================
             if (currentSearchResultsArray.length === 0) {
                 feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No matched database profiles located.</div>`;
                 return;
             }
 
-            // Clip rendering limits to top 15 matches to keep view pipeline lightning fast
+            // Clip rendering views safely to the top 15 records
             const renderLimitList = currentSearchResultsArray.slice(0, 15);
             renderLimitList.forEach((result, idx) => {
                 const itemRow = document.createElement('div');
