@@ -128,6 +128,38 @@
                         </div>
 
                     </div>
+                    <div class="mt-4 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4
+                                class="text-xs uppercase font-bold tracking-wider text-blue-400 flex items-center gap-2">
+                                <i class="fa-solid fa-note-sticky text-[11px]"></i> This month notes:
+                            </h4>
+                            <button onclick="openMobileNotesModal()"
+                                class="md:hidden bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-xl border border-blue-500/20 transition flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-expand text-[10px]"></i> View Notes
+                            </button>
+                        </div>
+
+                        <div class="hidden md:flex items-center w-full overflow-x-auto gap-2 pb-1 scroll-smooth"
+                            id="dashDesktopNotesScrollWrapper" style="scrollbar-width: thin;">
+                        </div>
+                        <div id="dashDesktopNotesEmptyState" class="hidden text-xs text-gray-600 italic py-1">No
+                            reminders logged for this month.</div>
+                    </div>
+
+                    <dialog id="mobileDashboardNotesModal"
+                        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-11/12 backdrop:bg-black/80">
+                        <div class="flex items-center justify-between border-b border-gray-800 pb-2 mb-4">
+                            <h3 id="mobileNotesModalHeader"
+                                class="text-sm font-bold text-blue-400 flex items-center gap-2">
+                                <i class="fa-solid fa-note-sticky text-xs"></i> Current Month Notes
+                            </h3>
+                            <button onclick="closeMobileNotesModal()" class="text-gray-400 hover:text-white p-1"><i
+                                    class="fa-solid fa-xmark text-lg"></i></button>
+                        </div>
+                        <div id="mobileNotesModalFeedContainer" class="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
+                        </div>
+                    </dialog>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -995,6 +1027,55 @@
     <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
 `;
                     freqContainer.appendChild(item);
+                });
+            }
+            // ========================================================
+            // NEW BLOCK: DASHBOARD LIVE NOTES SLIDER SYNC ENGINE
+            // ========================================================
+            const currentSysMonthIdx = new Date().getMonth();
+            const currentMonthKey = `month_${currentSysMonthIdx}`;
+            const activeLiveNotes = (state.notes && state.notes[currentMonthKey]) ? state.notes[currentMonthKey] : [];
+
+            const desktopWrapper = document.getElementById('dashDesktopNotesScrollWrapper');
+            const desktopEmpty = document.getElementById('dashDesktopNotesEmptyState');
+            const mobileContainer = document.getElementById('mobileNotesModalFeedContainer');
+
+            // Set text month name string into mobile modal header
+            const mobileHeader = document.getElementById('mobileNotesModalHeader');
+            if (mobileHeader) {
+                mobileHeader.innerHTML = `<i class="fa-solid fa-note-sticky text-xs"></i> ${calendarMonthsNames[currentSysMonthIdx]} Reminders`;
+            }
+
+            if (desktopWrapper) desktopWrapper.innerHTML = '';
+            if (mobileContainer) mobileContainer.innerHTML = '';
+
+            if (activeLiveNotes.length === 0) {
+                if (desktopEmpty) desktopEmpty.classList.remove('hidden');
+                if (mobileContainer) {
+                    mobileContainer.innerHTML = `<div class="text-center py-6 text-gray-600 text-xs italic">No notes logged for this month.</div>`;
+                }
+            } else {
+                if (desktopEmpty) desktopEmpty.classList.add('hidden');
+
+                activeLiveNotes.forEach(note => {
+                    const rawText = decodeSanitizedNoteString(note.text);
+
+                    // A. Desktop Builder: Using whitespace-nowrap & w-max to guarantee true infinite horizontal scrolling
+                    if (desktopWrapper) {
+                        const noteBadge = document.createElement('div');
+                        noteBadge.className = "w-max max-w-xs shrink-0 bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-300 whitespace-nowrap overflow-hidden text-ellipsis select-none shadow-sm";
+                        noteBadge.innerText = rawText;
+                        noteBadge.title = rawText; // Hover tooltip for reading cropped long blocks
+                        desktopWrapper.appendChild(noteBadge);
+                    }
+
+                    // B. Mobile Popup Builder: Clean vertical cards fitted perfectly for vertical swiping
+                    if (mobileContainer) {
+                        const noteBlock = document.createElement('div');
+                        noteBlock.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 text-xs text-gray-200 break-words leading-relaxed shadow-md";
+                        noteBlock.innerText = rawText;
+                        mobileContainer.appendChild(noteBlock);
+                    }
                 });
             }
         }
@@ -2237,6 +2318,18 @@ async function checkAndTriggerReminders() {
             buildMonthsSelectorInterface(); // Re-render feed elements
 
             indicator.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Saved to Cloud`;
+        }
+        // ========================================================
+        // MOBILE POPUP CONTROLLERS FOR DASHBOARD NOTES
+        // ========================================================
+        function openMobileNotesModal() {
+            const modal = document.getElementById('mobileDashboardNotesModal');
+            if (modal) modal.showModal();
+        }
+
+        function closeMobileNotesModal() {
+            const modal = document.getElementById('mobileDashboardNotesModal');
+            if (modal) modal.close();
         }
     </script>
 </body>
