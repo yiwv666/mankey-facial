@@ -1604,6 +1604,10 @@
                 document.getElementById('allMovementsEmpty').classList.add('hidden');
                 records.forEach(m => {
                     const tr = document.createElement('tr');
+
+                    // PATCH HERE: Add the missing identification hooks so the teleport engine can find it
+                    tr.setAttribute('data-id', m.id);
+
                     tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer select-none";
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
                     tr.innerHTML = `
