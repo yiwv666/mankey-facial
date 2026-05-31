@@ -52,6 +52,35 @@
             transform: scale(1.05) !important;
         }
 
+        /* Universal Teleportation Highlight Glow Effect */
+        .search-glow-focus {
+            animation: searchGlowPulse 2.5s ease-in-out;
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes searchGlowPulse {
+            0% {
+                box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), inset 0 0 0 0px rgba(59, 130, 246, 0);
+                border-color: rgba(59, 130, 246, 0.8);
+            }
+
+            15% {
+                box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4), inset 0 0 12px rgba(59, 130, 246, 0.3);
+                border-color: #3b82f6;
+                background-color: rgba(59, 130, 246, 0.05);
+            }
+
+            85% {
+                box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3), inset 0 0 12px rgba(59, 130, 246, 0.2);
+                border-color: #3b82f6;
+            }
+
+            100% {
+                box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), inset 0 0 0 0px rgba(59, 130, 246, 0);
+            }
+        }
+
         @keyframes marqueeScroll {
             0% {
                 transform: translateX(0%);
@@ -111,6 +140,17 @@
                     class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-cloud-arrow-up w-5"></i> Cloud Sync
                 </button>
+            </div>
+            <div class="mt-auto pt-6 border-t border-gray-800/60 flex flex-col gap-1.5">
+                <div onclick="openCommandPaletteModal()"
+                    class="w-full bg-gray-900 hover:bg-gray-800 border border-gray-800/80 hover:border-gray-700 px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-gray-400 transition flex items-center justify-between cursor-pointer group select-none shadow-inner">
+                    <span class="flex items-center gap-2"><i
+                            class="fa-solid fa-magnifying-glass text-[11px] text-gray-600 group-hover:text-blue-500 transition"></i>
+                        Search records...</span>
+                    <kbd
+                        class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-600 font-bold group-hover:text-gray-400">Ctrl
+                        K</kbd>
+                </div>
             </div>
         </nav>
 
@@ -937,6 +977,28 @@
                     Plan</button>
             </div>
         </form>
+    </dialog>
+    <dialog id="commandPaletteModal"
+        class="fixed inset-x-0 top-[10%] m-auto bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl text-gray-100 max-w-xl w-11/12 backdrop:bg-black/80 flex flex-col overflow-hidden max-h-[480px]">
+        <div class="flex items-center gap-3 px-4 py-3.5 border-b border-gray-800 bg-gray-950 shrink-0">
+            <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm"></i>
+            <input type="text" id="paletteSearchBox" oninput="executeUniversalSearchQuery(this.value)"
+                placeholder="Search movements, budgets, plans, folders, notes..."
+                class="w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none"
+                autocomplete="off">
+            <button onclick="closeCommandPaletteModal()"
+                class="text-gray-500 hover:text-white px-1 text-xs font-mono bg-gray-900 border border-gray-800 rounded">ESC</button>
+        </div>
+
+        <div id="paletteResultsFeed"
+            class="flex-1 overflow-y-auto divide-y divide-gray-900 bg-gray-950/40 p-2 space-y-0.5">
+        </div>
+
+        <div
+            class="px-4 py-2 bg-gray-950 border-t border-gray-900 text-[10px] text-gray-600 flex items-center gap-4 shrink-0 font-medium select-none">
+            <span><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i> Navigate</span>
+            <span><i class="fa-solid fa-arrow-turn-down rotate-90"></i> Select</span>
+        </div>
     </dialog>
 
     <script>
@@ -3238,6 +3300,227 @@ async function checkAndTriggerReminders() {
             renderAll();
             renderWishlistsTabDeck();
             renderFocusedProjectDetailsList();
+        }
+        // ========================================================
+        // GLOBAL COMMAND PALETTE SEARCH ENGINE (CTRL + K)
+        // ========================================================
+        let activeSearchRowIndex = -1;
+        let currentSearchResultsArray = [];
+
+        // Global Hotkey shortcut interception listener mapping rules
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                openCommandPaletteModal();
+            }
+        });
+
+        function openCommandPaletteModal() {
+            const modal = document.getElementById('commandPaletteModal');
+            const input = document.getElementById('paletteSearchBox');
+            if (!modal) return;
+
+            input.value = '';
+            activeSearchRowIndex = -1;
+            currentSearchResultsArray = [];
+            executeUniversalSearchQuery(''); // Boot window clean list state pointers
+
+            modal.showModal();
+            setTimeout(() => input.focus(), 50);
+
+            // Setup exclusive unified navigation capture layout interceptors
+            input.removeEventListener('keydown', handleSearchKeyboardNavigationTrack);
+            input.addEventListener('keydown', handleSearchKeyboardNavigationTrack);
+        }
+
+        function closeCommandPaletteModal() {
+            document.getElementById('commandPaletteModal').close();
+        }
+
+        function executeUniversalSearchQuery(rawQueryString) {
+            const feed = document.getElementById('paletteResultsFeed');
+            if (!feed) return;
+
+            feed.innerHTML = '';
+            activeSearchRowIndex = -1;
+            currentSearchResultsArray = [];
+
+            const query = rawQueryString.trim().toLowerCase();
+            if (!query) {
+                feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">Type something to search across all data modules...</div>`;
+                return;
+            }
+
+            // 1. COLLECT AND QUERY PARSE ACROSS THE 5 SYSTEM DATA DOMAINS
+            // Domain A: All movements data registry tracks
+            state.movements.forEach(m => {
+                if (m.name.toLowerCase().includes(query) || m.category.toLowerCase().includes(query)) {
+                    currentSearchResultsArray.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements' });
+                }
+            });
+
+            // Domain B: Next Payment Plan budgets pool
+            (state.planification || []).forEach(p => {
+                if (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)) {
+                    currentSearchResultsArray.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard' });
+                }
+            });
+
+            // Domain C: Frequent templates records
+            (state.frequent || []).forEach(f => {
+                if (f.name.toLowerCase().includes(query) || f.category.toLowerCase().includes(query)) {
+                    currentSearchResultsArray.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Expense Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard' });
+                }
+            });
+
+            // Domain D: Blueprints projects and nested check-items checklist
+            (state.projects || []).forEach(proj => {
+                if (proj.name.toLowerCase().includes(query)) {
+                    currentSearchResultsArray.push({ type: 'project', id: proj.id, title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', tab: 'wishlists', targetProjId: proj.id });
+                }
+                (proj.items || []).forEach(item => {
+                    if (item.name.toLowerCase().includes(query)) {
+                        currentSearchResultsArray.push({ type: 'wishitem', id: item.id, title: item.name, sub: `Project Spec Item • Inside "${proj.name}"`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: proj.id });
+                    }
+                });
+            });
+
+            // Domain E: Calendar monthly notes text components
+            if (state.notes) {
+                Object.keys(state.notes).forEach(monthKey => {
+                    const idx = parseInt(monthKey.replace('month_', ''));
+                    const notesList = state.notes[monthKey] || [];
+                    notesList.forEach(note => {
+                        const decoded = decodeSanitizedNoteString(note.text);
+                        if (decoded.toLowerCase().includes(query)) {
+                            currentSearchResultsArray.push({ type: 'note', id: note.id, title: decoded, sub: `Monthly Note Memorandum • ${calendarMonthsNames[idx]} Line`, meta: 'Note', tab: 'notes', targetMonthIdx: idx });
+                        }
+                    });
+                });
+            }
+
+            // 2. BUILD THE SEARCH VIEW RESULTS GRID DOM NODES
+            if (currentSearchResultsArray.length === 0) {
+                feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No matched database profiles located.</div>`;
+                return;
+            }
+
+            // Clip rendering limits to top 15 matches to keep view pipeline lightning fast
+            const renderLimitList = currentSearchResultsArray.slice(0, 15);
+            renderLimitList.forEach((result, idx) => {
+                const itemRow = document.createElement('div');
+                itemRow.id = `palette-row-${idx}`;
+                itemRow.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group";
+                itemRow.onclick = () => routeUserTeleportToRecordLocation(result);
+                itemRow.onmouseenter = () => selectSearchRowIndexDirectly(idx);
+
+                itemRow.innerHTML = `
+            <div class="truncate flex-1">
+                <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
+                <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
+            </div>
+            <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0">${result.meta}</span>
+        `;
+                feed.appendChild(itemRow);
+            });
+        }
+
+        function selectSearchRowIndexDirectly(index) {
+            // Drop past dynamic highlight rings
+            if (activeSearchRowIndex >= 0) {
+                document.getElementById(`palette-row-${activeSearchRowIndex}`)?.classList.remove('bg-blue-600/10', 'border', 'border-blue-500/30');
+            }
+            activeSearchRowIndex = index;
+            if (activeSearchRowIndex >= 0) {
+                const targetRow = document.getElementById(`palette-row-${activeSearchRowIndex}`);
+                if (targetRow) {
+                    targetRow.classList.add('bg-blue-600/10', 'border', 'border-blue-500/30');
+                    targetRow.scrollIntoView({ block: 'nearest' });
+                }
+            }
+        }
+
+        function handleSearchKeyboardNavigationTrack(e) {
+            const totalItemsCount = Math.min(currentSearchResultsArray.length, 15);
+            if (totalItemsCount === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const nextIdx = (activeSearchRowIndex + 1) % totalItemsCount;
+                selectSearchRowIndexDirectly(nextIdx);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const prevIdx = activeSearchRowIndex <= 0 ? totalItemsCount - 1 : activeSearchRowIndex - 1;
+                selectSearchRowIndexDirectly(prevIdx);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const targetIndex = activeSearchRowIndex >= 0 ? activeSearchRowIndex : 0;
+                if (currentSearchResultsArray[targetIndex]) {
+                    routeUserTeleportToRecordLocation(currentSearchResultsArray[targetIndex]);
+                }
+            }
+        }
+
+        // THE TELEPORTATION CORE ROUTER ENGINE
+        function routeUserTeleportToRecordLocation(result) {
+            closeCommandPaletteModal();
+
+            // Step A: Fire navigation switcher out to the target tab window canvas
+            switchTab(result.tab);
+
+            // Give the layout tabs a split microsecond to construct and append data nodes into views
+            setTimeout(() => {
+                let targetDOMElement = null;
+
+                // Step B: Target matching DOM nodes or handle specific view updates
+                if (result.type === 'movement') {
+                    // Find in general ledger view matrix rows
+                    targetDOMElement = document.querySelector(`tr[data-id="${result.id}"]`) ||
+                        document.querySelector(`[data-id="${result.id}"]`);
+                }
+                else if (result.type === 'plan' || result.type === 'frequent') {
+                    targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
+                }
+                else if (result.type === 'project') {
+                    closeProjectFocusMode();
+                    targetDOMElement = document.querySelector(`div[onclick*="${result.id}"]`) ||
+                        document.getElementById('projectMasterPanel');
+                }
+                else if (result.type === 'wishitem') {
+                    focusOnSpecificProjectBlueprint(result.targetProjId);
+                    setTimeout(() => {
+                        targetDOMElement = document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.border');
+                        applyGlowFocusToTargetNode(targetDOMElement);
+                    }, 100);
+                    return;
+                }
+                else if (result.type === 'note') {
+                    selectNotesMonth(result.targetMonthIdx);
+                    setTimeout(() => {
+                        targetDOMElement = document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.border');
+                        applyGlowFocusToTargetNode(targetDOMElement);
+                    }, 100);
+                    return;
+                }
+
+                applyGlowFocusToTargetNode(targetDOMElement);
+            }, 150);
+        }
+
+        // HIGHLIGHT GLOW EXECUTION ROUTINE
+        function applyGlowFocusToTargetNode(element) {
+            if (!element) return;
+
+            // Smoothly pan element straight into the viewport focus centerline alignment
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Inject glow styles class utilities chain
+            element.classList.add('search-glow-focus');
+
+            // Safe garbage cleaner teardown routine to clean element nodes after completion loops
+            setTimeout(() => {
+                element.classList.remove('search-glow-focus');
+            }, 2500);
         }
     </script>
 </body>
