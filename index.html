@@ -31,7 +31,7 @@
         .marquee-container {
             display: flex;
             width: max-content;
-            animation: marqueeScroll 25s linear infinite;
+            animation: marqueeScroll 40s linear infinite;
         }
 
         /* Pause the animation instantly on mouse hover */
@@ -1636,11 +1636,17 @@
 
             // Identify target zone container
             const targetZone = event.currentTarget.getAttribute('data-zone');
-            const origin = event.dataTransfer.getData('item-origin') || draggedItemOrigin;
-            const id = event.dataTransfer.getData('text/plain') || draggedItemId;
+            let origin = event.dataTransfer.getData('item-origin') || draggedItemOrigin;
+            let id = event.dataTransfer.getData('text/plain') || draggedItemId;
 
             if (!id || !origin || !targetZone) return;
-            if (origin === targetZone) return; // Dropped on itself? Cancel action cleanly.
+
+            // CRITICAL INTEGRITY FIX: If dropped inside the exact same table, cancel completely to prevent duplication
+            if (origin === targetZone || (origin === 'movement' && targetZone === 'movements')) {
+                draggedItemId = null;
+                draggedItemOrigin = null;
+                return;
+            }
 
             // 1. EXTRACT DATA OBJECT BASE PARAMETERS
             let sourceItem = null;
