@@ -1559,19 +1559,18 @@
         // CATEGORY ADMINISTRATION & STATS RENDERING
         function renderCategoryDashboard() {
             const list = document.getElementById('categoryManageList');
-
-            // NEW FILTER EXCLUSION: Skip rendering 'Debts' and 'Savings' entirely in this management area
             const displayCategories = state.categories.filter(cat => cat !== 'Debts' && cat !== 'Savings');
 
             list.innerHTML = displayCategories.map(cat => `
-        <div class="flex items-center justify-between bg-gray-900/80 px-3 py-2 border border-gray-800 rounded-xl text-sm">
-            <span class="font-medium">${cat}</span>
-            <div class="flex items-center gap-1">
-                <button onclick="editCategoryName('${cat}')" class="text-gray-500 hover:text-blue-400 transition p-1" title="Edit Category"><i class="fa-solid fa-pen text-xs"></i></button>
-                <button onclick="deleteCategory('${cat}')" class="text-gray-500 hover:text-rose-400 transition p-1" title="Delete Category"><i class="fa-solid fa-trash-can text-xs"></i></button>
-            </div>
-        </div>
-    `).join('');
+                <div class="flex items-center justify-between bg-gray-900/80 px-3 py-2 border border-gray-800 rounded-xl text-sm select-none"
+                     oncontextmenu="handleContextOpen(event, 'category', '${cat.replace(/'/g, "\\'")}')">
+                    <span class="font-medium select-text">${cat}</span>
+                    <div class="flex items-center gap-1">
+                        <button onclick="editCategoryName('${cat.replace(/'/g, "\\'")}')" class="text-gray-500 hover:text-blue-400 transition p-1" title="Edit Category"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="deleteCategory('${cat.replace(/'/g, "\\'")}')" class="text-gray-500 hover:text-rose-400 transition p-1" title="Delete Category"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                </div>
+            `).join('');
             populateCategorySelects();
         }
 
@@ -2070,7 +2069,8 @@
             if (!contextTarget) return;
             if (contextTarget.type === 'movement') openMovementModal(contextTarget.id);
             else if (contextTarget.type === 'planification') openPlanModal(contextTarget.id);
-            else if (contextTarget.type === 'frequent') openFrequentModal(contextTarget.id); // Triggers correct context configuration
+            else if (contextTarget.type === 'frequent') openFrequentModal(contextTarget.id);
+            else if (contextTarget.type === 'category') editCategoryName(contextTarget.id);
         }
 
         function triggerContextDelete() {
