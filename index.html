@@ -595,7 +595,7 @@
 
                     <div class="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-4 mb-4">
                         <div>
-                            <h2 class="text-xl font-bold tracking-wide">Wishlists & Projects Incubator</h2>
+                            <h2 class="text-xl font-bold tracking-wide">Wishlists & Projects</h2>
                             <p class="text-sm text-gray-400 mt-1">Draft sandbox item specs, allocate goals, or track
                                 project material costs before logging expenses.</p>
                         </div>
@@ -656,7 +656,7 @@
                 <form id="projectCreationForm" onsubmit="saveProjectForm(event)" class="space-y-4">
                     <input type="hidden" id="editProjectId">
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Project Matrix
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Project
                             Name</label>
                         <input type="text" id="projName" required
                             class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
@@ -673,7 +673,7 @@
                             class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
                         <button type="submit"
                             class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
-                            Matrix</button>
+                            Project</button>
                     </div>
                 </form>
             </dialog>
@@ -2243,6 +2243,7 @@
                     state.movements = mergeDataArrays(state.movements, cloudState.movements || []);
                     state.planification = mergeDataArrays(state.planification, cloudState.planification || []);
                     state.frequent = mergeDataArrays(state.frequent, cloudState.frequent || []);
+                    state.projects = mergeProjectsAndNestedItems(state.projects || [], cloudState.projects || []);
 
                     // Merge Monthly Notes dictionaries safely
                     if (!state.notes) state.notes = {};
@@ -2302,6 +2303,32 @@
             });
 
             return Array.from(mergedMap.values());
+        }
+
+        // NEW HELPER FUNCTION: Recursively merges projects and their nested item specs checklists safely by unique IDs
+        function mergeProjectsAndNestedItems(localProjects, cloudProjects) {
+            const projectMap = new Map();
+
+            // Map local projects
+            localProjects.forEach(p => { if (p && p.id) projectMap.set(p.id, p); });
+
+            // Combine cloud projects cleanly
+            cloudProjects.forEach(cloudProj => {
+                if (!cloudProj || !cloudProj.id) return;
+
+                if (projectMap.has(cloudProj.id)) {
+                    const localProj = projectMap.get(cloudProj.id);
+                    // Symmetrically bridge the inner wish item checklists together by unique IDs
+                    localProj.items = mergeDataArrays(localProj.items || [], cloudProj.items || []);
+                    // Cloud version metadata takes preference for minor description naming edits
+                    localProj.name = cloudProj.name || localProj.name;
+                    localProj.color = cloudProj.color || localProj.color;
+                } else {
+                    projectMap.set(cloudProj.id, cloudProj);
+                }
+            });
+
+            return Array.from(projectMap.values());
         }
 
         // FORCE REALTIME SCHEMA MIGRATION EXECUTION
@@ -2969,8 +2996,8 @@ async function checkAndTriggerReminders() {
                 <button onclick="toggleWishItemCompletedState('${item.id}')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 hover:text-emerald-400 transition" title="Toggle Completed State">
                     <i class="fa-solid ${item.completed ? 'fa-square-check text-emerald-400' : 'fa-regular fa-square'}"></i>
                 </button>
-                <button onclick="dispatchItemToCoreLedger('${item.id}', 'spend')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-emerald-500 hover:bg-emerald-950/20 transition" title="Log directly to instant Ledger Spendings outcomes"><i class="fa-solid fa-receipt"></i></button>
-                <button onclick="dispatchItemToCoreLedger('${item.id}', 'planning')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-indigo-400 hover:bg-indigo-950/20 transition" title="Schedule into upcoming payment plans pool"><i class="fa-solid fa-calendar-plus"></i></button>
+                <button onclick="dispatchItemToCoreLedger('${item.id}', 'spend')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-emerald-500 hover:bg-emerald-950/20 transition" title="Add as a movement"><i class="fa-solid fa-receipt"></i></button>
+                <button onclick="dispatchItemToCoreLedger('${item.id}', 'planning')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-indigo-400 hover:bg-indigo-950/20 transition" title="Add to the payment plan"><i class="fa-solid fa-calendar-plus"></i></button>
                 <button onclick="openWishItemModal('${item.id}')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-blue-400 hover:bg-gray-700 transition" title="Modify details"><i class="fa-solid fa-pen text-[10px]"></i></button>
                 <button onclick="deleteWishItemFromFolder('${item.id}')" class="p-2 rounded-lg text-xs font-semibold bg-gray-800 border border-gray-700 text-rose-400 hover:bg-rose-950/20 transition" title="Delete record"><i class="fa-solid fa-xmark"></i></button>
             </div>
