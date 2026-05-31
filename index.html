@@ -781,6 +781,30 @@
         </form>
     </dialog>
 
+    <dialog id="editCategoryModal"
+        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold">Edit Category</h3>
+            <button onclick="closeEditCategoryModal()" class="text-gray-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form id="editCategoryForm" onsubmit="saveEditCategoryForm(event)" class="space-y-4">
+            <input type="hidden" id="oldCategoryNameHidden">
+            <div>
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category Name</label>
+                <input type="text" id="editCategoryNameInput" required maxlength="30"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeEditCategoryModal()"
+                    class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
+                    Changes</button>
+            </div>
+        </form>
+    </dialog>
+
     <dialog id="frequentModal"
         class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
         <div class="flex items-center justify-between mb-4">
@@ -1589,11 +1613,31 @@
                 alert("Protected core system categories cannot be modified.");
                 return;
             }
-            const newName = prompt(`Enter a new name for the category "${oldName}":`, oldName);
-            if (!newName) return;
 
+            // Open the custom unified modal instead of the legacy window prompt
+            const modal = document.getElementById('editCategoryModal');
+            document.getElementById('oldCategoryNameHidden').value = oldName;
+            document.getElementById('editCategoryNameInput').value = oldName;
+
+            modal.showModal();
+        }
+
+        function closeEditCategoryModal() {
+            document.getElementById('editCategoryModal').close();
+        }
+
+        function saveEditCategoryForm(e) {
+            e.preventDefault();
+
+            const oldName = document.getElementById('oldCategoryNameHidden').value;
+            const newName = document.getElementById('editCategoryNameInput').value;
+
+            // Trim and enforce structural length limits instantly
             const sanitizedNewName = newName.trim().substring(0, 30);
-            if (sanitizedNewName === "" || sanitizedNewName === oldName) return;
+            if (sanitizedNewName === "" || sanitizedNewName === oldName) {
+                closeEditCategoryModal();
+                return;
+            }
 
             if (state.categories.includes(sanitizedNewName)) {
                 alert("A category with that name already exists.");
@@ -1606,25 +1650,17 @@
                 state.categories[catIdx] = sanitizedNewName;
             }
 
-            // 2. Cascade Rename: Update all logged Ledger Movements matching oldName
-            state.movements.forEach(m => {
-                if (m.category === oldName) m.category = sanitizedNewName;
-            });
-
-            // 3. Cascade Rename: Update Planification items
-            state.planification.forEach(p => {
-                if (p.category === oldName) p.category = sanitizedNewName;
-            });
-
-            // 4. Cascade Rename: Update Frequent template properties
-            state.frequent.forEach(f => {
-                if (f.category === oldName) f.category = sanitizedNewName;
-            });
+            // 2. Cascade Rename across collections
+            state.movements.forEach(m => { if (m.category === oldName) m.category = sanitizedNewName; });
+            state.planification.forEach(p => { if (p.category === oldName) p.category = sanitizedNewName; });
+            state.frequent.forEach(f => { if (f.category === oldName) f.category = sanitizedNewName; });
 
             // Commit changes to local state storage and fire background cloud syncing
             saveState();
             renderAll();
             if (typeof applyFilters === 'function') applyFilters();
+
+            closeEditCategoryModal();
         }
 
         function renderCategoryStats() {
