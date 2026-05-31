@@ -3368,24 +3368,24 @@ async function checkAndTriggerReminders() {
             }
 
             // ========================================================
-            // UNIVERSAL COLLECTION TRACKS WITH WEIGHT ASSIGNMENT
+            // HISTORY-FIRST SEEDING MATRIX WITH TARGETED WEIGHTS
             // ========================================================
 
-            // Priority 1: Frequent Expenses Templates (Weight: 10)
-            (state.frequent || []).forEach(f => {
-                if (f.name.toLowerCase().includes(query) || f.category.toLowerCase().includes(query)) {
-                    currentSearchResultsArray.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Expense Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', weight: 10 });
+            // Priority 1: Historical Ledger Log entries (Movements) -> Assigned lowest weight to win top priority
+            state.movements.forEach(m => {
+                if (m.name.toLowerCase().includes(query) || m.category.toLowerCase().includes(query)) {
+                    currentSearchResultsArray.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', weight: 10 });
                 }
             });
 
-            // Priority 2: Next Payment Plan (Weight: 20)
+            // Priority 2: Next Payment Plan upcoming budgets pool (Weight: 20)
             (state.planification || []).forEach(p => {
                 if (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)) {
                     currentSearchResultsArray.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', weight: 20 });
                 }
             });
 
-            // Priority 3: Wishlists & Projects (Weight: 30)
+            // Priority 3: Wishlists & Projects Incubator (Weight: 30)
             (state.projects || []).forEach(proj => {
                 if (proj.name.toLowerCase().includes(query)) {
                     currentSearchResultsArray.push({ type: 'project', id: proj.id, title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', tab: 'wishlists', targetProjId: proj.id, weight: 30 });
@@ -3397,7 +3397,7 @@ async function checkAndTriggerReminders() {
                 });
             });
 
-            // Priority 4: Monthly Notes (Weight: 40)
+            // Priority 4: Calendar financial memorandum notes (Weight: 40)
             if (state.notes) {
                 Object.keys(state.notes).forEach(monthKey => {
                     const idx = parseInt(monthKey.replace('month_', ''));
@@ -3411,18 +3411,16 @@ async function checkAndTriggerReminders() {
                 });
             }
 
-            // Priority 5: All Movements (Weight: 50)
-            state.movements.forEach(m => {
-                if (m.name.toLowerCase().includes(query) || m.category.toLowerCase().includes(query)) {
-                    currentSearchResultsArray.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', weight: 50 });
+            // Priority 5: Frequent Expenses Templates -> Now pushed safely to the bottom of the stack (Weight: 50)
+            (state.frequent || []).forEach(f => {
+                if (f.name.toLowerCase().includes(query) || f.category.toLowerCase().includes(query)) {
+                    currentSearchResultsArray.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Expense Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', weight: 50 });
                 }
             });
 
             // ========================================================
-            // CRITICAL FIX: EXPLICIT MATHEMATICAL SORT ALGORITHM
+            // ALGORITHMIC WEIGHT SORT (Lowest weight stays on top)
             // ========================================================
-            // This forces items with LOWER weights (Frequent Templates = 10) to bubble to the top,
-            // completely bypassing any browser collection sorting quirks.
             currentSearchResultsArray.sort((a, b) => a.weight - b.weight);
 
             // ========================================================
