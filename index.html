@@ -3486,8 +3486,23 @@ async function checkAndTriggerReminders() {
 
                 // Step B: Target matching DOM nodes or handle specific view updates
                 if (result.type === 'movement') {
-                    // Find in general ledger view matrix rows
-                    targetDOMElement = document.querySelector(`tr[data-id="${result.id}"]`) ||
+                    // FIX: If teleporting to the All Movements ledger tab, force the filter to match the item's month
+                    if (result.tab === 'all-movements') {
+                        const movementItem = state.movements.find(m => m.id === result.id);
+                        if (movementItem && movementItem.date) {
+                            const itemMonthStr = movementItem.date.substring(0, 7); // Extracts "YYYY-MM"
+                            const filterInput = document.getElementById('filterMonth');
+
+                            if (filterInput) {
+                                filterInput.value = itemMonthStr;
+                                applyFilters(); // Re-run filtering rules so the row is generated in the DOM
+                            }
+                        }
+                    }
+
+                    // Query parse the newly visible table row element
+                    targetDOMElement = document.querySelector(`tr[oncontextmenu*="${result.id}"]`) ||
+                        document.querySelector(`tr[data-id="${result.id}"]`) ||
                         document.querySelector(`[data-id="${result.id}"]`);
                 }
                 else if (result.type === 'plan' || result.type === 'frequent') {
