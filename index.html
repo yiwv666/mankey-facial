@@ -1227,52 +1227,42 @@
 
             let savingsAllTimeAccumulated = 0;
 
-            // 1. Process Symmetrical Metrics Matrix (Income vs Expenses)
+            // 1. Process All-Time and Monthly Metrics Matrix
             let targetStats = state.categories.map(cat => {
                 let monthlyExpenses = 0;
                 let allTimeExpenses = 0;
-                let monthlyIncome = 0;
-                let allTimeIncome = 0;
 
                 state.movements.forEach(m => {
                     if (m.category === cat) {
                         const amt = parseFloat(m.amount) || 0;
 
-                        // Route Outcomes
+                        // Track standard expense types
                         if (m.type === 'outcome') {
                             allTimeExpenses += amt;
                             if (m.date.startsWith(filterMonthStr)) {
                                 monthlyExpenses += amt;
                             }
                         }
-                        // Route Incomes
-                        else if (m.type === 'income') {
-                            allTimeIncome += amt;
-                            if (m.date.startsWith(filterMonthStr)) {
-                                monthlyIncome += amt;
-                            }
-                            if (cat === 'Savings') {
-                                savingsAllTimeAccumulated += amt;
-                            }
+                        // Custom Handling: Savings accumulated through positive history logs
+                        if (cat === 'Savings' && m.type === 'income') {
+                            savingsAllTimeAccumulated += amt;
                         }
                     }
                 });
 
-                // Deduct expenses from cumulative savings targets
+                // Balance adjustment counter calculation metric for net tracking metrics
                 if (cat === 'Savings') {
                     savingsAllTimeAccumulated = Math.max(0, savingsAllTimeAccumulated - allTimeExpenses);
                 }
 
                 return {
                     name: cat,
-                    monthInc: monthlyIncome,
-                    allTimeInc: allTimeIncome,
-                    monthExp: monthlyExpenses,
-                    allTimeExp: allTimeExpenses
+                    monthTotal: monthlyExpenses,
+                    allTimeTotal: allTimeExpenses
                 };
             });
 
-            // 2. Render Fullwidth Savings Area Card Live
+            // 2. Render Fullwidth Savings Area Calculations Live
             document.getElementById('savingsAllTimeTotal').innerText = formatCurrency(savingsAllTimeAccumulated);
 
             const goalVal = parseFloat(state.savingsGoal) || 0;
@@ -1288,6 +1278,8 @@
                     goalLabelEl.innerText = `Goal: ${formatCurrency(goalVal)}`;
                     goalLabelEl.classList.remove('hidden');
                 }
+
+                // Progress bar percentage math computations
                 const pct = Math.min(100, Math.round((savingsAllTimeAccumulated / goalVal) * 100)) || 0;
                 document.getElementById('savingsProgressBar').style.width = `${pct}%`;
                 document.getElementById('savingsProgressPercent').innerText = `${pct}% achieved`;
@@ -1297,7 +1289,7 @@
                 if (goalLabelEl) goalLabelEl.classList.add('hidden');
             }
 
-            // 3. Render Planned Debts Panel Summary
+            // 3. Render Planned Debts Dynamic Summary Table
             const debtBody = document.getElementById('plannedDebtsTableBody');
             debtBody.innerHTML = '';
             let totalPlannedDebtsAmt = 0;
@@ -1323,27 +1315,24 @@
             }
             document.getElementById('plannedDebtTotalBadge').innerText = `${formatCurrency(totalPlannedDebtsAmt)} Total`;
 
-            // 4. Sort Configurations Sorting Matrix Options
+            // 4. Sort and Append standard Category Distributions
             if (sortMethod === 'name-asc') {
                 targetStats.sort((a, b) => a.name.localeCompare(b.name));
             } else if (sortMethod === 'name-desc') {
                 targetStats.sort((a, b) => b.name.localeCompare(a.name));
             } else if (sortMethod === 'expense-month') {
-                targetStats.sort((a, b) => b.monthExp - a.monthExp);
+                targetStats.sort((a, b) => b.monthTotal - a.monthTotal);
             } else if (sortMethod === 'expense-all') {
-                targetStats.sort((a, b) => b.allTimeExp - a.allTimeExp);
+                targetStats.sort((a, b) => b.allTimeTotal - a.allTimeTotal);
             }
 
-            // 5. Build Symmetrical Dynamic Table Structure
             targetStats.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.className = "border-b border-gray-900 text-xs sm:text-sm hover:bg-gray-900/50 transition";
+                tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50";
                 tr.innerHTML = `
             <td class="py-3 px-3 font-semibold text-gray-200">${item.name}</td>
-            <td class="py-3 px-2 text-right font-medium text-emerald-400 bg-emerald-500/[0.01]">${formatCurrency(item.monthInc)}</td>
-            <td class="py-3 px-2 text-right font-medium text-emerald-500 bg-emerald-500/[0.01]">${formatCurrency(item.allTimeInc)}</td>
-            <td class="py-3 px-2 text-right font-medium text-rose-400 bg-rose-500/[0.01]">${formatCurrency(item.monthExp)}</td>
-            <td class="py-3 px-2 text-right font-medium text-rose-500 bg-rose-500/[0.01]">${formatCurrency(item.allTimeExp)}</td>
+            <td class="py-3 px-3 text-right font-medium text-rose-300">${formatCurrency(item.monthTotal)}</td>
+            <td class="py-3 px-3 text-right font-medium text-rose-400 bg-gray-950/40">${formatCurrency(item.allTimeTotal)}</td>
         `;
                 tbody.appendChild(tr);
             });
