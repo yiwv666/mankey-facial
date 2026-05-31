@@ -476,6 +476,14 @@
                                 <h3 id="activeNoteMonthHeader" class="text-lg font-bold text-blue-400">January</h3>
                                 <span id="noteCharCounter" class="text-[11px] font-mono text-gray-500">0/200</span>
                             </div>
+
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <h3 id="activeNoteMonthHeader" class="text-lg font-bold text-blue-400">January</h3>
+                                    <div id="noteEditModeBadge"></div>
+                                </div>
+                                <span id="noteCharCounter" class="text-[11px] font-mono text-gray-500">0/200</span>
+                            </div>
                             <div class="relative">
                                 <input type="text" id="noteInputBox" onkeydown="handleNoteKeyDown(event)"
                                     oninput="handleNoteInputCounter(this)"
@@ -2187,6 +2195,17 @@ async function checkAndTriggerReminders() {
             inputEl.focus();
             inputEl.classList.add('border-blue-500', 'bg-blue-950/10');
             inputEl.placeholder = "Modifying note... Press Enter to update change parameter.";
+
+            // NEW VISUAL CODE: Inject an active, pulsing Edit Mode badge next to the Month Title
+            const badgeEl = document.getElementById('noteEditModeBadge');
+            if (badgeEl) {
+                badgeEl.innerHTML = `
+            <span class="inline-flex items-center gap-1 text-[10px] bg-amber-500/10 text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-500/30 shadow-sm animate-pulse">
+                <i class="fa-solid fa-pen-to-square text-[9px]"></i> EDITING
+            </span>
+        `;
+            }
+
             handleNoteInputCounter(inputEl);
         }
 
@@ -2198,6 +2217,12 @@ async function checkAndTriggerReminders() {
             inputEl.classList.remove('border-blue-500', 'bg-blue-950/10');
             inputEl.placeholder = "Type a note and press Enter to save...";
             document.getElementById('noteCharCounter').innerText = '0/200';
+
+            // NEW VISUAL CODE: Wipe the badge cleanly when editing closes, saves, or cancels
+            const badgeEl = document.getElementById('noteEditModeBadge');
+            if (badgeEl) {
+                badgeEl.innerHTML = '';
+            }
         }
 
         function deleteNote(id) {
