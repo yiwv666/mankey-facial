@@ -141,15 +141,20 @@
                     <i class="fa-solid fa-cloud-arrow-up w-5"></i> Cloud Sync
                 </button>
             </div>
-            <div class="mt-auto pt-6 border-t border-gray-800/60 flex flex-col gap-1.5">
-                <div onclick="openCommandPaletteModal()"
-                    class="w-full bg-gray-900 hover:bg-gray-800 border border-gray-800/80 hover:border-gray-700 px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-gray-400 transition flex items-center justify-between cursor-pointer group select-none shadow-inner">
-                    <span class="flex items-center gap-2"><i
-                            class="fa-solid fa-magnifying-glass text-[11px] text-gray-600 group-hover:text-blue-500 transition"></i>
-                        Search records...</span>
-                    <kbd
-                        class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-600 font-bold group-hover:text-gray-400">Ctrl
-                        K</kbd>
+            <div class="mt-4 pt-4 border-t border-gray-800 relative">
+                <label class="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 px-1">Quick
+                    Finder</label>
+                <div class="relative">
+                    <input type="text" id="sidebarSearchBox" oninput="processSidebarSearch(this.value)"
+                        placeholder="Search records... (Ctrl+K)"
+                        class="w-full bg-gray-900 text-xs border border-gray-800/80 rounded-xl pl-3 pr-8 py-2.5 text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition shadow-inner"
+                        autocomplete="off">
+                    <div class="absolute right-2.5 top-3 pointer-events-none text-[9px] font-mono font-bold text-gray-600 bg-gray-950 px-1 py-0.5 rounded border border-gray-800 hidden md:block"
+                        id="sidebarKbdHint">⌘K</div>
+                </div>
+
+                <div id="sidebarSearchResultsDrawer"
+                    class="hidden absolute left-0 right-0 bottom-full mb-2 bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl max-h-[320px] overflow-y-auto z-50 p-1.5 space-y-0.5 divide-y divide-gray-900/40">
                 </div>
             </div>
         </nav>
@@ -978,28 +983,7 @@
             </div>
         </form>
     </dialog>
-    <dialog id="commandPaletteModal"
-        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl text-gray-100 w-11/12 md:w-[500px] h-fit max-h-[450px] overflow-hidden backdrop:bg-black/80 backdrop:backdrop-blur-sm z-50 transition-all duration-200">
-        <div class="flex items-center gap-3 px-4 py-3.5 border-b border-gray-800 bg-gray-950 shrink-0">
-            <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm"></i>
-            <input type="text" id="paletteSearchBox" oninput="executeUniversalSearchQuery(this.value)"
-                placeholder="Search movements, budgets, plans, folders, notes..."
-                class="w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none"
-                autocomplete="off">
-            <button onclick="closeCommandPaletteModal()"
-                class="text-gray-500 hover:text-white px-1 text-xs font-mono bg-gray-900 border border-gray-800 rounded">ESC</button>
-        </div>
 
-        <div id="paletteResultsFeed"
-            class="flex-1 overflow-y-auto divide-y divide-gray-900 bg-gray-950/40 p-2 space-y-0.5">
-        </div>
-
-        <div
-            class="px-4 py-2 bg-gray-950 border-t border-gray-900 text-[10px] text-gray-600 flex items-center gap-4 shrink-0 font-medium select-none">
-            <span><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i> Navigate</span>
-            <span><i class="fa-solid fa-arrow-turn-down rotate-90"></i> Select</span>
-        </div>
-    </dialog>
 
     <script>
         // Data Models Initialization
@@ -3304,418 +3288,270 @@ async function checkAndTriggerReminders() {
             renderFocusedProjectDetailsList();
         }
         // ========================================================
-        // GLOBAL COMMAND PALETTE SEARCH ENGINE (CTRL + K)
+        // CORE FINTECH SEARCH ANALYTICS ENGINE FROM SCRATCH
         // ========================================================
-        let activeSearchRowIndex = -1;
-        let currentSearchResultsArray = [];
+        let sidebarSearchSelectedRowIndex = -1;
+        let filteredSearchPayloadRows = [];
 
-        // Global Hotkey shortcut interception listener mapping rules
+        // Intercept Ctrl + K hotkeys to focus onto the navigation sidebar field directly
         window.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
-                openCommandPaletteModal();
+                const searchInput = document.getElementById('sidebarSearchBox');
+                if (searchInput) {
+                    searchInput.focus();
+                    searchInput.select();
+                }
             }
         });
 
-        function openCommandPaletteModal() {
-            const modal = document.getElementById('commandPaletteModal');
-            const input = document.getElementById('paletteSearchBox');
-            if (!modal) return;
-
-            input.value = '';
-            activeSearchRowIndex = -1;
-            currentSearchResultsArray = [];
-
-            // FORCE CORRECT VERTICAL FLEX ALIGNMENT MAPPING
-            modal.style.display = 'flex';
-            modal.style.flexDirection = 'column';
-
-            modal.showModal();
-            setTimeout(() => input.focus(), 50);
-
-            // Render the last 5 searches instantly as interactive selection placeholders
-            executeUniversalSearchQuery('');
-
-            // Universal escape close safety handler tracking
-            modal.onclose = () => {
-                modal.style.display = 'none';
-            };
-
-            // Clean duplicate keyboard input tracking listeners
-            input.removeEventListener('keydown', handleSearchKeyboardNavigationTrack);
-            input.addEventListener('keydown', handleSearchKeyboardNavigationTrack);
-        }
-
-        function closeCommandPaletteModal() {
-            const modal = document.getElementById('commandPaletteModal');
-            if (modal) {
-                modal.close(); // Triggers the onclose listener above automatically
+        // Close floating drawer dropdown cleanly if user clicks outside container targets
+        window.addEventListener('click', (e) => {
+            const drawer = document.getElementById('sidebarSearchResultsDrawer');
+            const input = document.getElementById('sidebarSearchBox');
+            if (drawer && !drawer.contains(e.target) && e.target !== input) {
+                drawer.classList.add('hidden');
             }
-        }
+        });
 
-        function executeUniversalSearchQuery(rawQueryString) {
-            const feed = document.getElementById('paletteResultsFeed');
-            if (!feed) return;
+        function processSidebarSearch(rawTextQuery) {
+            const drawer = document.getElementById('sidebarSearchResultsDrawer');
+            if (!drawer) return;
 
-            feed.innerHTML = '';
-            activeSearchRowIndex = -1;
-            currentSearchResultsArray = [];
+            drawer.innerHTML = '';
+            sidebarSearchSelectedRowIndex = -1;
+            filteredSearchPayloadRows = [];
 
-            const query = rawQueryString.trim().toLowerCase();
-            const searchHistoryDB = JSON.parse(localStorage.getItem('MONEYCO_SEARCH_HISTORY') || '{}');
-
-            // ========================================================
-            // 1. EMPTY INPUT PLACEHOLDER PARSER
-            // ========================================================
+            const query = rawTextQuery.trim().toLowerCase();
             if (!query) {
-                const allItemsPool = [];
-
-                // Compile database collections with absolute fail-safes for missing or undefined IDs
-                state.movements.forEach(m => {
-                    const itemId = m.id || `fallback_${m.name.replace(/\s+/g, '_')}`;
-                    allItemsPool.push({ type: 'movement', id: itemId, title: m.name, sub: `History • Movement • ${m.category}`, meta: formatCurrency(m.amount), tab: 'all-movements', historyKey: `movement_${itemId}`, rawDate: m.date });
-                });
-                (state.planification || []).forEach(p => {
-                    const itemId = p.id || `fallback_${p.name.replace(/\s+/g, '_')}`;
-                    allItemsPool.push({ type: 'plan', id: itemId, title: p.name, sub: `History • Planned Budget`, meta: formatCurrency(p.amount), tab: 'dashboard', historyKey: `plan_${itemId}`, rawDate: '0000-00-00' });
-                });
-                (state.frequent || []).forEach(f => {
-                    const itemId = f.id || `fallback_${f.name.replace(/\s+/g, '_')}`;
-                    allItemsPool.push({ type: 'frequent', id: itemId, title: f.name, sub: `History • Frequent Template`, meta: formatCurrency(f.amount), tab: 'dashboard', historyKey: `frequent_${itemId}`, rawDate: '0000-00-00' });
-                });
-                (state.projects || []).forEach(proj => {
-                    const projId = proj.id || `fallback_${proj.name.replace(/\s+/g, '_')}`;
-                    allItemsPool.push({ type: 'project', id: projId, title: proj.name, sub: `History • Project Folder`, meta: 'Folder', tab: 'wishlists', targetProjId: projId, historyKey: `project_${projId}`, rawDate: '0000-00-00' });
-                    (proj.items || []).forEach(item => {
-                        const itemId = item.id || `fallback_${item.name.replace(/\s+/g, '_')}`;
-                        allItemsPool.push({ type: 'wishitem', id: itemId, title: item.name, sub: `History • Project Spec`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: projId, historyKey: `wishitem_${itemId}`, rawDate: '0000-00-00' });
-                    });
-                });
-                if (state.notes) {
-                    Object.keys(state.notes).forEach(monthKey => {
-                        const idx = parseInt(monthKey.replace('month_', ''));
-                        (state.notes[monthKey] || []).forEach(note => {
-                            const itemId = note.id || `fallback_${idx}_note`;
-                            allItemsPool.push({ type: 'note', id: itemId, title: decodeSanitizedNoteString(note.text), sub: `History • Note • ${calendarMonthsNames[idx]}`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, historyKey: `note_${itemId}`, rawDate: '0000-00-00' });
-                        });
-                    });
-                }
-
-                // Clean calculation parsing logic check to see if database has records with scores > 0
-                let hasSearchHistory = false;
-                const scoresList = Object.keys(searchHistoryDB);
-                for (let i = 0; i < scoresList.length; i++) {
-                    if (searchHistoryDB[scoresList[i]] > 0) {
-                        hasSearchHistory = true;
-                        break;
-                    }
-                }
-
-                if (hasSearchHistory) {
-                    const scoredItems = allItemsPool.filter(item => (searchHistoryDB[item.historyKey] || 0) > 0);
-
-                    console.groupCollapsed("%c[Search Analytics Engine] Current History Priority Leaderboard", "color: #10b981; font-weight: bold;");
-                    console.table(scoredItems.map(item => ({
-                        "History Key": item.historyKey,
-                        "Title": item.title,
-                        "Type": item.type,
-                        "Click Count": searchHistoryDB[item.historyKey] || 0
-                    })).sort((a, b) => b["Click Count"] - a["Click Count"]));
-                    console.groupEnd();
-
-                    currentSearchResultsArray = scoredItems
-                        .sort((a, b) => (searchHistoryDB[b.historyKey] || 0) - (searchHistoryDB[a.historyKey] || 0))
-                        .slice(0, 5);
-                } else {
-                    console.log("%c[Search Analytics Engine] No custom history entries loaded yet. Displaying fallback activity shortcuts.", "color: #eab308; font-style: italic;");
-
-                    currentSearchResultsArray = allItemsPool
-                        .filter(item => item.type === 'movement')
-                        .sort((a, b) => b.rawDate.localeCompare(a.rawDate))
-                        .slice(0, 5);
-                }
-
-                const placeholderHeader = document.createElement('div');
-                placeholderHeader.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
-                placeholderHeader.innerHTML = hasSearchHistory
-                    ? `<i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Frequently Accessed Searches`
-                    : `<i class="fa-solid fa-bolt text-[9px]"></i> Recent Activity Shortcuts`;
-                feed.appendChild(placeholderHeader);
-
-            } else {
-                // ========================================================
-                // 2. ACTIVE DRILL-DOWN SEARCH COLLECTION PORTAL PASS
-                // ========================================================
-
-                // Domain A: All Movements Ledger Logs
-                state.movements.forEach(m => {
-                    if (m.name.toLowerCase().includes(query) || m.category.toLowerCase().includes(query)) {
-                        const itemId = m.id || `fallback_${m.name.replace(/\s+/g, '_')}`;
-                        currentSearchResultsArray.push({ type: 'movement', id: itemId, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', historyKey: `movement_${itemId}`, targetProjId: "", targetMonthIdx: -1 });
-                    }
-                });
-
-                // Domain B: Next Payment Plan Upcoming Budgets
-                (state.planification || []).forEach(p => {
-                    if (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)) {
-                        const itemId = p.id || `fallback_${p.name.replace(/\s+/g, '_')}`;
-                        currentSearchResultsArray.push({ type: 'plan', id: itemId, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', historyKey: `plan_${itemId}`, targetProjId: "", targetMonthIdx: -1 });
-                    }
-                });
-
-                // Domain C: Wishlist Folders and Nested Project Specifications Checklist Items
-                (state.projects || []).forEach(proj => {
-                    const projId = proj.id || `fallback_${proj.name.replace(/\s+/g, '_')}`;
-                    if (proj.name.toLowerCase().includes(query)) {
-                        currentSearchResultsArray.push({ type: 'project', id: projId, title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', tab: 'wishlists', targetProjId: projId, historyKey: `project_${projId}`, targetMonthIdx: -1 });
-                    }
-                    (proj.items || []).forEach(item => {
-                        if (item.name.toLowerCase().includes(query)) {
-                            const itemId = item.id || `fallback_${item.name.replace(/\s+/g, '_')}`;
-                            currentSearchResultsArray.push({ type: 'wishitem', id: itemId, title: item.name, sub: `Project Spec Item • Inside "${proj.name}"`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: projId, historyKey: `wishitem_${itemId}`, targetMonthIdx: -1 });
-                        }
-                    });
-                });
-
-                // Domain D: Calendar Financial Notes
-                if (state.notes) {
-                    Object.keys(state.notes).forEach(monthKey => {
-                        const idx = parseInt(monthKey.replace('month_', ''));
-                        const notesList = state.notes[monthKey] || [];
-                        notesList.forEach(note => {
-                            const decoded = decodeSanitizedNoteString(note.text);
-                            if (decoded.toLowerCase().includes(query)) {
-                                const itemId = note.id || `fallback_${idx}_note`;
-                                currentSearchResultsArray.push({ type: 'note', id: itemId, title: decoded, sub: `Monthly Note Memorandum • ${calendarMonthsNames[idx]} Line`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, historyKey: `note_${itemId}`, targetProjId: "" });
-                            }
-                        });
-                    });
-                }
-
-                // Domain E: Frequent Expense Templates
-                (state.frequent || []).forEach(f => {
-                    if (f.name.toLowerCase().includes(query) || f.category.toLowerCase().includes(query)) {
-                        const itemId = f.id || `fallback_${f.name.replace(/\s+/g, '_')}`;
-                        currentSearchResultsArray.push({ type: 'frequent', id: itemId, title: f.name, sub: `Frequent Expense Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', historyKey: `frequent_${itemId}`, targetProjId: "", targetMonthIdx: -1 });
-                    }
-                });
-
-                currentSearchResultsArray.sort((a, b) => (searchHistoryDB[b.historyKey] || 0) - (searchHistoryDB[a.historyKey] || 0));
-            }
-
-            // ========================================================
-            // 3. RENDER PROCESSING FEED PIPELINE
-            // ========================================================
-            if (currentSearchResultsArray.length === 0) {
-                feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No matched database profiles located.</div>`;
+                drawer.classList.add('hidden');
                 return;
             }
 
-            const limit = query ? 15 : 5;
-            const renderLimitList = currentSearchResultsArray.slice(0, limit);
+            // Pull frequency mapping history matrix out of browser localStorage safely
+            let usageHistoryWeightsDB = {};
+            try {
+                usageHistoryWeightsDB = JSON.parse(localStorage.getItem('MONEYCO_SEARCH_ANALYTICS_V2')) || {};
+            } catch (err) {
+                usageHistoryWeightsDB = {};
+            }
 
+            // ========================================================
+            // DATABASE DRILL-DOWN COLLECTION CRUISE PASS
+            // ========================================================
+
+            // 1. All Movements Records
+            state.movements.forEach(m => {
+                if (m.name.toLowerCase().includes(query) || m.category.toLowerCase().includes(query)) {
+                    filteredSearchPayloadRows.push({
+                        historyKey: `mv_${m.id}`, type: 'movement', id: m.id, tab: 'all-movements',
+                        title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount)
+                    });
+                }
+            });
+
+            // 2. Scheduled Planning Costs
+            (state.planification || []).forEach(p => {
+                if (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)) {
+                    filteredSearchPayloadRows.push({
+                        historyKey: `plan_${p.id}`, type: 'plan', id: p.id, tab: 'dashboard',
+                        title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount)
+                    });
+                }
+            });
+
+            // 3. Frequent Expenses Templates
+            (state.frequent || []).forEach(f => {
+                if (f.name.toLowerCase().includes(query) || f.category.toLowerCase().includes(query)) {
+                    filteredSearchPayloadRows.push({
+                        historyKey: `freq_${f.id}`, type: 'frequent', id: f.id, tab: 'dashboard',
+                        title: f.name, sub: `Frequent Template • ${f.category}`, meta: formatCurrency(f.amount)
+                    });
+                }
+            });
+
+            // 4. Projects & Nested Blueprints Items Specs Checklists
+            (state.projects || []).forEach(proj => {
+                if (proj.name.toLowerCase().includes(query)) {
+                    filteredSearchPayloadRows.push({
+                        historyKey: `proj_${proj.id}`, type: 'project', id: proj.id, tab: 'wishlists',
+                        title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', targetProjId: proj.id
+                    });
+                }
+                (proj.items || []).forEach(item => {
+                    if (item.name.toLowerCase().includes(query)) {
+                        filteredSearchPayloadRows.push({
+                            historyKey: `wish_${item.id}`, type: 'wishitem', id: item.id, tab: 'wishlists',
+                            title: item.name, sub: `Item Spec • Inside "${proj.name}"`, meta: formatCurrency(item.price), targetProjId: proj.id
+                        });
+                    }
+                });
+            });
+
+            // 5. Calendar Financial Memorandum Notes
+            if (state.notes) {
+                Object.keys(state.notes).forEach(monthKey => {
+                    const monthIdx = parseInt(monthKey.replace('month_', ''));
+                    (state.notes[monthKey] || []).forEach(note => {
+                        const plainNoteText = decodeSanitizedNoteString(note.text);
+                        if (plainNoteText.toLowerCase().includes(query)) {
+                            filteredSearchPayloadRows.push({
+                                historyKey: `note_${note.id}`, type: 'note', id: note.id, tab: 'notes',
+                                title: plainNoteText, sub: `${calendarMonthsNames[monthIdx]} Memorandum Note`, meta: 'Note', targetMonthIdx: monthIdx
+                            });
+                        }
+                    });
+                });
+            }
+
+            // ========================================================
+            // USAGE HISTORY DYNAMIC SORT (Highest score bubbles to top)
+            // ========================================================
+            filteredSearchPayloadRows.sort((a, b) => {
+                const scoreA = usageHistoryWeightsDB[a.historyKey] || 0;
+                const scoreB = usageHistoryWeightsDB[b.historyKey] || 0;
+                return scoreB - scoreA;
+            });
+
+            if (filteredSearchPayloadRows.length === 0) {
+                drawer.innerHTML = `<div class="text-center py-4 text-gray-600 text-[11px] italic">No matched records found.</div>`;
+                drawer.classList.remove('hidden');
+                return;
+            }
+
+            // Render results limits safely to top 10 items for sidebar sizing footprint cleanliness
+            const renderLimitList = filteredSearchPayloadRows.slice(0, 10);
             renderLimitList.forEach((result, idx) => {
                 const itemRow = document.createElement('div');
-                itemRow.id = `palette-row-${idx}`;
-                itemRow.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
+                itemRow.id = `sidebar-search-row-${idx}`;
+                itemRow.className = "p-2 rounded-xl flex flex-col gap-0.5 cursor-pointer text-left transition select-none group border border-transparent";
 
-                // REMOVED: setAttribute('onclick', ...) which breaks on quote styling/bubbling
-                // FIXED: Direct JavaScript memory binding guarantees execution on click
+                itemRow.innerHTML = `
+            <div class="flex items-center justify-between gap-2 pointer-events-none">
+                <p class="text-xs font-bold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
+                <span class="text-[9px] font-mono font-bold bg-gray-900 border border-gray-800 px-1.5 py-0.5 rounded text-gray-400 shrink-0">${result.meta}</span>
+            </div>
+            <span class="text-[9px] text-gray-500 font-medium tracking-wide pointer-events-none truncate">${result.sub}</span>
+        `;
+
+                // Direct in-memory pointer attachment bypasses HTML string parsing bugs completely
                 itemRow.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    trackSearchSelectionAnalytics(
-                        result.historyKey,
-                        result.type,
-                        result.id,
-                        result.tab,
-                        result.targetProjId || "",
-                        result.targetMonthIdx ?? -1
-                    );
+                    executeSidebarAnalyticsSelectionHit(result);
                 });
 
-                itemRow.onmouseenter = () => selectSearchRowIndexDirectly(idx);
-
-                itemRow.innerHTML = `
-                    <div class="truncate flex-1 pointer-events-none">
-                        <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
-                        <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
-                    </div>
-                    <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
-                `;
-                feed.appendChild(itemRow);
+                drawer.appendChild(itemRow);
             });
-        }
-        // ANALYTICS INTEGRITY ENGINE: Records search usage clicks and prunes database bounds smoothly
-        // ANALYTICS INTEGRITY ENGINE: Records search usage clicks and prunes database bounds smoothly
-        function trackSearchSelectionAnalytics(historyKey, type, id, tab, targetProjId, targetMonthIdx) {
-            // 1. Gather historical tracker map states safely
-            let searchHistoryDB = {};
-            try {
-                searchHistoryDB = JSON.parse(localStorage.getItem('MONEYCO_SEARCH_HISTORY')) || {};
-            } catch (e) {
-                searchHistoryDB = {};
-            }
 
-            // 2. Log hit to target unique item signature string key reference
-            searchHistoryDB[historyKey] = (searchHistoryDB[historyKey] || 0) + 1;
+            drawer.classList.remove('hidden');
 
-            // Print clear selection metric event status to developer tools console
-            console.log(`%c[Search Analytics Log] Registered click on key: "${historyKey}". New Frequency Score: ${searchHistoryDB[historyKey]}`, "color: #3b82f6; font-weight: bold;");
-
-            // 3. CAP COMPLIANCE JANITOR: Ensure the database caps storage bounds strictly at 50 unique items
-            let datasetEntries = Object.entries(searchHistoryDB);
-            if (datasetEntries.length > 50) {
-                datasetEntries.sort((a, b) => a[1] - b[1]);
-                const droppedItem = datasetEntries[0];
-                while (datasetEntries.length > 50) {
-                    datasetEntries.shift();
-                }
-                searchHistoryDB = Object.fromEntries(datasetEntries);
-                console.log(`%c[Search Analytics Janitor] 50-item storage threshold exceeded. Evicted least-used history key: "${droppedItem[0]}" (Score: ${droppedItem[1]})`, "color: #f43f5e; font-weight: bold;");
-            }
-
-            // 4. Lock updates securely into browser local memory
-            localStorage.setItem('MONEYCO_SEARCH_HISTORY', JSON.stringify(searchHistoryDB));
-
-            // 5. Reconstruct the clean payload object to send down to your viewport routing teleport engine
-            const reconstructedResult = {
-                historyKey: historyKey,
-                type: type,
-                id: id,
-                tab: tab,
-                targetProjId: targetProjId || null,
-                targetMonthIdx: targetMonthIdx !== -1 ? targetMonthIdx : null
-            };
-
-            // 6. Execute viewport tracking redirect teleport changes smoothly
-            routeUserTeleportToRecordLocation(reconstructedResult);
-
-            // 7. FIX: Force the layout palette search feed to synchronize its data arrays immediately 
-            // after routing. This guarantees the placeholder list weights remain completely updated.
-            const currentSearchInput = document.getElementById('paletteSearchBox');
-            if (currentSearchInput) {
-                executeUniversalSearchQuery(currentSearchInput.value);
-            }
+            // Attach clean arrow keys keyboard navigation handlers
+            const inputField = document.getElementById('sidebarSearchBox');
+            inputField.removeEventListener('keydown', handleSidebarSearchKeyboardInputTracks);
+            inputField.addEventListener('keydown', handleSidebarSearchKeyboardInputTracks);
         }
 
-        function selectSearchRowIndexDirectly(index) {
-            // Drop past dynamic highlight rings
-            if (activeSearchRowIndex >= 0) {
-                document.getElementById(`palette-row-${activeSearchRowIndex}`)?.classList.remove('bg-blue-600/10', 'border', 'border-blue-500/30');
-            }
-            activeSearchRowIndex = index;
-            if (activeSearchRowIndex >= 0) {
-                const targetRow = document.getElementById(`palette-row-${activeSearchRowIndex}`);
-                if (targetRow) {
-                    targetRow.classList.add('bg-blue-600/10', 'border', 'border-blue-500/30');
-                    targetRow.scrollIntoView({ block: 'nearest' });
-                }
-            }
-        }
-
-        function handleSearchKeyboardNavigationTrack(e) {
-            const totalItemsCount = Math.min(currentSearchResultsArray.length, 15);
-            if (totalItemsCount === 0) return;
+        function handleSidebarSearchKeyboardInputTracks(e) {
+            const drawer = document.getElementById('sidebarSearchResultsDrawer');
+            const limitCount = Math.min(filteredSearchPayloadRows.length, 10);
+            if (drawer.classList.contains('hidden') || limitCount === 0) return;
 
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                const nextIdx = (activeSearchRowIndex + 1) % totalItemsCount;
-                selectSearchRowIndexDirectly(nextIdx);
+                highlightSidebarSearchRowIndex((sidebarSearchSelectedRowIndex + 1) % limitCount);
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                const prevIdx = activeSearchRowIndex <= 0 ? totalItemsCount - 1 : activeSearchRowIndex - 1;
-                selectSearchRowIndexDirectly(prevIdx);
+                highlightSidebarSearchRowIndex(sidebarSearchSelectedRowIndex <= 0 ? limitCount - 1 : sidebarSearchSelectedRowIndex - 1);
             } else if (e.key === 'Enter') {
                 e.preventDefault();
-                const targetIndex = activeSearchRowIndex >= 0 ? activeSearchRowIndex : 0;
-                if (currentSearchResultsArray[targetIndex]) {
-                    routeUserTeleportToRecordLocation(currentSearchResultsArray[targetIndex]);
+                const targetIdx = sidebarSearchSelectedRowIndex >= 0 ? sidebarSearchSelectedRowIndex : 0;
+                if (filteredSearchPayloadRows[targetIdx]) {
+                    executeSidebarAnalyticsSelectionHit(filteredSearchPayloadRows[targetIdx]);
+                }
+            } else if (e.key === 'Escape') {
+                drawer.classList.add('hidden');
+                this.blur();
+            }
+        }
+
+        function highlightSidebarSearchRowIndex(index) {
+            if (sidebarSearchSelectedRowIndex >= 0) {
+                document.getElementById(`sidebar-search-row-${sidebarSearchSelectedRowIndex}`)?.classList.remove('bg-blue-600/10', 'border-blue-500/20');
+            }
+            sidebarSearchSelectedRowIndex = index;
+            if (sidebarSearchSelectedRowIndex >= 0) {
+                const row = document.getElementById(`sidebar-search-row-${sidebarSearchSelectedRowIndex}`);
+                if (row) {
+                    row.classList.add('bg-blue-600/10', 'border-blue-500/20');
+                    row.scrollIntoView({ block: 'nearest' });
                 }
             }
         }
 
-        // THE TELEPORTATION CORE ROUTER ENGINE
-        // THE TELEPORTATION CORE ROUTER ENGINE
-        function routeUserTeleportToRecordLocation(result) {
-            closeCommandPaletteModal();
+        function executeSidebarAnalyticsSelectionHit(result) {
+            // 1. Increment frequency click metric scoring
+            let usageHistoryWeightsDB = JSON.parse(localStorage.getItem('MONEYCO_SEARCH_ANALYTICS_V2') || '{}');
+            usageHistoryWeightsDB[result.historyKey] = (usageHistoryWeightsDB[result.historyKey] || 0) + 1;
+            localStorage.setItem('MONEYCO_SEARCH_ANALYTICS_V2', JSON.stringify(usageHistoryWeightsDB));
 
-            // Step A: Fire navigation switcher out to the target tab window canvas
+            // 2. Wipe search bar string and hide dropdown panels
+            const input = document.getElementById('sidebarSearchBox');
+            if (input) input.value = '';
+            document.getElementById('sidebarSearchResultsDrawer').classList.add('hidden');
+
+            // 3. Teleport out to target application workspace panel
             switchTab(result.tab);
 
-            // Give the layout tabs a split microsecond to construct and append data nodes into views
+            // 4. Dom query element selection focus ring animation routine
             setTimeout(() => {
-                let targetDOMElement = null;
+                let elementTarget = null;
 
-                // Step B: Target matching DOM nodes or handle specific view updates
                 if (result.type === 'movement') {
                     if (result.tab === 'all-movements') {
-                        const movementItem = state.movements.find(m => m.id === result.id);
-                        if (movementItem && movementItem.date) {
-                            const itemMonthStr = movementItem.date.substring(0, 7);
-                            const filterInput = document.getElementById('filterMonth');
-                            if (filterInput) {
-                                filterInput.value = itemMonthStr;
-                                applyFilters();
-                            }
+                        const mItem = state.movements.find(m => m.id === result.id);
+                        if (mItem && mItem.date) {
+                            document.getElementById('filterMonth').value = mItem.date.substring(0, 7);
+                            applyFilters();
                         }
                     }
-
-                    // UNAMBIGUOUS QUERY FIX: Target the specific tab wrapper container directly 
-                    // to ensure it selects the exact matching row from the multi-item list
                     const tabWrapper = document.getElementById(`tab-${result.tab}`);
                     if (tabWrapper) {
-                        // FIX: Explicit string cast matching check to ensure multiple matches resolve correctly
-                        targetDOMElement = tabWrapper.querySelector(`tr[data-id="${String(result.id)}"]`) ||
-                            tabWrapper.querySelector(`[data-id="${String(result.id)}"]`);
-                    }
-
-                    // Fallback to global search if tab container lookup fails
-                    if (!targetDOMElement) {
-                        targetDOMElement = document.querySelector(`tr[data-id="${String(result.id)}"]`) ||
-                            document.querySelector(`[data-id="${String(result.id)}"]`);
+                        elementTarget = tabWrapper.querySelector(`tr[data-id="${result.id}"]`) || tabWrapper.querySelector(`[data-id="${result.id}"]`);
                     }
                 }
                 else if (result.type === 'plan' || result.type === 'frequent') {
-                    targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
+                    elementTarget = document.querySelector(`[data-id="${result.id}"]`);
                 }
                 else if (result.type === 'project') {
                     closeProjectFocusMode();
-                    targetDOMElement = document.querySelector(`div[onclick*="${result.id}"]`) ||
-                        document.getElementById('projectMasterPanel');
+                    elementTarget = document.querySelector(`[onclick*="${result.id}"]`) || document.getElementById('projectMasterPanel');
                 }
                 else if (result.type === 'wishitem') {
                     focusOnSpecificProjectBlueprint(result.targetProjId);
                     setTimeout(() => {
-                        targetDOMElement = document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.border');
-                        applyGlowFocusToTargetNode(targetDOMElement);
-                    }, 100);
+                        elementTarget = document.querySelector(`[onclick*="${result.id}"]`)?.closest('.border') || document.querySelector(`[data-id="${result.id}"]`);
+                        applySidebarFocusGlowRing(elementTarget);
+                    }, 120);
                     return;
                 }
                 else if (result.type === 'note') {
                     selectNotesMonth(result.targetMonthIdx);
                     setTimeout(() => {
-                        targetDOMElement = document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.border');
-                        applyGlowFocusToTargetNode(targetDOMElement);
-                    }, 100);
+                        elementTarget = document.querySelector(`[onclick*="${result.id}"]`)?.closest('.border') || document.querySelector(`div.w-fit`);
+                        applySidebarFocusGlowRing(elementTarget);
+                    }, 120);
                     return;
                 }
 
-                applyGlowFocusToTargetNode(targetDOMElement);
-            }, 150);
+                applySidebarFocusGlowRing(elementTarget);
+            }, 180);
         }
 
-        // HIGHLIGHT GLOW EXECUTION ROUTINE
-        function applyGlowFocusToTargetNode(element) {
+        function applySidebarFocusGlowRing(element) {
             if (!element) return;
-
-            // Smoothly pan element straight into the viewport focus centerline alignment
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // Inject glow styles class utilities chain
             element.classList.add('search-glow-focus');
-
-            // Safe garbage cleaner teardown routine to clean element nodes after completion loops
             setTimeout(() => {
                 element.classList.remove('search-glow-focus');
             }, 2500);
