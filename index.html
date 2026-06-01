@@ -1551,18 +1551,18 @@
         // Locate triggerContextDelete() and update it to look like this:
         function triggerContextDelete() {
             if (!contextTarget) return;
-            if (confirm(`Permanently drop this item record parameter?`)) {
-                if (contextTarget.type === 'movement') {
-                    state.movements = state.movements.filter(m => m.id !== contextTarget.id);
-                } else if (contextTarget.type === 'planification') {
-                    state.planification = state.planification.filter(p => p.id !== contextTarget.id);
-                } else if (contextTarget.type === 'frequent') {
-                    state.frequent = state.frequent.filter(f => f.id !== contextTarget.id); // <-- ADD THIS LINE
-                }
-                saveState();
-                renderAll();
-                applyFilters();
+            // REMOVED: if (confirm(...)) verification check interceptor
+            if (contextTarget.type === 'movement') {
+                state.movements = state.movements.filter(m => m.id !== contextTarget.id);
+            } else if (contextTarget.type === 'planification') {
+                state.planification = state.planification.filter(p => p.id !== contextTarget.id);
+            } else if (contextTarget.type === 'frequent') {
+                state.frequent = state.frequent.filter(f => f.id !== contextTarget.id);
             }
+
+            saveState();
+            renderAll();
+            if (typeof applyFilters === 'function') applyFilters();
         }
 
 
@@ -2822,11 +2822,10 @@ async function checkAndTriggerReminders() {
         }
 
         function deleteNote(id) {
-            if (confirm("Permanently wipe this entry parameter from this calendar slot?")) {
-                const targetKey = `month_${selectedMonthIndex}`;
-                state.notes[targetKey] = state.notes[targetKey].filter(n => n.id !== id);
-                commitNoteSave();
-            }
+            // REMOVED: if (confirm(...)) verification check interceptor
+            const targetKey = `month_${selectedMonthIndex}`;
+            state.notes[targetKey] = state.notes[targetKey].filter(n => n.id !== id);
+            commitNoteSave();
         }
 
         function commitNoteSave() {
@@ -3191,12 +3190,11 @@ async function checkAndTriggerReminders() {
         }
 
         function deleteEntireProjectFolder(id) {
-            if (confirm("Permanently collapse and purge this project folder framework including all nested element specification indexes?")) {
-                state.projects = state.projects.filter(p => p.id !== id);
-                if (activeFocusedProjectId === id) activeFocusedProjectId = null;
-                saveState();
-                closeProjectFocusMode();
-            }
+            // REMOVED: if (confirm(...)) envelope layout protection
+            state.projects = state.projects.filter(p => p.id !== id);
+            if (activeFocusedProjectId === id) activeFocusedProjectId = null;
+            saveState();
+            closeProjectFocusMode();
         }
 
         // ACTION PIPELINES: SUBCHECKLISTS SPECS SPECIFIC ROW ITEMS
@@ -3272,6 +3270,7 @@ async function checkAndTriggerReminders() {
         function deleteWishItemFromFolder(itemId) {
             const proj = state.projects.find(p => p.id === activeFocusedProjectId);
             if (proj) {
+                // REMOVED: if (confirm(...)) envelope layout protection
                 proj.items = proj.items.filter(i => i.id !== itemId);
                 saveState();
                 renderWishlistsTabDeck();
