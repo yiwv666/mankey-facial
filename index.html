@@ -3399,7 +3399,7 @@ async function checkAndTriggerReminders() {
                 if (hasSearchHistory) {
                     // Match items with frequency scores above zero
                     const scoredItems = allItemsPool.filter(item => (searchHistoryDB[item.historyKey] || 0) > 0);
-                    
+
                     // --- LOG CHANGE: OUTPUT ACTIVE SELECTION SCORE CHART ---
                     console.groupCollapsed("%c[Search Analytics Engine] Current History Priority Leaderboard", "color: #10b981; font-weight: bold;");
                     console.table(scoredItems.map(item => ({
@@ -3416,7 +3416,7 @@ async function checkAndTriggerReminders() {
                 } else {
                     // --- LOG CHANGE: NOTICE ON BRAND NEW SESSIONS ---
                     console.log("%c[Search Analytics Engine] No custom history entries loaded yet. Displaying fallback activity shortcuts.", "color: #eab308; italic");
-                    
+
                     currentSearchResultsArray = allItemsPool
                         .filter(item => item.type === 'movement')
                         .sort((a, b) => b.rawDate.localeCompare(a.rawDate))
@@ -3509,19 +3509,32 @@ async function checkAndTriggerReminders() {
             renderLimitList.forEach((result, idx) => {
                 const itemRow = document.createElement('div');
                 itemRow.id = `palette-row-${idx}`;
-                itemRow.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group";
+                itemRow.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
 
-                // FIXED: Pass individual string arguments instead of a complex stringified JSON object
-                itemRow.setAttribute('onclick', `trackSearchSelectionAnalytics('${result.historyKey}', '${result.type}', '${result.id}', '${result.tab}', '${result.targetProjId || ""}', ${result.targetMonthIdx ?? -1})`);
+                // REMOVED: setAttribute('onclick', ...) which breaks on quote styling/bubbling
+                // FIXED: Direct JavaScript memory binding guarantees execution on click
+                itemRow.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    trackSearchSelectionAnalytics(
+                        result.historyKey,
+                        result.type,
+                        result.id,
+                        result.tab,
+                        result.targetProjId || "",
+                        result.targetMonthIdx ?? -1
+                    );
+                });
+
                 itemRow.onmouseenter = () => selectSearchRowIndexDirectly(idx);
 
                 itemRow.innerHTML = `
-            <div class="truncate flex-1 pointer-events-none">
-                <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
-                <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
-            </div>
-            <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
-        `;
+                    <div class="truncate flex-1 pointer-events-none">
+                        <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
+                        <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
+                    </div>
+                    <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
+                `;
                 feed.appendChild(itemRow);
             });
         }
