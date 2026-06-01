@@ -3397,12 +3397,26 @@ async function checkAndTriggerReminders() {
                 const hasSearchHistory = Object.values(searchHistoryDB).some(score => score > 0);
 
                 if (hasSearchHistory) {
-                    currentSearchResultsArray = allItemsPool
-                        .filter(item => (searchHistoryDB[item.historyKey] || 0) > 0)
+                    // Match items with frequency scores above zero
+                    const scoredItems = allItemsPool.filter(item => (searchHistoryDB[item.historyKey] || 0) > 0);
+                    
+                    // --- LOG CHANGE: OUTPUT ACTIVE SELECTION SCORE CHART ---
+                    console.groupCollapsed("%c[Search Analytics Engine] Current History Priority Leaderboard", "color: #10b981; font-weight: bold;");
+                    console.table(scoredItems.map(item => ({
+                        "History Key": item.historyKey,
+                        "Title": item.title,
+                        "Type": item.type,
+                        "Click Count": searchHistoryDB[item.historyKey] || 0
+                    })).sort((a, b) => b["Click Count"] - a["Click Count"]));
+                    console.groupEnd();
+
+                    currentSearchResultsArray = scoredItems
                         .sort((a, b) => (searchHistoryDB[b.historyKey] || 0) - (searchHistoryDB[a.historyKey] || 0))
                         .slice(0, 5);
                 } else {
-                    // Fallback to sorting your 5 most recent real movements chronologically
+                    // --- LOG CHANGE: NOTICE ON BRAND NEW SESSIONS ---
+                    console.log("%c[Search Analytics Engine] No custom history entries loaded yet. Displaying fallback activity shortcuts.", "color: #eab308; italic");
+                    
                     currentSearchResultsArray = allItemsPool
                         .filter(item => item.type === 'movement')
                         .sort((a, b) => b.rawDate.localeCompare(a.rawDate))
@@ -3519,21 +3533,28 @@ async function checkAndTriggerReminders() {
             // 2. Log hit to target unique item signature string key reference
             searchHistoryDB[historyKey] = (searchHistoryDB[historyKey] || 0) + 1;
 
+            // --- LOG CHANGE: PRINT SELECTION METRIC EVENT TO CONSOLE ---
+            console.log(`%c[Search Analytics Log] Registered click on key: "${historyKey}". New Frequency Score: ${searchHistoryDB[historyKey]}`, "color: #3b82f6; font-weight: bold;");
+
             // 3. CAP COMPLIANCE JANITOR: Ensure the database caps storage bounds strictly at 50 unique items
             let datasetEntries = Object.entries(searchHistoryDB);
             if (datasetEntries.length > 50) {
                 datasetEntries.sort((a, b) => a[1] - b[1]);
+                const droppedItem = datasetEntries[0]; // Capture the item being pruned
+
                 while (datasetEntries.length > 50) {
                     datasetEntries.shift();
                 }
                 searchHistoryDB = Object.fromEntries(datasetEntries);
+
+                // --- LOG CHANGE: CONFIRM CAP PRUNING ACTION ---
+                console.log(`%c[Search Analytics Janitor] 50-item storage threshold exceeded. Evicted least-used history key: "${droppedItem[0]}" (Score: ${droppedItem[1]})`, "color: #f43f5e; font-weight: bold;");
             }
 
             // 4. Lock changes safely into browser memory
             localStorage.setItem('MONEYCO_SEARCH_HISTORY', JSON.stringify(searchHistoryDB));
 
-            // 5. FIX: Force the search query engine to re-run immediately with whatever is currently 
-            // typed in the search box (or an empty string) to synchronize priority sorting weights instantly.
+            // 5. Force the search query engine to re-run immediately to update the palette sorting weights instantly
             const currentSearchInput = document.getElementById('paletteSearchBox');
             if (currentSearchInput) {
                 executeUniversalSearchQuery(currentSearchInput.value);
