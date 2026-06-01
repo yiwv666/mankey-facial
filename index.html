@@ -3539,41 +3539,38 @@ async function checkAndTriggerReminders() {
             });
         }
         // ANALYTICS INTEGRITY ENGINE: Records search usage clicks and prunes database bounds smoothly
+        // ANALYTICS INTEGRITY ENGINE: Records search usage clicks and prunes database bounds smoothly
         function trackSearchSelectionAnalytics(historyKey, type, id, tab, targetProjId, targetMonthIdx) {
-            // 1. Gather historical tracker map states
-            let searchHistoryDB = JSON.parse(localStorage.getItem('MONEYCO_SEARCH_HISTORY') || '{}');
+            // 1. Gather historical tracker map states safely
+            let searchHistoryDB = {};
+            try {
+                searchHistoryDB = JSON.parse(localStorage.getItem('MONEYCO_SEARCH_HISTORY')) || {};
+            } catch (e) {
+                searchHistoryDB = {};
+            }
 
             // 2. Log hit to target unique item signature string key reference
             searchHistoryDB[historyKey] = (searchHistoryDB[historyKey] || 0) + 1;
 
-            // --- LOG CHANGE: PRINT SELECTION METRIC EVENT TO CONSOLE ---
+            // Print clear selection metric event status to developer tools console
             console.log(`%c[Search Analytics Log] Registered click on key: "${historyKey}". New Frequency Score: ${searchHistoryDB[historyKey]}`, "color: #3b82f6; font-weight: bold;");
 
             // 3. CAP COMPLIANCE JANITOR: Ensure the database caps storage bounds strictly at 50 unique items
             let datasetEntries = Object.entries(searchHistoryDB);
             if (datasetEntries.length > 50) {
                 datasetEntries.sort((a, b) => a[1] - b[1]);
-                const droppedItem = datasetEntries[0]; // Capture the item being pruned
-
+                const droppedItem = datasetEntries[0];
                 while (datasetEntries.length > 50) {
                     datasetEntries.shift();
                 }
                 searchHistoryDB = Object.fromEntries(datasetEntries);
-
-                // --- LOG CHANGE: CONFIRM CAP PRUNING ACTION ---
                 console.log(`%c[Search Analytics Janitor] 50-item storage threshold exceeded. Evicted least-used history key: "${droppedItem[0]}" (Score: ${droppedItem[1]})`, "color: #f43f5e; font-weight: bold;");
             }
 
-            // 4. Lock changes safely into browser memory
+            // 4. Lock updates securely into browser local memory
             localStorage.setItem('MONEYCO_SEARCH_HISTORY', JSON.stringify(searchHistoryDB));
 
-            // 5. Force the search query engine to re-run immediately to update the palette sorting weights instantly
-            const currentSearchInput = document.getElementById('paletteSearchBox');
-            if (currentSearchInput) {
-                executeUniversalSearchQuery(currentSearchInput.value);
-            }
-
-            // 6. Reconstruct the clean payload object to send down to your viewport routing teleport engine
+            // 5. Reconstruct the clean payload object to send down to your viewport routing teleport engine
             const reconstructedResult = {
                 historyKey: historyKey,
                 type: type,
@@ -3583,7 +3580,15 @@ async function checkAndTriggerReminders() {
                 targetMonthIdx: targetMonthIdx !== -1 ? targetMonthIdx : null
             };
 
+            // 6. Execute viewport tracking redirect teleport changes smoothly
             routeUserTeleportToRecordLocation(reconstructedResult);
+
+            // 7. FIX: Force the layout palette search feed to synchronize its data arrays immediately 
+            // after routing. This guarantees the placeholder list weights remain completely updated.
+            const currentSearchInput = document.getElementById('paletteSearchBox');
+            if (currentSearchInput) {
+                executeUniversalSearchQuery(currentSearchInput.value);
+            }
         }
 
         function selectSearchRowIndexDirectly(index) {
@@ -3623,6 +3628,7 @@ async function checkAndTriggerReminders() {
         }
 
         // THE TELEPORTATION CORE ROUTER ENGINE
+        // THE TELEPORTATION CORE ROUTER ENGINE
         function routeUserTeleportToRecordLocation(result) {
             closeCommandPaletteModal();
 
@@ -3651,14 +3657,15 @@ async function checkAndTriggerReminders() {
                     // to ensure it selects the exact matching row from the multi-item list
                     const tabWrapper = document.getElementById(`tab-${result.tab}`);
                     if (tabWrapper) {
-                        targetDOMElement = tabWrapper.querySelector(`tr[data-id="${result.id}"]`) ||
-                            tabWrapper.querySelector(`[data-id="${result.id}"]`);
+                        // FIX: Explicit string cast matching check to ensure multiple matches resolve correctly
+                        targetDOMElement = tabWrapper.querySelector(`tr[data-id="${String(result.id)}"]`) ||
+                            tabWrapper.querySelector(`[data-id="${String(result.id)}"]`);
                     }
 
                     // Fallback to global search if tab container lookup fails
                     if (!targetDOMElement) {
-                        targetDOMElement = document.querySelector(`tr[data-id="${result.id}"]`) ||
-                            document.querySelector(`[data-id="${result.id}"]`);
+                        targetDOMElement = document.querySelector(`tr[data-id="${String(result.id)}"]`) ||
+                            document.querySelector(`[data-id="${String(result.id)}"]`);
                     }
                 }
                 else if (result.type === 'plan' || result.type === 'frequent') {
