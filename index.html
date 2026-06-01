@@ -3487,15 +3487,16 @@ async function checkAndTriggerReminders() {
                 itemRow.id = `palette-row-${idx}`;
                 itemRow.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group";
 
-                itemRow.onclick = () => trackSearchSelectionAnalytics(result);
+                // FIX: Stringify the payload structure directly into the DOM attribute to guarantee execution regardless of child element click targets
+                itemRow.setAttribute('onclick', `trackSearchSelectionAnalytics(${JSON.stringify(result).replace(/"/g, '&quot;')})`);
                 itemRow.onmouseenter = () => selectSearchRowIndexDirectly(idx);
 
                 itemRow.innerHTML = `
-            <div class="truncate flex-1">
+            <div class="truncate flex-1 pointer-events-none">
                 <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
                 <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
             </div>
-            <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0">${result.meta}</span>
+            <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
         `;
                 feed.appendChild(itemRow);
             });
