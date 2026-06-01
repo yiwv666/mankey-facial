@@ -3385,10 +3385,65 @@ async function checkAndTriggerReminders() {
                 this.activeIndex = -1;
                 this.results = [];
 
-                const searchStr = rawText.trim().toLowerCase();
+                const trimmedInput = rawText.trim();
+                const searchStr = trimmedInput.toLowerCase();
+
+                // ========================================================
+                // 1. ENGINE INTERCEPTOR: SLASH COMMAND DETECTOR MATRIX
+                // ========================================================
+                if (trimmedInput.startsWith('/')) {
+                    const commands = [
+                        { key: '/note', title: 'Create a new note', sub: 'Action • Adds a quick memorandum reminder to the active month timeline view', action: () => { this.close(); switchTab('notes'); setTimeout(() => document.getElementById('noteInputBox')?.focus(), 150); } },
+                        { key: '/pay', title: 'Log a new movement entry', sub: 'Action • Launch the financial outcome/income transaction ledger modal forms', action: () => { this.close(); openMovementModal(); } },
+                        { key: '/plan', title: 'Schedule an upcoming payment budget', sub: 'Action • Launch the target planning pool scheduler wrapper layout modal', action: () => { this.close(); openPlanModal(); } },
+                        { key: '/template', title: 'Create a dynamic recurring cost template', sub: 'Action • Launch the frequent expense automated blueprint modal configurations', action: () => { this.close(); openFrequentModal(); } },
+                        { key: '/project', title: 'Initialize a new wishlist folder milestone', sub: 'Action • Launch the multi-color project folder creation canvas modal context', action: () => { this.close(); openProjectModal(); } },
+                        { key: '/category', title: 'Register a new custom evaluation category', sub: 'Action • Shifts focus directly to the custom categories creation dashboard fields', action: () => { this.close(); switchTab('categories'); setTimeout(() => document.getElementById('newCategoryName')?.focus(), 150); } }
+                    ];
+
+                    const matchedCommands = commands.filter(cmd => cmd.key.startsWith(searchStr));
+
+                    if (matchedCommands.length > 0) {
+                        const header = document.createElement('div');
+                        header.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-amber-500/80 select-none flex items-center gap-1.5";
+                        header.innerHTML = `<i class="fa-solid fa-terminal text-[9px]"></i> Action Command Shortcodes`;
+                        this.feed.appendChild(header);
+
+                        matchedCommands.forEach((cmd, idx) => {
+                            const row = document.createElement('div');
+                            row.id = `palette-row-${idx}`;
+                            row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
+                            row.innerHTML = `
+                                <div class="truncate flex-1 pointer-events-none">
+                                    <p class="text-sm font-semibold text-amber-400 group-hover:text-amber-300 transition truncate">${cmd.key}</p>
+                                    <span class="text-[10px] font-medium text-gray-500 tracking-wide">${cmd.title} — ${cmd.sub}</span>
+                                </div>
+                                <span class="text-[9px] font-bold text-amber-500/80 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded shadow-sm shrink-0 uppercase tracking-wider font-mono">Run</span>
+                            `;
+                            row.addEventListener('click', () => cmd.action());
+                            row.addEventListener('mouseenter', () => this.highlight(idx));
+                            this.feed.appendChild(row);
+                        });
+
+                        this.results = matchedCommands.map(cmd => ({ type: 'command', action: cmd.action }));
+                        return;
+                    }
+                }
+
+                // ========================================================
+                // 2. COMPILE ALL APP DATA BOUNDARIES + APP VIEW TAB LINK PATHS
+                // ========================================================
                 const pool = [];
 
-                // 1. Gather Data Sources & Cast Content Object References
+                // Inject App Routing Tab Bridges
+                pool.push({ type: 'nav', title: 'Go to Dashboard Overview', sub: 'Navigation • Open main metric asset pools, recent movements, and live note tracks', tab: 'dashboard', key: 'nav_dash', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to All Movements Complete Ledger', sub: 'Navigation • Open advanced monthly historical lookup grids and filters', tab: 'all-movements', key: 'nav_move', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to Wishlists & Projects Incubator', sub: 'Navigation • Open project specification folders sandbox tracking blueprints', tab: 'wishlists', key: 'nav_wish', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to Category Distribution Analytics', sub: 'Navigation • Open category statistics matrix maps and asset savings goals', tab: 'categories', key: 'nav_cat', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to Financial Memorandums Notes', sub: 'Navigation • Track macro block text annotations across calendar lines', tab: 'notes', key: 'nav_note', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to Google Drive Cloud Sync Configuration', sub: 'Navigation • Manage remote ecosystem account binding parameter tokens', tab: 'settings', key: 'nav_set', meta: 'View' });
+
+                // Structural Database Records Context
                 state.movements.forEach(m => {
                     pool.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', key: `m_${m.id}` });
                 });
@@ -3413,47 +3468,52 @@ async function checkAndTriggerReminders() {
                     });
                 }
 
-                // 2. Evaluation Parsing Pipelines
+                // ========================================================
+                // 3. SORT & DISTRIBUTE PARSED FEED OUTPUTS
+                // ========================================================
                 if (!searchStr) {
-                    // Placeholder view branch layout: Fetch the last 3 searches performed
                     const historyList = this.getHistory();
                     const matchedHistoryItems = [];
 
-                    // Loop through history chronologically to match active elements inside the structural state variables
                     for (let i = 0; i < historyList.length; i++) {
                         const match = pool.find(item => item.key === historyList[i]);
                         if (match) {
                             matchedHistoryItems.push(match);
-                            if (matchedHistoryItems.length === 3) break; // Strict Limit 3
+                            if (matchedHistoryItems.length === 3) break;
                         }
                     }
 
                     if (matchedHistoryItems.length === 0) {
-                        this.feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">Type something to search across all data modules...</div>`;
-                        return;
+                        // Quick navigation default setup if user doesn't have an item interaction history signature cached yet
+                        const defaultNavOptions = pool.filter(item => item.type === 'nav').slice(0, 3);
+                        const bannerHeader = document.createElement('div');
+                        bannerHeader.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
+                        bannerHeader.innerHTML = `<i class="fa-solid fa-compass text-[9px]"></i> Quick Navigation Shortcuts`;
+                        this.feed.appendChild(bannerHeader);
+                        this.results = defaultNavOptions;
+                    } else {
+                        const header = document.createElement('div');
+                        header.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
+                        header.innerHTML = `<i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Recent Searches`;
+                        this.feed.appendChild(header);
+                        this.results = matchedHistoryItems;
                     }
-
-                    const header = document.createElement('div');
-                    header.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
-                    header.innerHTML = `<i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Recent Searches`;
-                    this.feed.appendChild(header);
-
-                    this.results = matchedHistoryItems;
                 } else {
-                    // Regular processing branch layout: Evaluate closest match algorithms
                     this.results = pool.filter(item => {
                         return item.title.toLowerCase().includes(searchStr) || item.sub.toLowerCase().includes(searchStr);
                     }).sort((a, b) => {
-                        // Sorting Matrix Factor A: Closest String Distance match evaluation
+                        // Prioritize dynamic tab shortcuts over specific record results if they contain matching terms
+                        if (a.type === 'nav' && b.type !== 'nav') return -1;
+                        if (b.type === 'nav' && a.type !== 'nav') return 1;
+
                         const indexA = a.title.toLowerCase().indexOf(searchStr);
                         const indexB = b.title.toLowerCase().indexOf(searchStr);
                         if (indexA !== indexB) return indexA - indexB;
 
-                        // Sorting Matrix Factor B: Usage frequency tracking logs metrics
                         const freqA = this.getSelectionFrequency(a.key);
                         const freqB = this.getSelectionFrequency(b.key);
                         return freqB - freqA;
-                    }).slice(0, 15); // Upper bound layout protection
+                    }).slice(0, 15);
                 }
 
                 this.render();
@@ -3513,11 +3573,24 @@ async function checkAndTriggerReminders() {
             },
 
             select(result) {
-                this.saveHistory(result.key);
+                // Intercept dynamic action triggers
+                if (result.type === 'command') {
+                    if (typeof result.action === 'function') result.action();
+                    return;
+                }
+
+                // Prevent broad page views navigation tracking notes from polluting raw records interaction statistics
+                if (result.type !== 'nav') {
+                    this.saveHistory(result.key);
+                }
+
                 this.close();
 
-                // Fire tab switch canvas layouts
+                // Fire global application layout state shifts
                 switchTab(result.tab);
+
+                // Exit immediately if it was pure tab routing navigation with no target element matching criteria
+                if (result.type === 'nav') return;
 
                 setTimeout(() => {
                     let targetDOMElement = null;
@@ -3557,7 +3630,6 @@ async function checkAndTriggerReminders() {
                     else if (result.type === 'note') {
                         selectNotesMonth(result.targetMonthIdx);
                         setTimeout(() => {
-                            // Match note boxes within note management boards directly
                             targetDOMElement = document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.w-fit') ||
                                 document.querySelector(`div.w-fit[row-id="${result.id}"]`);
                             this.glow(targetDOMElement);
