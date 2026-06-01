@@ -3659,6 +3659,40 @@ async function checkAndTriggerReminders() {
             setTimeout(() => MoneycoSearch.init(), 100);
         });
 
+        // ========================================================
+        // GLOBAL WORKSPACE HOTKEYS INTERCEPTOR INTERACTION ENGINE
+        // ========================================================
+        window.addEventListener('keydown', (e) => {
+            // Bypass processing hotkeys entirely if the user is typing into any interactive entry field form element
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Map Alt + [Number] navigation targets smoothly
+            if (e.altKey && !e.ctrlKey && !e.metaKey) {
+                if (e.key === '1') {
+                    e.preventDefault();
+                    switchTab('dashboard');
+                } else if (e.key === '2') {
+                    e.preventDefault();
+                    switchTab('all-movements');
+                } else if (e.key === '3') {
+                    e.preventDefault();
+                    switchTab('wishlists');
+                } else if (e.key === '4') {
+                    e.preventDefault();
+                    switchTab('categories');
+                } else if (e.key === '5') {
+                    e.preventDefault();
+                    switchTab('notes');
+                } else if (e.key.toLowerCase() === 'n') {
+                    // Quick Action utility route to create a raw item entry instantly
+                    e.preventDefault();
+                    openMovementModal();
+                }
+            }
+        });
+
     </script>
 </body>
 
