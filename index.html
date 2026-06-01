@@ -141,18 +141,16 @@
                     <i class="fa-solid fa-cloud-arrow-up w-5"></i> Cloud Sync
                 </button>
             </div>
-            <div class="mt-6 pt-4 border-t border-gray-800/60 flex flex-col gap-1.5">
-                <div id="sidebarSearchTrigger"
-                    class="w-full bg-gray-900/60 hover:bg-gray-800 border border-gray-800/80 hover:border-gray-700 px-3 py-2.5 rounded-xl text-xs text-gray-400 hover:text-gray-200 transition flex items-center justify-between cursor-pointer group select-none shadow-inner">
-                    <span class="flex items-center gap-2">
-                        <i
-                            class="fa-solid fa-magnifying-glass text-[11px] text-gray-500 group-hover:text-blue-500 transition"></i>
-                        Search records...
-                    </span>
-                    <kbd
-                        class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-600 font-bold group-hover:text-gray-400">Ctrl
-                        K</kbd>
-                </div>
+            <div onclick="MoneycoSearch.open()"
+                class="w-full bg-gray-900 hover:bg-gray-800 border border-gray-800/80 hover:border-gray-700 px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-gray-400 transition flex items-center justify-between cursor-pointer group select-none shadow-inner">
+                <span class="flex items-center gap-2">
+                    <i
+                        class="fa-solid fa-magnifying-glass text-[11px] text-gray-600 group-hover:text-blue-500 transition"></i>
+                    Search records...
+                </span>
+                <kbd
+                    class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-600 font-bold group-hover:text-gray-400">Ctrl
+                    K</kbd>
             </div>
         </nav>
 
@@ -247,6 +245,8 @@
                         <div id="mobileNotesModalFeedContainer" class="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
                         </div>
                     </dialog>
+
+
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -756,6 +756,29 @@
                     </div>
                 </form>
             </dialog>
+
+            <dialog id="commandPaletteModal"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl text-gray-100 w-11/12 md:w-[500px] h-fit max-h-[450px] backdrop:bg-black/80 backdrop:backdrop-blur-sm z-50 overflow-hidden focus:outline-none">
+                <div class="flex flex-col h-full">
+                    <div class="flex items-center gap-3 px-4 py-3.5 border-b border-gray-900 bg-gray-950 shrink-0">
+                        <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm"></i>
+                        <input type="text" id="paletteSearchBox"
+                            placeholder="Search movements, budgets, plans, folders, notes..."
+                            class="w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none"
+                            autocomplete="off">
+                        <button onclick="MoneycoSearch.close()"
+                            class="text-gray-500 hover:text-white px-1 text-xs font-mono bg-gray-900 border border-gray-800 rounded">ESC</button>
+                    </div>
+                    <div id="paletteResultsFeed"
+                        class="flex-1 overflow-y-auto bg-gray-950/40 p-2 space-y-0.5 max-h-[320px]"></div>
+                    <div
+                        class="px-4 py-2 bg-gray-950 border-t border-gray-900 text-[10px] text-gray-600 flex items-center gap-4 shrink-0 font-medium select-none">
+                        <span><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i>
+                            Navigate</span>
+                        <span><i class="fa-solid fa-arrow-turn-down rotate-90"></i> Select</span>
+                    </div>
+                </div>
+            </dialog>
         </main>
     </div>
 
@@ -979,25 +1002,6 @@
                     Plan</button>
             </div>
         </form>
-    </dialog>
-    <dialog id="commandPaletteModal"
-        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl text-gray-100 w-11/12 md:w-[500px] h-fit max-h-[450px] overlay-hidden backdrop:bg-black/80 backdrop:backdrop-blur-sm z-50 transition-all duration-200">
-        <div class="flex items-center gap-3 px-4 py-3.5 border-b border-gray-800 bg-gray-950 shrink-0">
-            <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm"></i>
-            <input type="text" id="paletteSearchBox" placeholder="Search across movements, notes, budgets, specs..."
-                class="w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none"
-                autocomplete="off">
-            <button id="closePaletteBtn"
-                class="text-gray-500 hover:text-white px-1 text-xs font-mono bg-gray-900 border border-gray-800 rounded">ESC</button>
-        </div>
-
-        <div id="paletteResultsFeed" class="flex-1 overflow-y-auto bg-gray-950/40 p-2 space-y-0.5 max-h-[320px]"></div>
-
-        <div
-            class="px-4 py-2 bg-gray-950 border-t border-gray-900 text-[10px] text-gray-500 flex items-center gap-4 shrink-0 font-medium select-none">
-            <span><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i> Move</span>
-            <span><i class="fa-solid fa-arrow-turn-down rotate-90"></i> Select</span>
-        </div>
     </dialog>
 
 
@@ -3305,252 +3309,278 @@ async function checkAndTriggerReminders() {
         }
 
         // ========================================================
-        // COMPACT COMMAND PALETTE MATRIX INFRASTRUCTURE (V2)
+        // UNIFIED COMMAND PALETTE ARCHITECTURE CORE MODULE ENGINE
         // ========================================================
-        let searchRowIndexPointer = -1;
-        let activeSearchResultsCollection = [];
+        const MoneycoSearch = {
+            modal: null,
+            input: null,
+            feed: null,
+            results: [],
+            activeIndex: -1,
 
-        // Operational Core Binding Listeners
-        window.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-                e.preventDefault();
-                launchSearchPaletteWindow();
-            }
-        });
+            init() {
+                this.modal = document.getElementById('commandPaletteModal');
+                this.input = document.getElementById('paletteSearchBox');
+                this.feed = document.getElementById('paletteResultsFeed');
 
-        document.getElementById('sidebarSearchTrigger')?.addEventListener('click', launchSearchPaletteWindow);
-        document.getElementById('closePaletteBtn')?.addEventListener('click', terminateSearchPaletteWindow);
-        document.getElementById('paletteSearchBox')?.addEventListener('input', (e) => compileUniversalDatabaseSearch(e.target.value));
+                if (!this.modal || !this.input || !this.feed) return;
 
-        function launchSearchPaletteWindow() {
-            const modal = document.getElementById('commandPaletteModal');
-            const input = document.getElementById('paletteSearchBox');
-            if (!modal || !input) return;
+                // Force correct flex distribution settings
+                this.modal.style.display = 'none';
+                this.modal.style.flexDirection = 'column';
 
-            input.value = '';
-            searchRowIndexPointer = -1;
-            activeSearchResultsCollection = [];
-
-            modal.style.display = 'flex';
-            modal.style.flexDirection = 'column';
-            modal.showModal();
-
-            setTimeout(() => input.focus(), 30);
-            compileUniversalDatabaseSearch(''); // Instantly parse history shortcuts
-
-            modal.onclose = () => { modal.style.display = 'none'; };
-
-            input.removeEventListener('keydown', interpretSearchKeyboardNavigation);
-            input.addEventListener('keydown', interpretSearchKeyboardNavigation);
-        }
-
-        function terminateSearchPaletteWindow() {
-            document.getElementById('commandPaletteModal')?.close();
-        }
-
-        function compileUniversalDatabaseSearch(userInputString) {
-            const feed = document.getElementById('paletteResultsFeed');
-            if (!feed) return;
-
-            feed.innerHTML = '';
-            searchRowIndexPointer = -1;
-            activeSearchResultsCollection = [];
-
-            const query = userInputString.trim().toLowerCase();
-            const historyDB = JSON.parse(localStorage.getItem('MONEYCO_SEARCH_HISTORY') || '{}');
-            const masterDataPool = [];
-
-            // Core Mapping & Sanitization Layer: Auto-patch missing model records securely
-            state.movements.forEach(m => {
-                const uid = m.id || `m_${m.name.replace(/\s+/g, '_')}`;
-                masterDataPool.push({ historyKey: `mv_${uid}`, id: uid, type: 'movement', title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', date: m.date });
-            });
-            (state.planification || []).forEach(p => {
-                const uid = p.id || `p_${p.name.replace(/\s+/g, '_')}`;
-                masterDataPool.push({ historyKey: `pl_${uid}`, id: uid, type: 'plan', title: p.name, sub: `Planned Budget Commitment • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', date: '0000-00-00' });
-            });
-            (state.frequent || []).forEach(f => {
-                const uid = f.id || `f_${f.name.replace(/\s+/g, '_')}`;
-                masterDataPool.push({ historyKey: `fr_${uid}`, id: uid, type: 'frequent', title: f.name, sub: `Recurring Expenses Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', date: '0000-00-00' });
-            });
-            (state.projects || []).forEach(proj => {
-                const pId = proj.id || `pr_${proj.name.replace(/\s+/g, '_')}`;
-                masterDataPool.push({ historyKey: `proj_${pId}`, id: pId, type: 'project', title: proj.name, sub: `Project Sandbox Folder`, meta: 'Folder', tab: 'wishlists', targetProjId: pId, date: '0000-00-00' });
-                (proj.items || []).forEach(item => {
-                    const iId = item.id || `wi_${item.name.replace(/\s+/g, '_')}`;
-                    masterDataPool.push({ historyKey: `witem_${iId}`, id: iId, type: 'wishitem', title: item.name, sub: `Item Blueprint Specification • Inside "${proj.name}"`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: pId, date: '0000-00-00' });
+                // Bind core keyboard shortcuts
+                window.addEventListener('keydown', (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                        e.preventDefault();
+                        this.open();
+                    }
                 });
-            });
-            if (state.notes) {
-                Object.keys(state.notes).forEach(mKey => {
-                    const idx = parseInt(mKey.replace('month_', ''));
-                    (state.notes[mKey] || []).forEach(note => {
-                        const uid = note.id || `nt_${idx}_${note.text.substring(0, 10).replace(/\s+/g, '_')}`;
-                        masterDataPool.push({ historyKey: `note_${uid}`, id: uid, type: 'note', title: decodeSanitizedNoteString(note.text), sub: `Monthly Memorandum Reminder • ${calendarMonthsNames[idx]}`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, date: '0000-00-00' });
+
+                this.input.addEventListener('input', (e) => this.query(e.target.value));
+                this.modal.addEventListener('keydown', (e) => this.navigate(e));
+
+                this.modal.onclose = () => {
+                    this.modal.style.display = 'none';
+                };
+            },
+
+            open() {
+                if (!this.modal) this.init();
+                this.input.value = '';
+                this.activeIndex = -1;
+                this.results = [];
+                this.modal.style.display = 'flex';
+                this.modal.showModal();
+                setTimeout(() => this.input.focus(), 30);
+                this.query(''); // Build view with placeholders instantly
+            },
+
+            close() {
+                if (this.modal) this.modal.close();
+            },
+
+            getHistory() {
+                return JSON.parse(localStorage.getItem('MONEYCO_SEARCH_ANNDB') || '[]');
+            },
+
+            saveHistory(keyName) {
+                let list = this.getHistory();
+                list = list.filter(k => k !== keyName);
+                list.unshift(keyName); // Unshift pushes item straight to index 0 (Newest)
+                if (list.length > 50) list.pop(); // Caps size limit at 50 records safely
+                localStorage.setItem('MONEYCO_SEARCH_ANNDB', JSON.stringify(list));
+            },
+
+            getSelectionFrequency(keyName) {
+                const list = this.getHistory();
+                const index = list.indexOf(keyName);
+                if (index === -1) return 0;
+                // Inverse weight: items at the top of the history list score higher priority weight values
+                return 1000 - index;
+            },
+
+            query(rawText) {
+                this.feed.innerHTML = '';
+                this.activeIndex = -1;
+                this.results = [];
+
+                const searchStr = rawText.trim().toLowerCase();
+                const pool = [];
+
+                // 1. Gather Data Sources & Cast Content Object References
+                state.movements.forEach(m => {
+                    pool.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', key: `m_${m.id}` });
+                });
+                (state.planification || []).forEach(p => {
+                    pool.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', key: `p_${p.id}` });
+                });
+                (state.frequent || []).forEach(f => {
+                    pool.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', key: `f_${f.id}` });
+                });
+                (state.projects || []).forEach(proj => {
+                    pool.push({ type: 'project', id: proj.id, title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', tab: 'wishlists', targetProjId: proj.id, key: `proj_${proj.id}` });
+                    (proj.items || []).forEach(item => {
+                        pool.push({ type: 'wishitem', id: item.id, title: item.name, sub: `Project Spec Item • Inside "${proj.name}"`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: proj.id, key: `witem_${item.id}` });
                     });
                 });
-            }
-
-            // Evaluation Sorting Pipeline Branching
-            if (!query) {
-                const hasHistory = Object.values(historyDB).some(score => score > 0);
-                if (hasHistory) {
-                    activeSearchResultsCollection = masterDataPool
-                        .filter(item => (historyDB[item.historyKey] || 0) > 0)
-                        .sort((a, b) => (historyDB[b.historyKey] || 0) - (historyDB[a.historyKey] || 0))
-                        .slice(0, 5);
-                } else {
-                    activeSearchResultsCollection = masterDataPool
-                        .filter(item => item.type === 'movement')
-                        .sort((a, b) => b.date.localeCompare(a.date))
-                        .slice(0, 5);
+                if (state.notes) {
+                    Object.keys(state.notes).forEach(mKey => {
+                        const idx = parseInt(mKey.replace('month_', ''));
+                        (state.notes[mKey] || []).forEach(note => {
+                            pool.push({ type: 'note', id: note.id, title: decodeSanitizedNoteString(note.text), sub: `Note Memorandum • ${calendarMonthsNames[idx]}`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, key: `n_${note.id}` });
+                        });
+                    });
                 }
 
-                const sectionHeader = document.createElement('div');
-                sectionHeader.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
-                sectionHeader.innerHTML = hasHistory ? `<i class="fa-solid fa-clock-rotate-left"></i> Frequently Accessed Searches` : `<i class="fa-solid fa-bolt"></i> Recent Activity Shortcuts`;
-                feed.appendChild(sectionHeader);
-            } else {
-                activeSearchResultsCollection = masterDataPool
-                    .filter(item => item.title.toLowerCase().includes(query) || item.sub.toLowerCase().includes(query))
-                    .sort((a, b) => (historyDB[b.historyKey] || 0) - (historyDB[a.historyKey] || 0));
-            }
+                // 2. Evaluation Parsing Pipelines
+                if (!searchStr) {
+                    // Placeholder view branch layout: Fetch the last 3 searches performed
+                    const historyList = this.getHistory();
+                    const matchedHistoryItems = [];
 
-            // Render Output Element Generations
-            if (activeSearchResultsCollection.length === 0) {
-                feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No matched data tracking profiles discovered.</div>`;
-                return;
-            }
-
-            const activeRenderLimit = query ? 15 : 5;
-            activeSearchResultsCollection.slice(0, activeRenderLimit).forEach((result, idx) => {
-                const itemRow = document.createElement('div');
-                itemRow.id = `palette-row-${idx}`;
-                itemRow.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
-
-                itemRow.addEventListener('click', (e) => {
-                    e.preventDefault(); e.stopPropagation();
-                    executeAnalyticsHitRegistration(result);
-                });
-                itemRow.onmouseenter = () => updatePaletteRowHighlightIndex(idx);
-
-                itemRow.innerHTML = `
-                    <div class="truncate flex-1 pointer-events-none">
-                        <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
-                        <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
-                    </div>
-                    <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
-                `;
-                feed.appendChild(itemRow);
-            });
-        }
-
-        function executeAnalyticsHitRegistration(result) {
-            let historyDB = JSON.parse(localStorage.getItem('MONEYCO_SEARCH_HISTORY') || '{}');
-            historyDB[result.historyKey] = (historyDB[result.historyKey] || 0) + 1;
-
-            // Maintain storage limit caps at a strict 50 items maximum
-            let entries = Object.entries(historyDB);
-            if (entries.length > 50) {
-                entries.sort((a, b) => a[1] - b[1]);
-                while (entries.length > 50) entries.shift();
-                historyDB = Object.fromEntries(entries);
-            }
-
-            localStorage.setItem('MONEYCO_SEARCH_HISTORY', JSON.stringify(historyDB));
-
-            // Force interface state refresh instantly before routing focus redirects
-            executeUniversalSearchQuery(document.getElementById('paletteSearchBox')?.value || '');
-            dispatchUserToTeleportLocation(result);
-        }
-
-        function updatePaletteRowHighlightIndex(idx) {
-            if (searchRowIndexPointer >= 0) {
-                document.getElementById(`palette-row-${searchRowIndexPointer}`)?.classList.remove('bg-blue-600/10', 'border-blue-500/30');
-            }
-            searchRowIndexPointer = idx;
-            if (searchRowIndexPointer >= 0) {
-                const element = document.getElementById(`palette-row-${searchRowIndexPointer}`);
-                if (element) {
-                    element.classList.add('bg-blue-600/10', 'border-blue-500/30');
-                    element.scrollIntoView({ block: 'nearest' });
-                }
-            }
-        }
-
-        function interpretSearchKeyboardNavigation(e) {
-            const limit = Math.min(activeSearchResultsCollection.length, document.getElementById('paletteSearchBox').value ? 15 : 5);
-            if (limit === 0) return;
-
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                updatePaletteRowHighlightIndex((searchRowIndexPointer + 1) % limit);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                updatePaletteRowHighlightIndex(searchRowIndexPointer <= 0 ? limit - 1 : searchRowIndexPointer - 1);
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                const selectionIndex = searchRowIndexPointer >= 0 ? searchRowIndexPointer : 0;
-                if (activeSearchResultsCollection[selectionIndex]) {
-                    executeAnalyticsHitRegistration(activeSearchResultsCollection[selectionIndex]);
-                }
-            }
-        }
-
-        function dispatchUserToTeleportLocation(result) {
-            terminateSearchPaletteWindow();
-            switchTab(result.tab);
-
-            setTimeout(() => {
-                let targetDOMElement = null;
-
-                if (result.type === 'movement') {
-                    if (result.tab === 'all-movements') {
-                        const mRecord = state.movements.find(m => m.id === result.id || `m_${m.name.replace(/\s+/g, '_')}` === result.id);
-                        if (mRecord && mRecord.date) {
-                            document.getElementById('filterMonth').value = mRecord.date.substring(0, 7);
-                            applyFilters();
+                    // Loop through history chronologically to match active elements inside the structural state variables
+                    for (let i = 0; i < historyList.length; i++) {
+                        const match = pool.find(item => item.key === historyList[i]);
+                        if (match) {
+                            matchedHistoryItems.push(match);
+                            if (matchedHistoryItems.length === 3) break; // Strict Limit 3
                         }
                     }
-                    const wrapper = document.getElementById(`tab-${result.tab}`);
-                    if (wrapper) {
-                        targetDOMElement = wrapper.querySelector(`tr[data-id="${result.id}"]`) || wrapper.querySelector(`[data-id="${result.id}"]`);
+
+                    if (matchedHistoryItems.length === 0) {
+                        this.feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">Type something to search across all data modules...</div>`;
+                        return;
                     }
+
+                    const header = document.createElement('div');
+                    header.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
+                    header.innerHTML = `<i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Recent Searches`;
+                    this.feed.appendChild(header);
+
+                    this.results = matchedHistoryItems;
+                } else {
+                    // Regular processing branch layout: Evaluate closest match algorithms
+                    this.results = pool.filter(item => {
+                        return item.title.toLowerCase().includes(searchStr) || item.sub.toLowerCase().includes(searchStr);
+                    }).sort((a, b) => {
+                        // Sorting Matrix Factor A: Closest String Distance match evaluation
+                        const indexA = a.title.toLowerCase().indexOf(searchStr);
+                        const indexB = b.title.toLowerCase().indexOf(searchStr);
+                        if (indexA !== indexB) return indexA - indexB;
+
+                        // Sorting Matrix Factor B: Usage frequency tracking logs metrics
+                        const freqA = this.getSelectionFrequency(a.key);
+                        const freqB = this.getSelectionFrequency(b.key);
+                        return freqB - freqA;
+                    }).slice(0, 15); // Upper bound layout protection
                 }
-                else if (result.type === 'plan' || result.type === 'frequent') {
-                    targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
-                }
-                else if (result.type === 'project') {
-                    closeProjectFocusMode();
-                    targetDOMElement = document.querySelector(`div[onclick*="${result.id}"]`) || document.getElementById('projectMasterPanel');
-                }
-                else if (result.type === 'wishitem') {
-                    focusOnSpecificProjectBlueprint(result.targetProjId);
-                    setTimeout(() => {
-                        targetDOMElement = document.querySelector(`div.border:has(button[onclick*="${result.id}"])`) || document.querySelector(`[data-id="${result.id}"]`) || document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.border');
-                        triggerVisualGlowPulseAnimation(targetDOMElement);
-                    }, 120);
-                    return;
-                }
-                else if (result.type === 'note') {
-                    selectNotesMonth(result.targetMonthIdx);
-                    setTimeout(() => {
-                        targetDOMElement = document.querySelector(`dsiv.border:has(button[onclick*="${result.id}"])`) || document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.border');
-                        triggerVisualGlowPulseAnimation(targetDOMElement);
-                    }, 120);
+
+                this.render();
+            },
+
+            render() {
+                if (this.results.length === 0) {
+                    this.feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No matched database profiles located.</div>`;
                     return;
                 }
 
-                triggerVisualGlowPulseAnimation(targetDOMElement);
-            }, 180);
-        }
+                this.results.forEach((result, idx) => {
+                    const row = document.createElement('div');
+                    row.id = `palette-row-${idx}`;
+                    row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
 
-        function triggerVisualGlowPulseAnimation(element) {
-            if (!element) return;
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            element.classList.add('search-glow-focus');
-            setTimeout(() => { element.classList.remove('search-glow-focus'); }, 2500);
-        }
+                    row.innerHTML = `
+                <div class="truncate flex-1 pointer-events-none">
+                    <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
+                    <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
+                </div>
+                <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
+            `;
+
+                    row.addEventListener('click', () => this.select(result));
+                    row.addEventListener('mouseenter', () => this.highlight(idx));
+                    this.feed.appendChild(row);
+                });
+            },
+
+            highlight(index) {
+                if (this.activeIndex >= 0) {
+                    document.getElementById(`palette-row-${this.activeIndex}`)?.classList.remove('bg-blue-600/10', 'border-blue-500/30');
+                }
+                this.activeIndex = index;
+                if (this.activeIndex >= 0) {
+                    const row = document.getElementById(`palette-row-${this.activeIndex}`);
+                    row?.classList.add('bg-blue-600/10', 'border-blue-500/30');
+                    row?.scrollIntoView({ block: 'nearest' });
+                }
+            },
+
+            navigate(e) {
+                if (this.results.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.highlight((this.activeIndex + 1) % this.results.length);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.highlight(this.activeIndex <= 0 ? this.results.length - 1 : this.activeIndex - 1);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const targetIndex = this.activeIndex >= 0 ? this.activeIndex : 0;
+                    if (this.results[targetIndex]) this.select(this.results[targetIndex]);
+                }
+            },
+
+            select(result) {
+                this.saveHistory(result.key);
+                this.close();
+
+                // Fire tab switch canvas layouts
+                switchTab(result.tab);
+
+                setTimeout(() => {
+                    let targetDOMElement = null;
+
+                    if (result.type === 'movement') {
+                        if (result.tab === 'all-movements') {
+                            const movementItem = state.movements.find(m => m.id === result.id);
+                            if (movementItem && movementItem.date) {
+                                const filterInput = document.getElementById('filterMonth');
+                                if (filterInput) {
+                                    filterInput.value = movementItem.date.substring(0, 7);
+                                    applyFilters();
+                                }
+                            }
+                        }
+                        const wrapper = document.getElementById(`tab-${result.tab}`);
+                        targetDOMElement = wrapper?.querySelector(`tr[data-id="${result.id}"]`) ||
+                            wrapper?.querySelector(`[data-id="${result.id}"]`) ||
+                            document.querySelector(`tr[data-id="${result.id}"]`);
+                    }
+                    else if (result.type === 'plan' || result.type === 'frequent') {
+                        targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
+                    }
+                    else if (result.type === 'project') {
+                        closeProjectFocusMode();
+                        targetDOMElement = document.querySelector(`div[onclick*="${result.id}"]`) || document.getElementById('projectMasterPanel');
+                    }
+                    else if (result.type === 'wishitem') {
+                        focusOnSpecificProjectBlueprint(result.targetProjId);
+                        setTimeout(() => {
+                            targetDOMElement = document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.border') ||
+                                document.querySelector(`div.border[row-id="${result.id}"]`);
+                            this.glow(targetDOMElement);
+                        }, 120);
+                        return;
+                    }
+                    else if (result.type === 'note') {
+                        selectNotesMonth(result.targetMonthIdx);
+                        setTimeout(() => {
+                            // Match note boxes within note management boards directly
+                            targetDOMElement = document.querySelector(`button[onclick*="${result.id}"]`)?.closest('.w-fit') ||
+                                document.querySelector(`div.w-fit[row-id="${result.id}"]`);
+                            this.glow(targetDOMElement);
+                        }, 120);
+                        return;
+                    }
+
+                    this.glow(targetDOMElement);
+                }, 150);
+            },
+
+            glow(el) {
+                if (!el) return;
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('search-glow-focus');
+                setTimeout(() => el.classList.remove('search-glow-focus'), 2500);
+            }
+        };
+
+        // Auto-initialize components securely on application load sequences
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => MoneycoSearch.init(), 100);
+        });
 
     </script>
 </body>
