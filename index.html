@@ -1218,6 +1218,17 @@
         function renderAll() {
             renderDashboard();
             renderCategoryDashboard();
+
+            // FIXED: Force the project grid view layout components to re-render 
+            // during background delta ticks to maintain instant multi-device continuity.
+            if (typeof renderWishlistsTabDeck === 'function') {
+                renderWishlistsTabDeck();
+            }
+
+            // Also keep your nested focus sheet list updated in real-time if a project is actively opened
+            if (activeFocusedProjectId && typeof renderFocusedProjectDetailsList === 'function') {
+                renderFocusedProjectDetailsList();
+            }
         }
 
         function renderDashboard() {
