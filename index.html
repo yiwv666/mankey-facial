@@ -1548,10 +1548,10 @@
             if (contextTarget.type === 'frequent') openFrequentModal(contextTarget.id); // <-- ADD THIS LINE
         }
 
-        // Locate triggerContextDelete() and update it to look like this:
         function triggerContextDelete() {
             if (!contextTarget) return;
-            // REMOVED: if (confirm(...)) verification check interceptor
+
+            // REMOVED: if (confirm(...)) check - processes instantly
             if (contextTarget.type === 'movement') {
                 state.movements = state.movements.filter(m => m.id !== contextTarget.id);
             } else if (contextTarget.type === 'planification') {
@@ -1559,7 +1559,6 @@
             } else if (contextTarget.type === 'frequent') {
                 state.frequent = state.frequent.filter(f => f.id !== contextTarget.id);
             }
-
             saveState();
             renderAll();
             if (typeof applyFilters === 'function') applyFilters();
@@ -1674,12 +1673,12 @@
                 alert("Protected core system categories cannot be deleted.");
                 return;
             }
-            if (confirm(`Are you sure you want to completely remove "${catName}"? Existing movements will retain this label but you won't be able to select it.`)) {
-                state.categories = state.categories.filter(c => c !== catName);
-                saveState();
-                renderCategoryDashboard();
-                renderCategoryStats();
-            }
+
+            // REMOVED: if (confirm(...)) check - drops category instantly
+            state.categories = state.categories.filter(c => c !== catName);
+            saveState();
+            renderCategoryDashboard();
+            renderCategoryStats();
         }
 
         function editCategoryName(oldName) {
@@ -2150,18 +2149,17 @@
 
         function triggerContextDelete() {
             if (!contextTarget) return;
-            if (confirm(`Permanently remove this item from its respective ledger container?`)) {
-                if (contextTarget.type === 'movement') {
-                    state.movements = state.movements.filter(m => m.id !== contextTarget.id);
-                } else if (contextTarget.type === 'planification') {
-                    state.planification = state.planification.filter(p => p.id !== contextTarget.id);
-                } else if (contextTarget.type === 'frequent') {
-                    state.frequent = state.frequent.filter(f => f.id !== contextTarget.id); // Purges from core state array
-                }
-                saveState();
-                renderAll();
-                if (typeof applyFilters === 'function') applyFilters();
+            // REMOVED: legacy if (confirm(...)) wrap here
+            if (contextTarget.type === 'movement') {
+                state.movements = state.movements.filter(m => m.id !== contextTarget.id);
+            } else if (contextTarget.type === 'planification') {
+                state.planification = state.planification.filter(p => p.id !== contextTarget.id);
+            } else if (contextTarget.type === 'frequent') {
+                state.frequent = state.frequent.filter(f => f.id !== contextTarget.id);
             }
+            saveState();
+            renderAll();
+            if (typeof applyFilters === 'function') applyFilters();
         }
 
         // ==========================================
