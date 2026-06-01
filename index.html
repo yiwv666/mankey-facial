@@ -3370,37 +3370,50 @@ async function checkAndTriggerReminders() {
             if (!query) {
                 const allItemsPool = [];
 
+                // Compile database collections with absolute fail-safes for missing or undefined IDs
                 state.movements.forEach(m => {
-                    allItemsPool.push({ type: 'movement', id: m.id, title: m.name, sub: `History • Movement • ${m.category}`, meta: formatCurrency(m.amount), tab: 'all-movements', historyKey: `movement_${m.id}`, rawDate: m.date });
+                    const itemId = m.id || `fallback_${m.name.replace(/\s+/g, '_')}`;
+                    allItemsPool.push({ type: 'movement', id: itemId, title: m.name, sub: `History • Movement • ${m.category}`, meta: formatCurrency(m.amount), tab: 'all-movements', historyKey: `movement_${itemId}`, rawDate: m.date });
                 });
                 (state.planification || []).forEach(p => {
-                    allItemsPool.push({ type: 'plan', id: p.id, title: p.name, sub: `History • Planned Budget`, meta: formatCurrency(p.amount), tab: 'dashboard', historyKey: `plan_${p.id}`, rawDate: '0000-00-00' });
+                    const itemId = p.id || `fallback_${p.name.replace(/\s+/g, '_')}`;
+                    allItemsPool.push({ type: 'plan', id: itemId, title: p.name, sub: `History • Planned Budget`, meta: formatCurrency(p.amount), tab: 'dashboard', historyKey: `plan_${itemId}`, rawDate: '0000-00-00' });
                 });
                 (state.frequent || []).forEach(f => {
-                    allItemsPool.push({ type: 'frequent', id: f.id, title: f.name, sub: `History • Frequent Template`, meta: formatCurrency(f.amount), tab: 'dashboard', historyKey: `frequent_${f.id}`, rawDate: '0000-00-00' });
+                    const itemId = f.id || `fallback_${f.name.replace(/\s+/g, '_')}`;
+                    allItemsPool.push({ type: 'frequent', id: itemId, title: f.name, sub: `History • Frequent Template`, meta: formatCurrency(f.amount), tab: 'dashboard', historyKey: `frequent_${itemId}`, rawDate: '0000-00-00' });
                 });
                 (state.projects || []).forEach(proj => {
-                    allItemsPool.push({ type: 'project', id: proj.id, title: proj.name, sub: `History • Project Folder`, meta: 'Folder', tab: 'wishlists', targetProjId: proj.id, historyKey: `project_${proj.id}`, rawDate: '0000-00-00' });
+                    const projId = proj.id || `fallback_${proj.name.replace(/\s+/g, '_')}`;
+                    allItemsPool.push({ type: 'project', id: projId, title: proj.name, sub: `History • Project Folder`, meta: 'Folder', tab: 'wishlists', targetProjId: projId, historyKey: `project_${projId}`, rawDate: '0000-00-00' });
                     (proj.items || []).forEach(item => {
-                        allItemsPool.push({ type: 'wishitem', id: item.id, title: item.name, sub: `History • Project Spec`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: proj.id, historyKey: `wishitem_${item.id}`, rawDate: '0000-00-00' });
+                        const itemId = item.id || `fallback_${item.name.replace(/\s+/g, '_')}`;
+                        allItemsPool.push({ type: 'wishitem', id: itemId, title: item.name, sub: `History • Project Spec`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: projId, historyKey: `wishitem_${itemId}`, rawDate: '0000-00-00' });
                     });
                 });
                 if (state.notes) {
                     Object.keys(state.notes).forEach(monthKey => {
                         const idx = parseInt(monthKey.replace('month_', ''));
                         (state.notes[monthKey] || []).forEach(note => {
-                            allItemsPool.push({ type: 'note', id: note.id, title: decodeSanitizedNoteString(note.text), sub: `History • Note • ${calendarMonthsNames[idx]}`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, historyKey: `note_${note.id}`, rawDate: '0000-00-00' });
+                            const itemId = note.id || `fallback_${idx}_note`;
+                            allItemsPool.push({ type: 'note', id: itemId, title: decodeSanitizedNoteString(note.text), sub: `History • Note • ${calendarMonthsNames[idx]}`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, historyKey: `note_${itemId}`, rawDate: '0000-00-00' });
                         });
                     });
                 }
 
-                const hasSearchHistory = Object.values(searchHistoryDB).some(score => score > 0);
+                // Clean calculation parsing logic check to see if database has records with scores > 0
+                let hasSearchHistory = false;
+                const scoresList = Object.keys(searchHistoryDB);
+                for (let i = 0; i < scoresList.length; i++) {
+                    if (searchHistoryDB[scoresList[i]] > 0) {
+                        hasSearchHistory = true;
+                        break;
+                    }
+                }
 
                 if (hasSearchHistory) {
-                    // Match items with frequency scores above zero
                     const scoredItems = allItemsPool.filter(item => (searchHistoryDB[item.historyKey] || 0) > 0);
 
-                    // --- LOG CHANGE: OUTPUT ACTIVE SELECTION SCORE CHART ---
                     console.groupCollapsed("%c[Search Analytics Engine] Current History Priority Leaderboard", "color: #10b981; font-weight: bold;");
                     console.table(scoredItems.map(item => ({
                         "History Key": item.historyKey,
@@ -3414,22 +3427,12 @@ async function checkAndTriggerReminders() {
                         .sort((a, b) => (searchHistoryDB[b.historyKey] || 0) - (searchHistoryDB[a.historyKey] || 0))
                         .slice(0, 5);
                 } else {
-                    // --- LOG CHANGE: NOTICE ON BRAND NEW SESSIONS ---
-                    console.log("%c[Search Analytics Engine] No custom history entries loaded yet. Displaying fallback activity shortcuts.", "color: #eab308; italic");
+                    console.log("%c[Search Analytics Engine] No custom history entries loaded yet. Displaying fallback activity shortcuts.", "color: #eab308; font-style: italic;");
 
                     currentSearchResultsArray = allItemsPool
                         .filter(item => item.type === 'movement')
                         .sort((a, b) => b.rawDate.localeCompare(a.rawDate))
                         .slice(0, 5);
-                }
-
-                if (currentSearchResultsArray.length === 0) {
-                    feed.innerHTML = `
-                <div class="text-center py-10 text-gray-600 text-xs flex flex-col items-center justify-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left text-base text-gray-700"></i>
-                    <span class="italic font-medium">Type something to search across all data modules...</span>
-                </div>`;
-                    return;
                 }
 
                 const placeholderHeader = document.createElement('div');
@@ -3447,25 +3450,29 @@ async function checkAndTriggerReminders() {
                 // Domain A: All Movements Ledger Logs
                 state.movements.forEach(m => {
                     if (m.name.toLowerCase().includes(query) || m.category.toLowerCase().includes(query)) {
-                        currentSearchResultsArray.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', historyKey: `movement_${m.id}`, targetProjId: "", targetMonthIdx: -1 });
+                        const itemId = m.id || `fallback_${m.name.replace(/\s+/g, '_')}`;
+                        currentSearchResultsArray.push({ type: 'movement', id: itemId, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', historyKey: `movement_${itemId}`, targetProjId: "", targetMonthIdx: -1 });
                     }
                 });
 
                 // Domain B: Next Payment Plan Upcoming Budgets
                 (state.planification || []).forEach(p => {
                     if (p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)) {
-                        currentSearchResultsArray.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', historyKey: `plan_${p.id}`, targetProjId: "", targetMonthIdx: -1 });
+                        const itemId = p.id || `fallback_${p.name.replace(/\s+/g, '_')}`;
+                        currentSearchResultsArray.push({ type: 'plan', id: itemId, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', historyKey: `plan_${itemId}`, targetProjId: "", targetMonthIdx: -1 });
                     }
                 });
 
                 // Domain C: Wishlist Folders and Nested Project Specifications Checklist Items
                 (state.projects || []).forEach(proj => {
+                    const projId = proj.id || `fallback_${proj.name.replace(/\s+/g, '_')}`;
                     if (proj.name.toLowerCase().includes(query)) {
-                        currentSearchResultsArray.push({ type: 'project', id: proj.id, title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', tab: 'wishlists', targetProjId: proj.id, historyKey: `project_${proj.id}`, targetMonthIdx: -1 });
+                        currentSearchResultsArray.push({ type: 'project', id: projId, title: proj.name, sub: `Project Folder Blueprint`, meta: 'Folder', tab: 'wishlists', targetProjId: projId, historyKey: `project_${projId}`, targetMonthIdx: -1 });
                     }
                     (proj.items || []).forEach(item => {
                         if (item.name.toLowerCase().includes(query)) {
-                            currentSearchResultsArray.push({ type: 'wishitem', id: item.id, title: item.name, sub: `Project Spec Item • Inside "${proj.name}"`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: proj.id, historyKey: `wishitem_${item.id}`, targetMonthIdx: -1 });
+                            const itemId = item.id || `fallback_${item.name.replace(/\s+/g, '_')}`;
+                            currentSearchResultsArray.push({ type: 'wishitem', id: itemId, title: item.name, sub: `Project Spec Item • Inside "${proj.name}"`, meta: formatCurrency(item.price), tab: 'wishlists', targetProjId: projId, historyKey: `wishitem_${itemId}`, targetMonthIdx: -1 });
                         }
                     });
                 });
@@ -3478,7 +3485,8 @@ async function checkAndTriggerReminders() {
                         notesList.forEach(note => {
                             const decoded = decodeSanitizedNoteString(note.text);
                             if (decoded.toLowerCase().includes(query)) {
-                                currentSearchResultsArray.push({ type: 'note', id: note.id, title: decoded, sub: `Monthly Note Memorandum • ${calendarMonthsNames[idx]} Line`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, historyKey: `note_${note.id}`, targetProjId: "" });
+                                const itemId = note.id || `fallback_${idx}_note`;
+                                currentSearchResultsArray.push({ type: 'note', id: itemId, title: decoded, sub: `Monthly Note Memorandum • ${calendarMonthsNames[idx]} Line`, meta: 'Note', tab: 'notes', targetMonthIdx: idx, historyKey: `note_${itemId}`, targetProjId: "" });
                             }
                         });
                     });
@@ -3487,11 +3495,11 @@ async function checkAndTriggerReminders() {
                 // Domain E: Frequent Expense Templates
                 (state.frequent || []).forEach(f => {
                     if (f.name.toLowerCase().includes(query) || f.category.toLowerCase().includes(query)) {
-                        currentSearchResultsArray.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Expense Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', historyKey: `frequent_${f.id}`, targetProjId: "", targetMonthIdx: -1 });
+                        const itemId = f.id || `fallback_${f.name.replace(/\s+/g, '_')}`;
+                        currentSearchResultsArray.push({ type: 'frequent', id: itemId, title: f.name, sub: `Frequent Expense Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', historyKey: `frequent_${itemId}`, targetProjId: "", targetMonthIdx: -1 });
                     }
                 });
 
-                // Apply the click frequency weight sorting layout engine
                 currentSearchResultsArray.sort((a, b) => (searchHistoryDB[b.historyKey] || 0) - (searchHistoryDB[a.historyKey] || 0));
             }
 
