@@ -3532,7 +3532,14 @@ async function checkAndTriggerReminders() {
             // 4. Lock changes safely into browser memory
             localStorage.setItem('MONEYCO_SEARCH_HISTORY', JSON.stringify(searchHistoryDB));
 
-            // 5. Reconstruct the clean payload object to send down to your viewport routing teleport engine
+            // 5. FIX: Force the search query engine to re-run immediately with whatever is currently 
+            // typed in the search box (or an empty string) to synchronize priority sorting weights instantly.
+            const currentSearchInput = document.getElementById('paletteSearchBox');
+            if (currentSearchInput) {
+                executeUniversalSearchQuery(currentSearchInput.value);
+            }
+
+            // 6. Reconstruct the clean payload object to send down to your viewport routing teleport engine
             const reconstructedResult = {
                 historyKey: historyKey,
                 type: type,
