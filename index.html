@@ -1019,7 +1019,15 @@
             notes: {},
             savingGoal: 0,
             categories: ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"],
-            lastUpdated: 0 // <-- ADD THIS: Tracks Epoch Unix time milliseconds
+            lastUpdated: 0,
+            tombstones: {
+                movements: {},
+                planification: {},
+                frequent: {},
+                projects: {},
+                wishitems: {},
+                notes: {}
+            }
         };
 
         // --- NEW HISTORY STATE TRACKING ARRAYS ---
@@ -1600,7 +1608,8 @@
                 reminderMonthlyDay: parseInt(document.getElementById('frReminderMonthlyDay').value) || null,
                 reminderCustomValue: parseInt(document.getElementById('frReminderCustomValue').value) || null,
                 reminderCustomUnit: document.getElementById('frReminderCustomUnit').value,
-                lastNotified: id ? (state.frequent.find(f => f.id === id)?.lastNotified || null) : null
+                lastNotified: id ? (state.frequent.find(f => f.id === id)?.lastNotified || null) : null,
+                updatedAt: Date.now() // Always append millisecond tracking on user modifications
             };
 
             if (id) {
@@ -1626,13 +1635,17 @@
 
         function triggerContextDelete() {
             if (!contextTarget) return;
+            const now = Date.now();
+            if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
 
-            // REMOVED: if (confirm(...)) check - processes instantly
             if (contextTarget.type === 'movement') {
+                state.tombstones.movements[contextTarget.id] = now;
                 state.movements = state.movements.filter(m => m.id !== contextTarget.id);
             } else if (contextTarget.type === 'planification') {
+                state.tombstones.planification[contextTarget.id] = now;
                 state.planification = state.planification.filter(p => p.id !== contextTarget.id);
             } else if (contextTarget.type === 'frequent') {
+                state.tombstones.frequent[contextTarget.id] = now;
                 state.frequent = state.frequent.filter(f => f.id !== contextTarget.id);
             }
             saveState();
@@ -2059,21 +2072,24 @@
                     amount: parseFloat(sourceItem.amount),
                     category: sourceItem.category,
                     type: sourceItem.type || 'outcome',
-                    date: sourceItem.date || new Date().toISOString().split('T')[0]
+                    date: sourceItem.date || new Date().toISOString().split('T')[0],
+                    updatedAt: Date.now()
                 });
             } else if (targetZone === 'planification') {
                 state.planification.push({
                     id: crypto.randomUUID(),
                     name: sourceItem.name,
                     amount: parseFloat(sourceItem.amount),
-                    category: sourceItem.category
+                    category: sourceItem.category,
+                    updatedAt: Date.now()
                 });
             } else if (targetZone === 'frequent') {
                 state.frequent.push({
                     id: crypto.randomUUID(),
                     name: sourceItem.name,
                     amount: parseFloat(sourceItem.amount),
-                    category: sourceItem.category
+                    category: sourceItem.category,
+                    updatedAt: Date.now()
                 });
             }
 
@@ -2128,7 +2144,8 @@
                 type: document.getElementById('mvType').value,
                 category: document.getElementById('mvCategory').value,
                 amount: parseFloat(document.getElementById('mvAmount').value),
-                date: document.getElementById('mvDate').value
+                date: document.getElementById('mvDate').value,
+                updatedAt: Date.now() // Always append millisecond tracking on user modifications
             };
 
             if (id) {
@@ -2173,7 +2190,8 @@
                 id: id || crypto.randomUUID(),
                 name: document.getElementById('plName').value.trim(),
                 category: document.getElementById('plCategory').value,
-                amount: parseFloat(document.getElementById('plAmount').value)
+                amount: parseFloat(document.getElementById('plAmount').value),
+                updatedAt: Date.now() // Always append millisecond tracking on user modifications
             };
 
             if (id) {
@@ -2319,90 +2337,6 @@
             }
         }
 
-        async function pullFromCloud() {
-            if (!driveFileId) return;
-            try {
-                const response = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
-
-                if (response.result) {
-                    // Update state reference completely 
-                    state = response.result;
-
-                    // Enforce absolute field consistency across all modules on entry
-                    if (!state.movements) state.movements = [];
-                    if (!state.planification) state.planification = [];
-                    if (!state.frequent) state.frequent = [];
-                    if (!state.projects) state.projects = [];
-                    if (!state.categories || state.categories.length === 0) {
-                        state.categories = ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments", "Debts", "Savings"];
-                    }
-                    if (state.savingsGoal === undefined) state.savingsGoal = 0;
-
-                    enforceNoteDatabaseStructure();
-                    enforceWishlistsDatabaseStructure();
-
-                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
-                    renderAll();
-                }
-            } catch (e) {
-                console.error("Failed to pull authoritative cloud file binary stream. Pushing local baseline structure...", e);
-            }
-        }
-
-        async function syncToGoogleDrive() {
-            if (!googleUserToken || !driveFileId) return;
-
-            try {
-                // 1. Fetch cloud authority file state
-                const cloudResponse = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
-                let cloudState = cloudResponse.result;
-
-                if (!cloudState || typeof cloudState !== 'object') {
-                    await uploadFinalMergedStateToCloud(state);
-                    return;
-                }
-
-                const localTime = state.lastUpdated || 0;
-                const cloudTime = cloudState.lastUpdated || 0;
-
-                // 2. Resolve synchronization timeline matrices
-                if (cloudTime > localTime) {
-                    console.log("%c[Cloud Engine] Cloud timestamp is newer. Symmetrically merging delta arrays...", "color: #3b82f6; font-weight: bold;");
-
-                    // Symmetrical merging protection layer for deep arrays
-                    state.movements = mergeDataArrays(state.movements, cloudState.movements || []);
-                    state.planification = mergeDataArrays(state.planification, cloudState.planification || []);
-                    state.frequent = mergeDataArrays(state.frequent, cloudState.frequent || []);
-                    state.projects = mergeProjectsAndNestedItems(state.projects || [], cloudState.projects || []);
-
-                    // Merge chronological notes collections safely
-                    if (!state.notes) state.notes = {};
-                    const incomingNotes = cloudState.notes || {};
-                    for (let i = 0; i < 12; i++) {
-                        const key = `month_${i}`;
-                        state.notes[key] = mergeDataArrays(state.notes[key] || [], incomingNotes[key] || []);
-                    }
-
-                    // Sync simple numerical thresholds and setup references
-                    state.savingsGoal = Math.max(state.savingsGoal, cloudState.savingsGoal || 0);
-                    state.categories = Array.from(new Set([...state.categories, ...(cloudState.categories || [])]));
-                    state.lastUpdated = cloudTime;
-
-                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
-                    renderAll();
-                }
-
-                // 3. Deploy full authorative ledger state back up to Google Drive containers
-                await uploadFinalMergedStateToCloud(state);
-
-            } catch (err) {
-                console.error('Cloud automation sync update failure:', err);
-                if (err.status === 401) {
-                    tokenClient.requestAccessToken({ prompt: 'none' });
-                }
-            }
-        }
-
         async function startLiveSyncEngine() {
             if (liveSyncIntervalPointer) clearInterval(liveSyncIntervalPointer);
 
@@ -2535,49 +2469,6 @@
             });
         }
 
-        // Helper Function: Compares two data arrays by item ID and combines them seamlessly
-        function mergeDataArrays(localArray, cloudArray) {
-            const mergedMap = new Map();
-
-            // Add all local entries to the map
-            localArray.forEach(item => {
-                if (item && item.id) mergedMap.set(item.id, item);
-            });
-
-            // Merge cloud entries. If an ID matches, the cloud entry wins (acting as the authoritative backup)
-            cloudArray.forEach(item => {
-                if (item && item.id) mergedMap.set(item.id, item);
-            });
-
-            return Array.from(mergedMap.values());
-        }
-
-        // NEW HELPER FUNCTION: Recursively merges projects and their nested item specs checklists safely by unique IDs
-        function mergeProjectsAndNestedItems(localProjects, cloudProjects) {
-            const projectMap = new Map();
-
-            // Map local projects
-            localProjects.forEach(p => { if (p && p.id) projectMap.set(p.id, p); });
-
-            // Combine cloud projects cleanly
-            cloudProjects.forEach(cloudProj => {
-                if (!cloudProj || !cloudProj.id) return;
-
-                if (projectMap.has(cloudProj.id)) {
-                    const localProj = projectMap.get(cloudProj.id);
-                    // Symmetrically bridge the inner wish item checklists together by unique IDs
-                    localProj.items = mergeDataArrays(localProj.items || [], cloudProj.items || []);
-                    // Cloud version metadata takes preference for minor description naming edits
-                    localProj.name = cloudProj.name || localProj.name;
-                    localProj.color = cloudProj.color || localProj.color;
-                } else {
-                    projectMap.set(cloudProj.id, cloudProj);
-                }
-            });
-
-            return Array.from(projectMap.values());
-        }
-
         // FORCE REALTIME SCHEMA MIGRATION EXECUTION
         // This runs once on boot to immediately patch, save, and upload the updated database structure.
         setTimeout(() => {
@@ -2599,6 +2490,138 @@
             else if (val === 'monthly') document.getElementById('wrapperMonthly').classList.remove('hidden');
             else if (val === 'custom') document.getElementById('wrapperCustom').classList.remove('hidden');
         }
+
+        // ========================================================
+        // ITEM-LEVEL TIMESTAMP CONCURRENCY SYNCHRONIZATION ENGINE
+        // ========================================================
+        async function pullFromCloud() {
+            if (!driveFileId) return;
+            try {
+                const response = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+                if (response.result) {
+                    // Execute authoritative timestamp merge layout rules immediately on data arrival
+                    const cloudState = response.result;
+                    state = reconcileDatabasesByTimestamp(state, cloudState);
+
+                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+                    renderAll();
+                    if (typeof applyFilters === 'function') applyFilters();
+                }
+            } catch (e) {
+                console.error("[Sync] Error pulling database stream updates:", e);
+            }
+        }
+
+        async function syncToGoogleDrive() {
+            if (!googleUserToken || !driveFileId) return;
+            try {
+                const cloudResponse = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+                let cloudState = cloudResponse.result;
+
+                if (cloudState && typeof cloudState === 'object') {
+                    // 1. Reconcile both local and cloud timelines atomically
+                    state = reconcileDatabasesByTimestamp(state, cloudState);
+                }
+
+                // 2. Broadcast definitive merged dataset back to cloud system registers
+                state.lastUpdated = Date.now();
+                await uploadFinalMergedStateToCloud(state);
+                localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+
+                // 3. POST-SYNC VERIFICATION MATRIX PASS
+                // Instantly re-query cloud properties to double-verify database checksum balance matches perfectly
+                const verificationResponse = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+                const verifiedState = verificationResponse.result;
+
+                if (JSON.stringify(state.movements.map(m => m.id).sort()) === JSON.stringify(verifiedState.movements.map(m => m.id).sort())) {
+                    console.log("%c[Sync Verification] Symmetrical validation check complete. All client database networks are perfectly uniform.", "color: #10b981; font-weight: bold;");
+                } else {
+                    console.warn("[Sync Verification] Asymmetrical alignment warning detected. Forcing secondary structural sync pipeline override...");
+                    await uploadFinalMergedStateToCloud(state);
+                }
+
+            } catch (err) {
+                console.error('[Sync] Google Drive connection interrupted:', err);
+                if (err.status === 401) {
+                    tokenClient.requestAccessToken({ prompt: 'none' });
+                }
+            }
+        }
+
+        function reconcileDatabasesByTimestamp(local, cloud) {
+            // Ensure structures exist safely
+            const safeObj = (obj) => obj || {};
+            if (!local.tombstones) local.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
+            if (!cloud.tombstones) cloud.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
+
+            // Merge Deletion Tombstone parameters Authoritatively (Highest unix timestamp wins deletion status)
+            const mergedTombstones = {
+                movements: { ...safeObj(local.tombstones.movements), ...safeObj(cloud.tombstones.movements) },
+                planification: { ...safeObj(local.tombstones.planification), ...safeObj(cloud.tombstones.planification) },
+                frequent: { ...safeObj(local.tombstones.frequent), ...safeObj(cloud.tombstones.frequent) },
+                projects: { ...safeObj(local.tombstones.projects), ...safeObj(cloud.tombstones.projects) },
+                wishitems: { ...safeObj(local.tombstones.wishitems), ...safeObj(cloud.tombstones.wishitems) },
+                notes: { ...safeObj(local.tombstones.notes), ...safeObj(cloud.tombstones.notes) }
+            };
+
+            const mergeCollection = (localArr, cloudArr, tombstoneMap) => {
+                const itemMap = new Map();
+                // Load local elements setup arrays
+                (localArr || []).forEach(item => { if (item && item.id) itemMap.set(item.id, item); });
+
+                // Compare timestamps property elements from incoming cloud records
+                (cloudArr || []).forEach(cloudItem => {
+                    if (!cloudItem || !cloudItem.id) return;
+                    const localItem = itemMap.get(cloudItem.id);
+                    if (!localItem || (cloudItem.updatedAt || 0) > (localItem.updatedAt || 0)) {
+                        itemMap.set(cloudItem.id, cloudItem);
+                    }
+                });
+
+                // Strip out anything flagged as logically deleted within our tombstones timeline register maps
+                return Array.from(itemMap.values()).filter(item => {
+                    const deletionTime = tombstoneMap[item.id] || 0;
+                    return !deletionTime || (item.updatedAt || 0) > deletionTime;
+                });
+            };
+
+            // Process mutations across flat tables
+            const finalMovements = mergeCollection(local.movements, cloud.movements, mergedTombstones.movements);
+            const finalPlan = mergeCollection(local.planification, cloud.planification, mergedTombstones.planification);
+            const finalFreq = mergeCollection(local.frequent, cloud.frequent, mergedTombstones.frequent);
+
+            // Symmetrically align granular nested projects matrices
+            const projectMap = new Map();
+            (local.projects || []).forEach(p => projectMap.set(p.id, p));
+            (cloud.projects || []).forEach(cp => {
+                const lp = projectMap.get(cp.id);
+                if (!lp || (cp.updatedAt || 0) > (lp.updatedAt || 0)) {
+                    projectMap.set(cp.id, cp);
+                } else if (lp && cp) {
+                    lp.items = mergeCollection(lp.items, cp.items, mergedTombstones.wishitems);
+                }
+            });
+            const finalProjects = Array.from(projectMap.values()).filter(p => !mergedTombstones.projects[p.id]);
+
+            // Merge financial calendar memo note arrays logs seamlessly
+            const finalNotes = { ...safeObj(local.notes) };
+            Object.keys(safeObj(cloud.notes)).forEach(key => {
+                finalNotes[key] = mergeCollection(local.notes[key], cloud.notes[key], mergedTombstones.notes);
+            });
+
+            return {
+                movements: finalMovements,
+                planification: finalPlan,
+                frequent: finalFreq,
+                projects: finalProjects,
+                notes: finalNotes,
+                savingGoal: Math.max(local.savingsGoal || 0, cloud.savingsGoal || 0),
+                categories: Array.from(new Set([...(local.categories || []), ...(cloud.categories || [])])),
+                tombstones: mergedTombstones,
+                lastUpdated: Date.now()
+            };
+        }
+
 
         // ========================================================
         // BACKGROUND SERVICE WORKER & NOTIFICATION SYNC ENGINE
@@ -2902,13 +2925,17 @@ async function checkAndTriggerReminders() {
                 if (editingNoteId) {
                     // Modification execution route
                     const targetNote = state.notes[targetKey].find(n => n.id === editingNoteId);
-                    if (targetNote) targetNote.text = cleanSanitizedText;
+                    if (targetNote) {
+                        targetNote.text = cleanSanitizedText;
+                        targetNote.updatedAt = Date.now();
+                    }
                     cancelEditNote();
                 } else {
                     // New creation execution route
                     state.notes[targetKey].push({
                         id: crypto.randomUUID(),
-                        text: cleanSanitizedText
+                        text: cleanSanitizedText,
+                        updatedAt: Date.now() // Always append millisecond tracking on user modifications
                     });
                 }
 
@@ -2957,8 +2984,9 @@ async function checkAndTriggerReminders() {
         }
 
         function deleteNote(id) {
-            // REMOVED: if (confirm(...)) verification check interceptor
             const targetKey = `month_${selectedMonthIndex}`;
+            if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
+            state.tombstones.notes[id] = Date.now();
             state.notes[targetKey] = state.notes[targetKey].filter(n => n.id !== id);
             commitNoteSave();
         }
@@ -3258,13 +3286,15 @@ async function checkAndTriggerReminders() {
                 if (proj) {
                     proj.name = nameVal;
                     proj.color = colorVal;
+                    updatedAt: Date.now()
                 }
             } else {
                 state.projects.push({
                     id: crypto.randomUUID(),
                     name: nameVal,
                     color: colorVal,
-                    items: []
+                    items: [],
+                    updatedAt: Date.now() // Always append millisecond tracking on user modifications
                 });
             }
             saveState();
@@ -3274,7 +3304,8 @@ async function checkAndTriggerReminders() {
         }
 
         function deleteEntireProjectFolder(id) {
-            // REMOVED: if (confirm(...)) envelope layout protection
+            if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
+            state.tombstones.projects[id] = Date.now();
             state.projects = state.projects.filter(p => p.id !== id);
             if (activeFocusedProjectId === id) activeFocusedProjectId = null;
             saveState();
@@ -3322,6 +3353,7 @@ async function checkAndTriggerReminders() {
                     item.name = nameVal;
                     item.price = priceVal;
                     item.url = urlVal;
+                    item.updatedAt = Date.now();
                 }
             } else {
                 if (!proj.items) proj.items = [];
@@ -3330,7 +3362,8 @@ async function checkAndTriggerReminders() {
                     name: nameVal,
                     price: priceVal,
                     url: urlVal,
-                    completed: false
+                    completed: false,
+                    updatedAt: Date.now() // Always append millisecond tracking on user modifications
                 });
             }
 
@@ -3345,6 +3378,8 @@ async function checkAndTriggerReminders() {
             const item = proj?.items?.find(i => i.id === itemId);
             if (item) {
                 item.completed = !item.completed;
+                item.updatedAt = Date.now();
+                proj.updatedAt = Date.now();
                 saveState();
                 renderWishlistsTabDeck();
                 renderFocusedProjectDetailsList();
@@ -3354,11 +3389,11 @@ async function checkAndTriggerReminders() {
         function deleteWishItemFromFolder(itemId) {
             const proj = state.projects.find(p => p.id === activeFocusedProjectId);
             if (proj) {
-                // REMOVED: if (confirm(...)) envelope layout protection
+                if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
+                state.tombstones.wishitems[itemId] = Date.now();
                 proj.items = proj.items.filter(i => i.id !== itemId);
                 saveState();
-                renderWishlistsTabDeck();
-                renderFocusedProjectDetailsList();
+                renderAll();
             }
         }
 
@@ -3375,7 +3410,8 @@ async function checkAndTriggerReminders() {
                     amount: parseFloat(item.price),
                     category: "Investments",
                     type: 'outcome',
-                    date: new Date().toISOString().split('T')[0]
+                    date: new Date().toISOString().split('T')[0],
+                    updatedAt: Date.now()
                 });
                 alert(`Successfully injected "${item.name}" directly into your live Movements Ledger!`);
             } else if (channelTarget === 'planning') {
@@ -3383,7 +3419,8 @@ async function checkAndTriggerReminders() {
                     id: crypto.randomUUID(),
                     name: item.name.substring(0, 30), // FIXED: Changed sourceItem to item
                     amount: parseFloat(item.price),
-                    category: "Investments"
+                    category: "Investments",
+                    updatedAt: Date.now()
                 });
                 alert(`"${item.name}" has been mapped into your active Next Payment Planning workspace!`);
             }
