@@ -2290,7 +2290,9 @@
             checkCloudAuthStatus();
         }
 
-        // --- UPGRADED ROBUST NETWORK TRACKING & TOKEN REFRESH ENGINE ---
+        // ========================================================
+        // ENHANCED AUTO-REFRESHING CLOUD STORAGE SYNCHRONIZER
+        // ========================================================
         async function checkCloudAuthStatus() {
             if (!gapiInited || !gisInited) return;
 
@@ -2300,13 +2302,11 @@
             try {
                 googleUserToken = JSON.parse(savedToken);
 
-                // CRITICAL SEAMLESS CHECK: Verify token lifetime buffer validity parameters explicitly
-                // Tokens hold a 3600-second window. If less than 5 minutes (300000ms) remain, auto-request a silent rollover refresh token
+                // Token rollover check: if less than 5 minutes remain on the token lifecycle, refresh it silently
                 const isTokenExpired = !googleUserToken.expires_at || (Date.now() >= googleUserToken.expires_at - 300000);
 
                 if (isTokenExpired) {
                     console.log("%c[Cloud Network] Auth token lifecycle threshold reached. Initiating background silent refresh pass...", "color: #eab308; font-weight: bold;");
-                    // Request token silently from Google identity servers without throwing consent screens
                     tokenClient.requestAccessToken({ prompt: 'none' });
                 } else {
                     gapi.client.setToken(googleUserToken);
@@ -2318,6 +2318,135 @@
                 updateDriveStatus(false);
             }
         }
+
+        async function pullFromCloud() {
+            if (!driveFileId) return;
+            try {
+                const response = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+
+                if (response.result) {
+                    // Update state reference completely 
+                    state = response.result;
+
+                    // Enforce absolute field consistency across all modules on entry
+                    if (!state.movements) state.movements = [];
+                    if (!state.planification) state.planification = [];
+                    if (!state.frequent) state.frequent = [];
+                    if (!state.projects) state.projects = [];
+                    if (!state.categories || state.categories.length === 0) {
+                        state.categories = ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments", "Debts", "Savings"];
+                    }
+                    if (state.savingsGoal === undefined) state.savingsGoal = 0;
+
+                    enforceNoteDatabaseStructure();
+                    enforceWishlistsDatabaseStructure();
+
+                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+                    renderAll();
+                }
+            } catch (e) {
+                console.error("Failed to pull authoritative cloud file binary stream. Pushing local baseline structure...", e);
+            }
+        }
+
+        async function syncToGoogleDrive() {
+            if (!googleUserToken || !driveFileId) return;
+
+            try {
+                // 1. Fetch cloud authority file state
+                const cloudResponse = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+                let cloudState = cloudResponse.result;
+
+                if (!cloudState || typeof cloudState !== 'object') {
+                    await uploadFinalMergedStateToCloud(state);
+                    return;
+                }
+
+                const localTime = state.lastUpdated || 0;
+                const cloudTime = cloudState.lastUpdated || 0;
+
+                // 2. Resolve synchronization timeline matrices
+                if (cloudTime > localTime) {
+                    console.log("%c[Cloud Engine] Cloud timestamp is newer. Symmetrically merging delta arrays...", "color: #3b82f6; font-weight: bold;");
+
+                    // Symmetrical merging protection layer for deep arrays
+                    state.movements = mergeDataArrays(state.movements, cloudState.movements || []);
+                    state.planification = mergeDataArrays(state.planification, cloudState.planification || []);
+                    state.frequent = mergeDataArrays(state.frequent, cloudState.frequent || []);
+                    state.projects = mergeProjectsAndNestedItems(state.projects || [], cloudState.projects || []);
+
+                    // Merge chronological notes collections safely
+                    if (!state.notes) state.notes = {};
+                    const incomingNotes = cloudState.notes || {};
+                    for (let i = 0; i < 12; i++) {
+                        const key = `month_${i}`;
+                        state.notes[key] = mergeDataArrays(state.notes[key] || [], incomingNotes[key] || []);
+                    }
+
+                    // Sync simple numerical thresholds and setup references
+                    state.savingsGoal = Math.max(state.savingsGoal, cloudState.savingsGoal || 0);
+                    state.categories = Array.from(new Set([...state.categories, ...(cloudState.categories || [])]));
+                    state.lastUpdated = cloudTime;
+
+                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+                    renderAll();
+                }
+
+                // 3. Deploy full authorative ledger state back up to Google Drive containers
+                await uploadFinalMergedStateToCloud(state);
+
+            } catch (err) {
+                console.error('Cloud automation sync update failure:', err);
+                if (err.status === 401) {
+                    tokenClient.requestAccessToken({ prompt: 'none' });
+                }
+            }
+        }
+
+        async function startLiveSyncEngine() {
+            if (liveSyncIntervalPointer) clearInterval(liveSyncIntervalPointer);
+
+            liveSyncIntervalPointer = setInterval(async () => {
+                if (!googleUserToken || !driveFileId || isCurrentlySyncingFlag) return;
+                if (document.activeElement && document.activeElement.id === 'noteInputBox') return;
+
+                try {
+                    isCurrentlySyncingFlag = true;
+
+                    const badge = document.getElementById('liveSyncBadge');
+                    if (badge) badge.classList.add('border-emerald-400', 'bg-emerald-500/30');
+
+                    const fileMeta = await gapi.client.drive.files.get({
+                        fileId: driveFileId,
+                        fields: 'modifiedTime'
+                    });
+
+                    const cloudModifiedTime = new Date(fileMeta.result.modifiedTime).getTime();
+                    const localLastUpdatedTime = state.lastUpdated || 0;
+
+                    if (cloudModifiedTime > localLastUpdatedTime) {
+                        console.log("%c[Live Sync Checking] Remote modification detected. Fetching cloud delta updates...", "color: #10b981; font-weight: bold;");
+                        await syncToGoogleDrive();
+                    }
+
+                    setTimeout(() => {
+                        if (badge) badge.classList.remove('border-emerald-400', 'bg-emerald-500/30');
+                        isCurrentlySyncingFlag = false;
+                    }, 600);
+
+                } catch (err) {
+                    isCurrentlySyncingFlag = false;
+                    console.warn("[Live Sync Heartbeat] Intercepted background exception status:", err.status || err);
+
+                    // Auto-resolve network token timeout states seamlessly without shifting UI focus parameters
+                    if (err.status === 401) {
+                        console.log("%c[Live Sync Engine] Token expiration identified. Running automated re-authentication sequence...", "color: #f43f5e; font-weight: bold;");
+                        tokenClient.requestAccessToken({ prompt: 'none' });
+                    }
+                }
+            }, 6000); // 6-second heartbeat polling cycle
+        }
+
 
         function handleAuthClick() {
             if (!tokenClient) return alert("Google API Script libraries compiling. Retry in a moment.");
@@ -2389,97 +2518,6 @@
                 driveFileId = response.result.id;
                 await syncToGoogleDrive();
             } catch (e) { console.error("Error creating state container boundary file", e); }
-        }
-
-        async function pullFromCloud() {
-            if (!driveFileId) return;
-            try {
-                const response = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
-
-                // Loosened security check constraint to catch and upgrade old file versions
-                if (response.result) {
-                    state = response.result;
-
-                    // CRITICAL FIX: Ensure incoming cloud data updates seamlessly to the new database format
-                    if (!state.movements) state.movements = [];
-                    if (!state.planification) state.planification = [];
-                    if (!state.frequent) state.frequent = [];
-                    if (!state.projects) state.projects = [];
-
-                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
-                    renderAll();
-                }
-            } catch (e) {
-                console.error("Failed to query file stream media binary data. Pushing local matrix format...", e);
-            }
-            if (!state.notes) {
-                state.notes = {};
-            } else {
-                // SECURITY AUTO-MIGRATION: Convert any legacy numeric index keys to valid string properties
-                for (let i = 0; i < 12; i++) {
-                    if (state.notes[i] !== undefined && state.notes[`month_${i}`] === undefined) {
-                        state.notes[`month_${i}`] = state.notes[i];
-                        delete state.notes[i];
-                    }
-                }
-            }
-            if (state.savingsGoal === undefined) state.savingsGoal = 0;
-            enforceNoteDatabaseStructure();
-        }
-
-        async function syncToGoogleDrive() {
-            if (!googleUserToken || !driveFileId) return;
-
-            try {
-                // 1. FETCH THE ABSOLUTE LATEST VERSION DIRECTLY FROM CLOUD STORAGE
-                const cloudResponse = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
-                let cloudState = cloudResponse.result;
-
-                // If the cloud file is empty or corrupted, default to standard upload pass-through
-                if (!cloudState || typeof cloudState !== 'object') {
-                    await uploadFinalMergedStateToCloud(state);
-                    return;
-                }
-
-                const localTime = state.lastUpdated || 0;
-                const cloudTime = cloudState.lastUpdated || 0;
-
-                // 2. DATA INTEGRITY MATRIX: CHOOSE WINNING DATA DATASETS BASELINE
-                if (cloudTime > localTime) {
-                    console.log("Cloud version is newer. Resolving changes...");
-
-                    // Symmetrical Merging Strategy: Combine data arrays using unique IDs to prevent data loss
-                    state.movements = mergeDataArrays(state.movements, cloudState.movements || []);
-                    state.planification = mergeDataArrays(state.planification, cloudState.planification || []);
-                    state.frequent = mergeDataArrays(state.frequent, cloudState.frequent || []);
-                    state.projects = mergeProjectsAndNestedItems(state.projects || [], cloudState.projects || []);
-
-                    // Merge Monthly Notes dictionaries safely
-                    if (!state.notes) state.notes = {};
-                    const incomingNotes = cloudState.notes || {};
-                    for (let i = 0; i < 12; i++) {
-                        const key = `month_${i}`;
-                        state.notes[key] = mergeDataArrays(state.notes[key] || [], incomingNotes[key] || []);
-                    }
-
-                    // Sync simple metric targets
-                    state.savingsGoal = Math.max(state.savingsGoal, cloudState.savingsGoal || 0);
-                    state.categories = Array.from(new Set([...state.categories, ...(cloudState.categories || [])]));
-                    state.lastUpdated = cloudTime;
-
-                    // Commit updates to local view cache
-                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
-                    renderAll();
-                } else {
-                    console.log("Local version is newer or identical. Uploading to cloud...");
-                }
-
-                // 3. BROADCAST DEFINITIVE MERGED MATRIX BACK TO THE CLOUD
-                await uploadFinalMergedStateToCloud(state);
-
-            } catch (err) {
-                console.error('Cloud automation sync update failure:', err);
-            }
         }
 
         // Helper Function: Uploads raw content streams to the Google Drive AppData folder media endpoint
@@ -2987,50 +3025,6 @@ async function checkAndTriggerReminders() {
         // ========================================================
         let liveSyncIntervalPointer = null;
         let isCurrentlySyncingFlag = false; // Prevents race condition overlaps
-
-        async function startLiveSyncEngine() {
-            if (liveSyncIntervalPointer) clearInterval(liveSyncIntervalPointer);
-
-            liveSyncIntervalPointer = setInterval(async () => {
-                if (!googleUserToken || !driveFileId || isCurrentlySyncingFlag) return;
-                if (document.activeElement && document.activeElement.id === 'noteInputBox') return;
-
-                try {
-                    isCurrentlySyncingFlag = true;
-
-                    const badge = document.getElementById('liveSyncBadge');
-                    if (badge) badge.classList.add('border-emerald-400', 'bg-emerald-500/30');
-
-                    const fileMeta = await gapi.client.drive.files.get({
-                        fileId: driveFileId,
-                        fields: 'modifiedTime'
-                    });
-
-                    const cloudModifiedTime = new Date(fileMeta.result.modifiedTime).getTime();
-                    const localLastUpdatedTime = state.lastUpdated || 0;
-
-                    if (cloudModifiedTime > localLastUpdatedTime) {
-                        console.log("%c[Live Sync Syncing] Newer dataset located on cloud network timeline. Merging...", "color: #10b981; font-weight: bold;");
-                        await syncToGoogleDrive();
-                    }
-
-                    setTimeout(() => {
-                        if (badge) badge.classList.remove('border-emerald-400', 'bg-emerald-500/30');
-                        isCurrentlySyncingFlag = false;
-                    }, 600);
-
-                } catch (err) {
-                    isCurrentlySyncingFlag = false;
-                    console.warn("[Live Sync Interceptor] Background polling encountered a network anomaly status:", err.status || err);
-
-                    // FIXED: Handle 401 unauthorized drops by explicitly refreshing without layout blocking
-                    if (err.status === 401) {
-                        console.log("%c[Live Sync] 401 Token Deficit intercepted. Dispatching background automated re-authentication sequence...", "color: #f43f5e; font-weight: bold;");
-                        tokenClient.requestAccessToken({ prompt: 'none' });
-                    }
-                }
-            }, 6000);
-        }
 
         function stopLiveSyncEngine() {
             if (liveSyncIntervalPointer) {
