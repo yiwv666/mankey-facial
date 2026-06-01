@@ -1022,6 +1022,70 @@
             lastUpdated: 0 // <-- ADD THIS: Tracks Epoch Unix time milliseconds
         };
 
+        // --- NEW HISTORY STATE TRACKING ARRAYS ---
+        const MoneycoHistory = {
+            undoStack: [],
+            redoStack: [],
+            maxSteps: 16,
+            isOperating: false, // Guard flag to prevent infinite saving loops during an undo action
+
+            // Take a deep-clone picture of the active application state database
+            push() {
+                if (this.isOperating) return;
+
+                // Keep a copy of the state *before* the incoming mutation occurs
+                this.undoStack.push(JSON.stringify(state));
+
+                // Clear the redo stack whenever the user executes a fresh action
+                this.redoStack = [];
+
+                // Cap memory preservation strictly at 16 steps
+                if (this.undoStack.length > this.maxSteps) {
+                    this.undoStack.shift(); // Remove the oldest historical snapshot
+                }
+            },
+
+            undo() {
+                if (this.undoStack.length === 0) return;
+
+                this.isOperating = true;
+                // Move current active layout to redo pool
+                this.redoStack.push(JSON.stringify(state));
+
+                // Restructure active app state data mapping from the timeline branch
+                state = JSON.parse(this.undoStack.pop());
+
+                this.finalizeTimelineShift();
+            },
+
+            redo() {
+                if (this.redoStack.length === 0) return;
+
+                this.isOperating = true;
+                // Capture current placement back to undo pipeline branch
+                this.undoStack.push(JSON.stringify(state));
+
+                state = JSON.parse(this.redoStack.pop());
+
+                this.finalizeTimelineShift();
+            },
+
+            finalizeTimelineShift() {
+                state.lastUpdated = Date.now();
+                localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+
+                // Cascade completely across visible dashboard nodes instantly
+                populateCategorySelects();
+                renderAll();
+                if (typeof applyFilters === 'function') applyFilters();
+
+                this.isOperating = false;
+
+                // Print execution visualization logging to console tracking windows
+                console.log(`%c[History Engine] Timeline updated. Undo remaining: ${this.undoStack.length} | Redo remaining: ${this.redoStack.length}`, "color: #a855f7; font-weight: bold;");
+            }
+        }
+
         // Context Menu Registry Pointer
         let contextTarget = null; // { type: 'movement'|'plan', id: 'uuid' }
 
@@ -1068,6 +1132,7 @@
         }
 
         async function saveState() {
+            MoneycoHistory.push();
             state.lastUpdated = Date.now();
             localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
             await syncToGoogleDrive();
@@ -3663,6 +3728,20 @@ async function checkAndTriggerReminders() {
             // Bypass processing hotkeys entirely if the user is typing into any interactive entry field form element
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
                 return;
+            }
+
+            const isZKey = e.key.toLowerCase() === 'z';
+
+            if ((e.ctrlKey || e.metaKey) && isZKey) {
+                if (e.shiftKey) {
+                    // Ctrl + Shift + Z -> Redo Action Path
+                    e.preventDefault();
+                    MoneycoHistory.redo();
+                } else {
+                    // Ctrl + Z -> Undo Action Path
+                    e.preventDefault();
+                    MoneycoHistory.undo();
+                }
             }
 
             // Map Alt + [Number] navigation targets smoothly
