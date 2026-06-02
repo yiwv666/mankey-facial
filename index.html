@@ -1303,7 +1303,6 @@
                 return dateDiff !== 0 ? dateDiff : state.movements.indexOf(b) - state.movements.indexOf(a);
             });
 
-            // INSIDE renderDashboard() -> OVERWRITE THE TOP METRICS CALCULATION AND ASSIGNMENT REGISTRY BLOCK:
             let incomeSum = 0;
             let expenseSum = 0;
             let savingsAccumulated = 0;
@@ -1315,7 +1314,7 @@
                 else expenseSum += parseFloat(m.amount) || 0;
             });
 
-            // 2. NEW MATRIX CODE: Loop across ALL historical logs to parse historical Net Savings and Active Debts
+            // 2. MATRIX CODE: Loop across ALL historical logs to parse historical Net Savings and Active Debts
             state.movements.forEach(m => {
                 const amt = parseFloat(m.amount) || 0;
                 if (m.category === 'Savings') {
@@ -1355,8 +1354,9 @@
                     tr.setAttribute('data-origin', 'movement');
                     tr.addEventListener('dragstart', handleDragStart);
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
-                    const [y, m, d] = m.date.split('-');
-                    const localizedMovementDate = `${d} / ${m} / ${y}`;
+
+                    const [y, mm, dd] = m.date.split('-');
+                    const localizedMovementDate = `${dd} / ${mm} / ${y}`;
 
                     tr.innerHTML = `
                         <td class="py-3 px-2 font-medium">
@@ -1374,7 +1374,7 @@
             }
 
             // ========================================================
-            // PLANIFICATION LIST ASSEMBLY (FIXED INFINITE LOOP BUG)
+            // PLANIFICATION LIST ASSEMBLY (FIXED LOOP STACK CRASH)
             // ========================================================
             const planContainer = document.getElementById('planificationList');
             planContainer.innerHTML = '';
@@ -1385,22 +1385,19 @@
             } else {
                 document.getElementById('noPlanItems').classList.add('hidden');
 
-                // 1. Sort the underlying planificación dataset array clone dynamically 
                 const sortedPlans = [...state.planification].sort((a, b) => {
                     const method = MoneycoPlanSort.currentMethod;
                     if (method === 'amount') {
-                        return b.amount - a.amount; // Highest amounts on top
+                        return b.amount - a.amount;
                     } else if (method === 'title') {
-                        return a.name.localeCompare(b.name); // Alphabetical A-Z
+                        return a.name.localeCompare(b.name);
                     } else {
-                        // Date sort: Treat missing estimated dates as maximum bounds (pushed to bottom)
                         if (!a.estimatedDate) return 1;
                         if (!b.estimatedDate) return -1;
                         return a.estimatedDate.localeCompare(b.estimatedDate);
                     }
                 });
 
-                // 2. Generate elements from sorted iteration rules safely on a single pass layer
                 sortedPlans.forEach(p => {
                     planTotal += parseFloat(p.amount);
                     const item = document.createElement('div');
@@ -1412,11 +1409,10 @@
                     item.addEventListener('dragstart', handleDragStart);
                     item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'planification', p.id));
 
-                    // REFORMAT DATE HOOK: Convert system YYYY-MM-DD to DD / MM / YYYY cleanly 
                     let formattedEstDate = '';
                     if (p.estimatedDate) {
-                        const [y, m, d] = p.estimatedDate.split('-');
-                        formattedEstDate = `${d} / ${m} / ${y}`;
+                        const [y, mm, dd] = p.estimatedDate.split('-');
+                        formattedEstDate = `${dd} / ${mm} / ${y}`;
                     }
 
                     const dateBadge = formattedEstDate
@@ -1439,6 +1435,8 @@
 
             document.getElementById('dashPlanTotal').innerText = formatCurrency(planTotal);
             document.getElementById('planTotalSum').innerText = formatCurrency(planTotal);
+
+            // Frequent Templates Assembly
             const freqContainer = document.getElementById('frequentExpensesList');
             freqContainer.innerHTML = '';
 
@@ -1448,9 +1446,7 @@
                 document.getElementById('noFrequentItems').classList.add('hidden');
                 state.frequent.forEach(f => {
                     const item = document.createElement('div');
-
-                    // NEW VISUAL CODE: Evaluate border treatment depending on type parameter
-                    let borderStyle = "border-l-4 border-l-teal-600"; // default styling
+                    let borderStyle = "border-l-4 border-l-teal-600";
                     if (f.category === 'Savings') borderStyle = "border-2 border-emerald-500 shadow-emerald-950/20";
                     else if (f.category === 'Debts') borderStyle = "border-2 border-rose-500 shadow-rose-950/20";
 
@@ -1476,21 +1472,20 @@
                     }
 
                     item.innerHTML = `
-    <div class="select-none">
-        <p class="font-semibold text-sm select-none flex items-center gap-1.5">
-            ${f.name}
-            ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="${titleNote}"></i>` : ''}
-        </p>
-        <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
-    </div>
-    <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
-`;
+                        <div class="select-none">
+                            <p class="font-semibold text-sm select-none flex items-center gap-1.5">
+                                ${f.name}
+                                ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="${titleNote}"></i>` : ''}
+                            </p>
+                            <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
+                        </div>
+                        <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
+                    `;
                     freqContainer.appendChild(item);
                 });
             }
-            // ========================================================
-            // NEW BLOCK: DASHBOARD LIVE NOTES SLIDER SYNC ENGINE
-            // ========================================================
+
+            // Dashboard Live Notes Marquee Sync
             const currentSysMonthIdx = new Date().getMonth();
             const currentMonthKey = `month_${currentSysMonthIdx}`;
             const activeLiveNotes = (state.notes && state.notes[currentMonthKey]) ? state.notes[currentMonthKey] : [];
@@ -1499,7 +1494,6 @@
             const desktopEmpty = document.getElementById('dashDesktopNotesEmptyState');
             const mobileContainer = document.getElementById('mobileNotesModalFeedContainer');
 
-            // Set text month name string into mobile modal header
             const mobileHeader = document.getElementById('mobileNotesModalHeader');
             if (mobileHeader) {
                 mobileHeader.innerHTML = `<i class="fa-solid fa-note-sticky text-xs"></i> ${calendarMonthsNames[currentSysMonthIdx]} Reminders`;
@@ -1516,11 +1510,9 @@
             } else {
                 if (desktopEmpty) desktopEmpty.classList.add('hidden');
 
-                // Create the moving marquee track container element
                 const marqueeTrack = document.createElement('div');
                 marqueeTrack.className = "marquee-container gap-2";
 
-                // Build out the raw elements array list
                 const fragmentCards = [];
                 activeLiveNotes.forEach(note => {
                     const rawText = decodeSanitizedNoteString(note.text);
@@ -1532,7 +1524,6 @@
 
                     fragmentCards.push(noteBadge);
 
-                    // B. Keep Mobile Popup Builder mapping behavior completely untouched
                     if (mobileContainer) {
                         const noteBlock = document.createElement('div');
                         noteBlock.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 text-xs text-gray-200 break-words leading-relaxed shadow-md";
@@ -1541,44 +1532,30 @@
                     }
                 });
 
-                // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
-                // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
-                // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
                 if (desktopWrapper) {
                     fragmentCards.forEach(card => marqueeTrack.appendChild(card));
-
-                    // Double the track list to prepare the continuous scrolling loop sequence
                     fragmentCards.forEach(card => marqueeTrack.appendChild(card.cloneNode(true)));
-
                     desktopWrapper.appendChild(marqueeTrack);
 
-                    // Using a micro-timeout guarantees the browser has fully calculated layout dimensions before checking widths
                     setTimeout(() => {
-                        // Read the actual visible boundary box width of the container element
                         const parentWidth = desktopWrapper.clientWidth;
-
-                        // Track total pixel depth of notes inside the flex layout track before it hits the loop duplication point
                         let notesCombinedWidth = 0;
                         const activeBadges = marqueeTrack.querySelectorAll('div');
 
-                        // Add up the widths of only the unique original cards (the first half of the array)
                         for (let i = 0; i < activeBadges.length / 2; i++) {
-                            notesCombinedWidth += activeBadges[i].offsetWidth + 8; // Card width + 8px gap margin space
+                            notesCombinedWidth += activeBadges[i].offsetWidth + 8;
                         }
 
-                        // If the unique cards fit entirely within the parent width, turn off animation
                         if (notesCombinedWidth <= parentWidth) {
                             marqueeTrack.style.animation = 'none';
                             marqueeTrack.style.width = '100%';
-                            marqueeTrack.classList.remove('marquee-container'); // Disables track shifting parameters safely
-                            marqueeTrack.className = "flex flex-wrap gap-2 pt-1"; // Re-arranges static components natively
+                            marqueeTrack.classList.remove('marquee-container');
+                            marqueeTrack.className = "flex flex-wrap gap-2 pt-1";
 
-                            // Clear out the duplicate loop clones since they are no longer needed for scrolling
                             while (marqueeTrack.children.length > activeLiveNotes.length) {
                                 marqueeTrack.removeChild(marqueeTrack.lastChild);
                             }
                         } else {
-                            // Re-enforce marquee styles explicitly if content overflows bounds
                             marqueeTrack.style.animation = '';
                             marqueeTrack.style.width = 'max-content';
                         }
