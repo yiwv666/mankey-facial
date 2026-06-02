@@ -2603,10 +2603,11 @@
                 return parentMasterTime || 1;
             };
 
-            const mergeCollection = (localArr, cloudArr, tombstoneMap, localMasterTime, cloudMasterTime) => {
+            const mergeCollection = (localArr, cloudArr, tombstoneSubMap, localMasterTime, cloudMasterTime) => {
                 const itemMap = new Map();
+                const cleanTombstoneSubMap = safeObj(tombstoneSubMap);
 
-                // Process local elements
+                // 1. Process local elements
                 (localArr || []).forEach(item => {
                     if (item && item.id) {
                         item.updatedAt = getItemTimestamp(item, localMasterTime);
@@ -2614,7 +2615,7 @@
                     }
                 });
 
-                // Compare timestamps against incoming cloud records
+                // 2. Compare timestamps against incoming cloud records
                 (cloudArr || []).forEach(cloudItem => {
                     if (!cloudItem || !cloudItem.id) return;
 
@@ -2626,13 +2627,14 @@
                     }
                 });
 
-                // Strip out anything logically deleted within our tombstones
+                // 3. FIXED: Strictly look up deletions inside the isolated partition map to prevent key cross-contamination noise
                 return Array.from(itemMap.values()).filter(item => {
-                    const deletionTime = tombstoneMap[item.id] || 0;
+                    const deletionTime = cleanTombstoneSubMap[item.id] || 0;
                     return !deletionTime || item.updatedAt > deletionTime;
                 });
             };
 
+            // Process mutations across flat tables with explicitly isolated sub-tombstones
             const finalMovements = mergeCollection(local.movements, cloud.movements, mergedTombstones.movements, local.lastUpdated, cloud.lastUpdated);
             const finalPlan = mergeCollection(local.planification, cloud.planification, mergedTombstones.planification, local.lastUpdated, cloud.lastUpdated);
             const finalFreq = mergeCollection(local.frequent, cloud.frequent, mergedTombstones.frequent, local.lastUpdated, cloud.lastUpdated);
