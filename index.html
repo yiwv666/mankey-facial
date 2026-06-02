@@ -1195,11 +1195,21 @@
         });
 
         function initDatePickers() {
-            const todayStr = new Date().toISOString().split('T')[0];
-            document.getElementById('mvDate').value = todayStr;
-            const currentMonthStr = todayStr.substring(0, 7);
-            document.getElementById('filterMonth').value = currentMonthStr;
-            document.getElementById('statsMonth').value = currentMonthStr;
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            // HTML Native Inputs require YYYY-MM-DD
+            if (document.getElementById('mvDate')) {
+                document.getElementById('mvDate').value = `${yyyy}-${mm}-${dd}`;
+            }
+            if (document.getElementById('filterMonth')) {
+                document.getElementById('filterMonth').value = `${yyyy}-${mm}`;
+            }
+            if (document.getElementById('statsMonth')) {
+                document.getElementById('statsMonth').value = `${yyyy}-${mm}`;
+            }
         }
 
         // Global Navigation Controls
@@ -1345,9 +1355,14 @@
                     tr.addEventListener('dragstart', handleDragStart);
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
 
-                    // Parse internal YYYY-MM-DD into a localized display format
-                    const [y, mm, dd] = m.date.split('-');
-                    const localizedMovementDate = `${dd} / ${mm} / ${y}`;
+                    // Parse system YYYY-MM-DD cleanly to display DD-MM-YYYY
+                    let localizedDate = '';
+                    if (m.date && m.date.includes('-')) {
+                        const parts = m.date.split('-');
+                        localizedDate = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : m.date;
+                    } else {
+                        localizedDate = m.date || '';
+                    }
 
                     tr.innerHTML = `
                         <td class="py-3 px-2 font-medium">
@@ -1355,7 +1370,7 @@
                             ${m.name}
                         </td>
                         <td class="py-3 px-2 text-gray-400 text-xs">${m.category}</td>
-                        <td class="py-3 px-2 text-gray-400 text-xs font-mono">${localizedMovementDate}</td>
+                        <td class="py-3 px-2 text-gray-400 text-xs font-mono">${localizedDate}</td>
                         <td class="py-3 px-2 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
                             ${m.type === 'income' ? '+' : '-'}${formatCurrency(m.amount)}
                         </td>
@@ -1758,22 +1773,24 @@
                 document.getElementById('allMovementsEmpty').classList.add('hidden');
                 records.forEach(m => {
                     const tr = document.createElement('tr');
-
-                    // Stamp the cross-reference identification key
                     tr.setAttribute('data-id', m.id);
-
                     tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer select-none";
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
 
-                    // Parse internal YYYY-MM-DD into a localized display format
-                    const [y, mm, dd] = m.date.split('-');
-                    const localizedLedgerDate = `${dd} / ${mm} / ${y}`;
+                    // Format native timestamp strings safely to clear text boxes
+                    let ledgerDateDisplay = '';
+                    if (m.date && m.date.includes('-')) {
+                        const parts = m.date.split('-');
+                        ledgerDateDisplay = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : m.date;
+                    } else {
+                        ledgerDateDisplay = m.date || '';
+                    }
 
                     tr.innerHTML = `
                         <td class="py-3 px-3 font-medium">${m.name}</td>
                         <td class="py-3 px-3 text-gray-400 text-xs"><span class="bg-gray-900 px-2 py-1 rounded-md border border-gray-800">${m.category}</span></td>
                         <td class="py-3 px-3 text-xs uppercase font-bold tracking-wider ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${m.type}</td>
-                        <td class="py-3 px-3 text-gray-400 text-xs font-mono">${localizedLedgerDate}</td>
+                        <td class="py-3 px-3 text-gray-400 text-xs font-mono">${ledgerDateDisplay}</td>
                         <td class="py-3 px-3 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(m.amount)}</td>
                     `;
                     if (allMovementsTableBody) allMovementsTableBody.appendChild(tr);
@@ -3748,20 +3765,10 @@ async function checkAndTriggerReminders() {
                     row.id = `palette-row-${idx}`;
                     row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
 
-                    // Reformat the subtitle trace data on the fly if the context points to a historical financial ledger movement row
-                    let detailedSubText = result.sub;
-                    if (result.type === 'movement' && result.sub.includes('•')) {
-                        const fragments = result.sub.split(' • ');
-                        if (fragments.length === 3) {
-                            const [y, mm, dd] = fragments[2].split('-');
-                            detailedSubText = `${fragments[0]} • ${fragments[1]} • ${dd} / ${mm} / ${y}`;
-                        }
-                    }
-
                     row.innerHTML = `
                 <div class="truncate flex-1 pointer-events-none">
                     <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
-                    <span class="text-[10px] font-medium text-gray-500 tracking-wide">${detailedSubText}</span>
+                    <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
                 </div>
                 <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
             `;
