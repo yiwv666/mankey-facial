@@ -1137,6 +1137,37 @@
             if (state.savingsGoal === undefined) state.savingsGoal = 0;
             enforceWishlistsDatabaseStructure();
             enforceNoteDatabaseStructure();
+            // --- ENFORCE DATA TIMESTAMPS ON PRE-EXISTING RECORDS (SELF-HEAL BASELINE) ---
+            let stateMigrated = false;
+            const fallbackEpoch = state.lastUpdated || Date.now();
+
+            const upgradeCollection = (arr) => {
+                (arr || []).forEach(item => {
+                    if (item && !item.updatedAt) {
+                        item.updatedAt = item.date ? new Date(item.date).getTime() : fallbackEpoch;
+                        stateMigrated = true;
+                    }
+                });
+            };
+
+            upgradeCollection(state.movements);
+            upgradeCollection(state.planification);
+            upgradeCollection(state.frequent);
+
+            (state.projects || []).forEach(p => {
+                if (!p.updatedAt) { p.updatedAt = fallbackEpoch; stateMigrated = true; }
+                upgradeCollection(p.items);
+            });
+
+            if (state.notes) {
+                Object.keys(state.notes).forEach(k => upgradeCollection(state.notes[k]));
+            }
+
+            if (stateMigrated) {
+                console.log("%c[Schema Migration] Detected pre-timestamp database records. Upgraded collection tags cleanly.", "color: #a855f7; font-weight: bold;");
+                state.lastUpdated = Date.now();
+                localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+            }
         }
 
         async function saveState() {
@@ -2551,12 +2582,11 @@
         }
 
         function reconcileDatabasesByTimestamp(local, cloud) {
-            // Ensure structures exist safely
             const safeObj = (obj) => obj || {};
             if (!local.tombstones) local.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
             if (!cloud.tombstones) cloud.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
 
-            // Merge Deletion Tombstone parameters Authoritatively (Highest unix timestamp wins deletion status)
+            // Merge Deletion Tombstones authoritatively
             const mergedTombstones = {
                 movements: { ...safeObj(local.tombstones.movements), ...safeObj(cloud.tombstones.movements) },
                 planification: { ...safeObj(local.tombstones.planification), ...safeObj(cloud.tombstones.planification) },
@@ -2566,49 +2596,74 @@
                 notes: { ...safeObj(local.tombstones.notes), ...safeObj(cloud.tombstones.notes) }
             };
 
-            const mergeCollection = (localArr, cloudArr, tombstoneMap) => {
-                const itemMap = new Map();
-                // Load local elements setup arrays
-                (localArr || []).forEach(item => { if (item && item.id) itemMap.set(item.id, item); });
+            // FIXED: Helper to safely deduce an item's true modified time even if it came from an old, unsynced DB version
+            const getItemTimestamp = (item, parentMasterTime) => {
+                if (item && item.updatedAt) return item.updatedAt;
+                // Fallback 1: If it is a movement ledger row, parse its calendar entry date string into milliseconds
+                if (item && item.date) return new Date(item.date).getTime() || 1;
+                // Fallback 2: Use the parent database container's historic modification epoch or baseline to 1
+                return parentMasterTime || 1;
+            };
 
-                // Compare timestamps property elements from incoming cloud records
+            const mergeCollection = (localArr, cloudArr, tombstoneMap, localMasterTime, cloudMasterTime) => {
+                const itemMap = new Map();
+
+                // 1. Process local collection array sets
+                (localArr || []).forEach(item => {
+                    if (item && item.id) {
+                        item.updatedAt = getItemTimestamp(item, localMasterTime); // Self-heal missing values natively
+                        itemMap.set(item.id, item);
+                    }
+                });
+
+                // 2. Process cloud items and compare authoritative timeline metrics
                 (cloudArr || []).forEach(cloudItem => {
                     if (!cloudItem || !cloudItem.id) return;
+
+                    cloudItem.updatedAt = getItemTimestamp(cloudItem, cloudMasterTime); // Self-heal incoming items
                     const localItem = itemMap.get(cloudItem.id);
-                    if (!localItem || (cloudItem.updatedAt || 0) > (localItem.updatedAt || 0)) {
+
+                    if (!localItem || cloudItem.updatedAt > localItem.updatedAt) {
                         itemMap.set(cloudItem.id, cloudItem);
                     }
                 });
 
-                // Strip out anything flagged as logically deleted within our tombstones timeline register maps
+                // 3. Filter out items flagged inside deletion tombstone registries
                 return Array.from(itemMap.values()).filter(item => {
                     const deletionTime = tombstoneMap[item.id] || 0;
-                    return !deletionTime || (item.updatedAt || 0) > deletionTime;
+                    return !deletionTime || item.updatedAt > deletionTime;
                 });
             };
 
-            // Process mutations across flat tables
-            const finalMovements = mergeCollection(local.movements, cloud.movements, mergedTombstones.movements);
-            const finalPlan = mergeCollection(local.planification, cloud.planification, mergedTombstones.planification);
-            const finalFreq = mergeCollection(local.frequent, cloud.frequent, mergedTombstones.frequent);
+            // Process mutations safely across flat collections with master time contextual bounds passed through
+            const finalMovements = mergeCollection(local.movements, cloud.movements, mergedTombstones.movements, local.lastUpdated, cloud.lastUpdated);
+            const finalPlan = mergeCollection(local.planification, cloud.planification, mergedTombstones.planification, local.lastUpdated, cloud.lastUpdated);
+            const finalFreq = mergeCollection(local.frequent, cloud.frequent, mergedTombstones.frequent, local.lastUpdated, cloud.lastUpdated);
 
             // Symmetrically align granular nested projects matrices
             const projectMap = new Map();
-            (local.projects || []).forEach(p => projectMap.set(p.id, p));
+            (local.projects || []).forEach(p => {
+                p.updatedAt = getItemTimestamp(p, local.lastUpdated);
+                projectMap.set(p.id, p);
+            });
+
             (cloud.projects || []).forEach(cp => {
+                if (!cp || !cp.id) return;
+                cp.updatedAt = getItemTimestamp(cp, cloud.lastUpdated);
                 const lp = projectMap.get(cp.id);
-                if (!lp || (cp.updatedAt || 0) > (lp.updatedAt || 0)) {
+
+                if (!lp || cp.updatedAt > lp.updatedAt) {
                     projectMap.set(cp.id, cp);
                 } else if (lp && cp) {
-                    lp.items = mergeCollection(lp.items, cp.items, mergedTombstones.wishitems);
+                    lp.items = mergeCollection(lp.items, cp.items, mergedTombstones.wishitems, lp.updatedAt, cp.updatedAt);
                 }
             });
             const finalProjects = Array.from(projectMap.values()).filter(p => !mergedTombstones.projects[p.id]);
 
-            // Merge financial calendar memo note arrays logs seamlessly
+            // Merge notes dictionaries seamlessly
             const finalNotes = { ...safeObj(local.notes) };
             Object.keys(safeObj(cloud.notes)).forEach(key => {
-                finalNotes[key] = mergeCollection(local.notes[key], cloud.notes[key], mergedTombstones.notes);
+                finalNotes[key] = mergeCollection(local.notes[key], cloud.notes[key], mergedTombstones.notes, local.lastUpdated, cloud.lastUpdated);
             });
 
             return {
@@ -2617,7 +2672,7 @@
                 frequent: finalFreq,
                 projects: finalProjects,
                 notes: finalNotes,
-                savingGoal: Math.max(local.savingsGoal || 0, cloud.savingsGoal || 0),
+                savingsGoal: Math.max(local.savingsGoal || 0, cloud.savingsGoal || 0),
                 categories: Array.from(new Set([...(local.categories || []), ...(cloud.categories || [])])),
                 tombstones: mergedTombstones,
                 lastUpdated: Date.now()
