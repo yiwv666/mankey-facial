@@ -1630,7 +1630,7 @@
             if (!contextTarget) return;
             if (contextTarget.type === 'movement') openMovementModal(contextTarget.id);
             if (contextTarget.type === 'planification') openPlanModal(contextTarget.id);
-            if (contextTarget.type === 'frequent') openFrequentModal(contextTarget.id); // <-- ADD THIS LINE
+            if (contextTarget.type === 'frequent') openFrequentModal(contextTarget.id);
         }
 
         function triggerContextDelete() {
@@ -1751,6 +1751,7 @@
             if (catName && !state.categories.includes(catName)) {
                 state.categories.push(catName);
                 input.value = '';
+                state.lastUpdated = Date.now();
                 saveState();
                 renderCategoryDashboard();
                 renderCategoryStats();
@@ -1818,6 +1819,7 @@
             state.frequent.forEach(f => { if (f.category === oldName) f.category = sanitizedNewName; });
 
             // Commit changes to local state storage and fire background cloud syncing
+            state.lastUpdated = Date.now();
             saveState();
             renderAll();
             if (typeof applyFilters === 'function') applyFilters();
@@ -2437,10 +2439,10 @@
                 if (files && files.length > 0) {
                     driveFileId = files[0].id;
                     await pullFromCloud();
-                    startLiveSyncEngine(); // <-- ADD THIS LINE HERE
+                    startLiveSyncEngine();
                 } else {
                     await createCloudContainer();
-                    startLiveSyncEngine(); // <-- ADD THIS LINE HERE
+                    startLiveSyncEngine();
                 }
             } catch (err) { console.error('Error scanning initialization targets:', err); }
         }
@@ -3286,7 +3288,7 @@ async function checkAndTriggerReminders() {
                 if (proj) {
                     proj.name = nameVal;
                     proj.color = colorVal;
-                    updatedAt: Date.now()
+                    proj.updatedAt = Date.now(); // FIXED: Removed broken colon label statement
                 }
             } else {
                 state.projects.push({
@@ -3294,7 +3296,7 @@ async function checkAndTriggerReminders() {
                     name: nameVal,
                     color: colorVal,
                     items: [],
-                    updatedAt: Date.now() // Always append millisecond tracking on user modifications
+                    updatedAt: Date.now()
                 });
             }
             saveState();
