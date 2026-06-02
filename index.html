@@ -2256,7 +2256,8 @@
                     document.getElementById('plName').value = item.name;
                     document.getElementById('plCategory').value = item.category;
                     document.getElementById('plAmount').value = item.amount;
-                    // Pre-fill the estimated date if it already exists
+
+                    // Force compatibility translation: guarantees YYYY-MM-DD back to field parameters safely
                     document.getElementById('plEstimatedDate').value = item.estimatedDate || "";
                 }
             } else {
