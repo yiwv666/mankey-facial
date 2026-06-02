@@ -1004,6 +1004,7 @@
                     (Optional)</label>
                 <input type="text" id="plEstimatedDateVisual" placeholder="DD/MM/YYYY" maxlength="10"
                     oninput="MoneycoDateMask.apply(this)"
+                    onblur="if(this.value.length < 10) { this.value = ''; document.getElementById('plEstimatedDate').value = ''; }"
                     class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 font-mono">
                 <input type="hidden" id="plEstimatedDate">
             </div>
@@ -3910,9 +3911,49 @@ async function checkAndTriggerReminders() {
             apply(inputEl) {
                 // Strip all non-digit components out of active sequence strings
                 let value = inputEl.value.replace(/\D/g, '');
-                let formatted = '';
+                
+                let dayNum = 0;
+                let monthNum = 0;
 
-                // Build structural formatting layers based on numeric limits dynamically
+                // 1. DYNAMIC CALENDAR CAPACITY CONSTRAINTS CAP ENGINE
+                if (value.length >= 2) {
+                    dayNum = parseInt(value.substring(0, 2), 10);
+                }
+                if (value.length >= 4) {
+                    monthNum = parseInt(value.substring(2, 4), 10);
+                    
+                    // Cap the month strictly to a maximum of 12
+                    if (monthNum > 12) {
+                        monthNum = 12;
+                        value = value.substring(0, 2) + "12" + value.substring(4);
+                    }
+                    if (monthNum === 0 && value.length === 4) {
+                        monthNum = 1; // Prevent remaining '00' locks
+                    }
+                }
+
+                // Enforce days limit logic contextually depending on the typed month
+                if (value.length >= 2) {
+                    let maxDaysAllowed = 31; // Default global ceiling fallback
+
+                    if (monthNum === 2) {
+                        maxDaysAllowed = 28; // Strict non-leap February threshold parameter
+                    } else if ([4, 6, 9, 11].includes(monthNum)) {
+                        maxDaysAllowed = 30; // April, June, September, November ceiling limits
+                    }
+
+                    // Force values down to the maximum boundary limits if exceeded
+                    if (dayNum > maxDaysAllowed) {
+                        dayNum = maxDaysAllowed;
+                        value = String(maxDaysAllowed).padStart(2, '0') + value.substring(2);
+                    }
+                    if (dayNum === 0 && value.length === 2) {
+                        dayNum = 1; // Prevent remaining '00' locks
+                    }
+                }
+
+                // 2. LIVE TEXT FORMAT MASKS CONVERSION WRAPPER
+                let formatted = '';
                 if (value.length > 0) {
                     formatted = value.substring(0, 2);
                     if (value.length > 2) {
@@ -3922,18 +3963,18 @@ async function checkAndTriggerReminders() {
                         }
                     }
                 }
-
-                // Write formatted layout parameters string directly back to input view
+                
+                // Write the safe formatted layout parameters back to the visual input input
                 inputEl.value = formatted;
 
-                // Sync translated parameters silently to background database input hidden values
+                // 3. BACKEND SYSTEM BIND SYNC
                 const hiddenInput = document.getElementById('plEstimatedDate');
                 if (hiddenInput) {
                     if (value.length === 8) {
-                        const d = value.substring(0, 2);
-                        const m = value.substring(2, 4);
+                        const d = String(dayNum).padStart(2, '0');
+                        const m = String(monthNum).padStart(2, '0');
                         const y = value.substring(4, 8);
-                        hiddenInput.value = `${y}-${m}-${d}`; // Preserves system alignment standard
+                        hiddenInput.value = `${y}-${m}-${d}`; // Preserves system data standards
                     } else {
                         hiddenInput.value = ""; // Holds values clear until complete string signature reached
                     }
