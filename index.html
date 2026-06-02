@@ -1345,13 +1345,17 @@
                     tr.addEventListener('dragstart', handleDragStart);
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
 
+                    // Parse internal YYYY-MM-DD into a localized display format
+                    const [y, mm, dd] = m.date.split('-');
+                    const localizedMovementDate = `${dd} / ${mm} / ${y}`;
+
                     tr.innerHTML = `
                         <td class="py-3 px-2 font-medium">
                             <span class="inline-block w-2 h-2 rounded-full mr-2 ${m.type === 'income' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
                             ${m.name}
                         </td>
                         <td class="py-3 px-2 text-gray-400 text-xs">${m.category}</td>
-                        <td class="py-3 px-2 text-gray-400 text-xs">${m.date}</td>
+                        <td class="py-3 px-2 text-gray-400 text-xs font-mono">${localizedMovementDate}</td>
                         <td class="py-3 px-2 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
                             ${m.type === 'income' ? '+' : '-'}${formatCurrency(m.amount)}
                         </td>
@@ -1562,7 +1566,7 @@
             if (!id) return; // Fail-safe exit if identifiers are missing
 
             // PATHWAY A: Dropping from Next Payment Plan (Moves the item)
-// PATHWAY A: Dropping from Next Payment Plan (Moves the item to Movements Ledger)
+            // PATHWAY A: Dropping from Next Payment Plan (Moves the item to Movements Ledger)
             if (origin === 'planification') {
                 const planIdx = state.planification.findIndex(p => p.id === id);
                 if (planIdx !== -1) {
@@ -1576,11 +1580,11 @@
                         date: new Date().toISOString().split('T')[0], // Authoritative calendar date takes over
                         updatedAt: Date.now()
                     });
-                    
+
                     // Register deletion tombstone for item-level sync
                     if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
                     state.tombstones.planification[id] = Date.now();
-                    
+
                     state.planification.splice(planIdx, 1); // Stripped out of plans cleanly
                     saveState();
                     renderAll();
@@ -1760,11 +1764,16 @@
 
                     tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer select-none";
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
+
+                    // Parse internal YYYY-MM-DD into a localized display format
+                    const [y, mm, dd] = m.date.split('-');
+                    const localizedLedgerDate = `${dd} / ${mm} / ${y}`;
+
                     tr.innerHTML = `
                         <td class="py-3 px-3 font-medium">${m.name}</td>
                         <td class="py-3 px-3 text-gray-400 text-xs"><span class="bg-gray-900 px-2 py-1 rounded-md border border-gray-800">${m.category}</span></td>
                         <td class="py-3 px-3 text-xs uppercase font-bold tracking-wider ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${m.type}</td>
-                        <td class="py-3 px-3 text-gray-400 text-xs">${m.date}</td>
+                        <td class="py-3 px-3 text-gray-400 text-xs font-mono">${localizedLedgerDate}</td>
                         <td class="py-3 px-3 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(m.amount)}</td>
                     `;
                     if (allMovementsTableBody) allMovementsTableBody.appendChild(tr);
@@ -3739,10 +3748,20 @@ async function checkAndTriggerReminders() {
                     row.id = `palette-row-${idx}`;
                     row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
 
+                    // Reformat the subtitle trace data on the fly if the context points to a historical financial ledger movement row
+                    let detailedSubText = result.sub;
+                    if (result.type === 'movement' && result.sub.includes('•')) {
+                        const fragments = result.sub.split(' • ');
+                        if (fragments.length === 3) {
+                            const [y, mm, dd] = fragments[2].split('-');
+                            detailedSubText = `${fragments[0]} • ${fragments[1]} • ${dd} / ${mm} / ${y}`;
+                        }
+                    }
+
                     row.innerHTML = `
                 <div class="truncate flex-1 pointer-events-none">
                     <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
-                    <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
+                    <span class="text-[10px] font-medium text-gray-500 tracking-wide">${detailedSubText}</span>
                 </div>
                 <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
             `;
