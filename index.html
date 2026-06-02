@@ -1002,8 +1002,10 @@
             <div>
                 <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Date
                     (Optional)</label>
-                <input type="date" id="plEstimatedDate"
-                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                <input type="text" id="plEstimatedDateVisual" placeholder="DD/MM/YYYY" maxlength="10"
+                    oninput="MoneycoDateMask.apply(this)"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 font-mono">
+                <input type="hidden" id="plEstimatedDate">
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" onclick="closePlanModal()"
@@ -2248,6 +2250,9 @@
             const form = document.getElementById('planForm');
             form.reset();
 
+            const visualInput = document.getElementById('plEstimatedDateVisual');
+            const hiddenInput = document.getElementById('plEstimatedDate');
+
             if (editId) {
                 document.getElementById('planModalTitle').innerText = "Edit Planned Item";
                 const item = state.planification.find(p => p.id === editId);
@@ -2257,13 +2262,21 @@
                     document.getElementById('plCategory').value = item.category;
                     document.getElementById('plAmount').value = item.amount;
 
-                    // Force compatibility translation: guarantees YYYY-MM-DD back to field parameters safely
-                    document.getElementById('plEstimatedDate').value = item.estimatedDate || "";
+                    if (item.estimatedDate && item.estimatedDate.includes('-')) {
+                        // Reconstruct backend system parameters (YYYY-MM-DD) into user layout style (DD/MM/YYYY)
+                        const [y, m, d] = item.estimatedDate.split('-');
+                        visualInput.value = `${d}/${m}/${y}`;
+                        hiddenInput.value = item.estimatedDate;
+                    } else {
+                        visualInput.value = "";
+                        hiddenInput.value = "";
+                    }
                 }
             } else {
                 document.getElementById('planModalTitle').innerText = "Add Planned Item";
                 document.getElementById('editPlanId').value = "";
-                document.getElementById('plEstimatedDate').value = "";
+                visualInput.value = "";
+                hiddenInput.value = "";
             }
             modal.showModal();
         }
@@ -3889,6 +3902,44 @@ async function checkAndTriggerReminders() {
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => MoneycoSearch.init(), 100);
         });
+
+        // ========================================================
+        // LIVE KEYSTROKE TEXT FORMATTING DATE MASK INTERCEPTOR
+        // ========================================================
+        const MoneycoDateMask = {
+            apply(inputEl) {
+                // Strip all non-digit components out of active sequence strings
+                let value = inputEl.value.replace(/\D/g, '');
+                let formatted = '';
+
+                // Build structural formatting layers based on numeric limits dynamically
+                if (value.length > 0) {
+                    formatted = value.substring(0, 2);
+                    if (value.length > 2) {
+                        formatted += '/' + value.substring(2, 4);
+                        if (value.length > 4) {
+                            formatted += '/' + value.substring(4, 8);
+                        }
+                    }
+                }
+
+                // Write formatted layout parameters string directly back to input view
+                inputEl.value = formatted;
+
+                // Sync translated parameters silently to background database input hidden values
+                const hiddenInput = document.getElementById('plEstimatedDate');
+                if (hiddenInput) {
+                    if (value.length === 8) {
+                        const d = value.substring(0, 2);
+                        const m = value.substring(2, 4);
+                        const y = value.substring(4, 8);
+                        hiddenInput.value = `${y}-${m}-${d}`; // Preserves system alignment standard
+                    } else {
+                        hiddenInput.value = ""; // Holds values clear until complete string signature reached
+                    }
+                }
+            }
+        };
 
         // ========================================================
         // GLOBAL WORKSPACE HOTKEYS INTERCEPTOR INTERACTION ENGINE
