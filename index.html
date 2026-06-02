@@ -291,10 +291,21 @@
                                 <h2 class="text-lg font-bold">Next Payment Plan</h2>
                                 <p class="text-xs text-gray-400">Draft upcoming budgets</p>
                             </div>
-                            <button onclick="openPlanModal()"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
-                                <i class="fa-solid fa-plus text-xs"></i> Add Plan
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="flex items-center bg-gray-900 border border-gray-800 rounded-xl p-0.5 shadow-inner text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                    <button onclick="MoneycoPlanSort.setSort('date')" id="btnPlanSortDate"
+                                        class="px-2 py-1 rounded-lg transition hover:text-white">Date</button>
+                                    <button onclick="MoneycoPlanSort.setSort('amount')" id="btnPlanSortAmount"
+                                        class="px-2 py-1 rounded-lg transition hover:text-white">Amt</button>
+                                    <button onclick="MoneycoPlanSort.setSort('title')" id="btnPlanSortTitle"
+                                        class="px-2 py-1 rounded-lg transition hover:text-white">Title</button>
+                                </div>
+                                <button onclick="openPlanModal()"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
+                                    <i class="fa-solid fa-plus text-xs"></i> Add Plan
+                                </button>
+                            </div>
                         </div>
 
                         <div id="planDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
@@ -1344,6 +1355,8 @@
                     tr.setAttribute('data-origin', 'movement');
                     tr.addEventListener('dragstart', handleDragStart);
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
+                    const [y, m, d] = m.date.split('-');
+                    const localizedMovementDate = `${d} / ${m} / ${y}`;
 
                     tr.innerHTML = `
                         <td class="py-3 px-2 font-medium">
@@ -1351,7 +1364,7 @@
                             ${m.name}
                         </td>
                         <td class="py-3 px-2 text-gray-400 text-xs">${m.category}</td>
-                        <td class="py-3 px-2 text-gray-400 text-xs">${m.date}</td>
+                        <td class="py-3 px-2 text-gray-400 text-xs font-mono">${localizedMovementDate}</td>
                         <td class="py-3 px-2 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
                             ${m.type === 'income' ? '+' : '-'}${formatCurrency(m.amount)}
                         </td>
@@ -1371,22 +1384,55 @@
                 document.getElementById('noPlanItems').classList.add('hidden');
                 // LOCATE THE state.planification FOREACH INSIDE renderDashboard AND OVERWRITE ITS INNER CARD GENERATOR
                 state.planification.forEach(p => {
-                    planTotal += parseFloat(p.amount);
-                    const item = document.createElement('div');
-                    item.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md";
-                    item.setAttribute('draggable', 'true');
-                    item.setAttribute('data-id', p.id);
-                    item.setAttribute('data-origin', 'planification');
+                    // --- OVERWRITE THE state.planification RENDER LAYER INSIDE renderDashboard WITH THIS ---
+                    const planContainer = document.getElementById('planificationList');
+                    planContainer.innerHTML = '';
+                    let planTotal = 0;
 
-                    item.addEventListener('dragstart', handleDragStart);
-                    item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'planification', p.id));
+                    if (state.planification.length === 0) {
+                        document.getElementById('noPlanItems').classList.remove('hidden');
+                    } else {
+                        document.getElementById('noPlanItems').classList.add('hidden');
 
-                    // Build dynamic sub-badge if an estimated date is present
-                    const dateBadge = p.estimatedDate
-                        ? `<span class="text-[10px] text-gray-500 font-mono"><i class="fa-regular fa-calendar text-[9px] text-indigo-400/80"></i> Est: ${p.estimatedDate}</span>`
-                        : '';
+                        // 1. Sort the underlying planificación dataset array clone dynamically 
+                        const sortedPlans = [...state.planification].sort((a, b) => {
+                            const method = MoneycoPlanSort.currentMethod;
+                            if (method === 'amount') {
+                                return b.amount - a.amount; // Highest amounts on top
+                            } else if (method === 'title') {
+                                return a.name.localeCompare(b.name); // Alphabetical A-Z
+                            } else {
+                                // Date sort: Treat missing estimated dates as maximum bounds (pushed to bottom)
+                                if (!a.estimatedDate) return 1;
+                                if (!b.estimatedDate) return -1;
+                                return a.estimatedDate.localeCompare(b.estimatedDate);
+                            }
+                        });
 
-                    item.innerHTML = `
+                        // 2. Generate elements from sorted iteration rules
+                        sortedPlans.forEach(p => {
+                            planTotal += parseFloat(p.amount);
+                            const item = document.createElement('div');
+                            item.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md";
+                            item.setAttribute('draggable', 'true');
+                            item.setAttribute('data-id', p.id);
+                            item.setAttribute('data-origin', 'planification');
+
+                            item.addEventListener('dragstart', handleDragStart);
+                            item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'planification', p.id));
+
+                            // REFORMAT DATE HOOK: Convert system YYYY-MM-DD to DD / MM / YYYY cleanly 
+                            let formattedEstDate = '';
+                            if (p.estimatedDate) {
+                                const [y, m, d] = p.estimatedDate.split('-');
+                                formattedEstDate = `${d} / ${m} / ${y}`;
+                            }
+
+                            const dateBadge = formattedEstDate
+                                ? `<span class="text-[10px] text-gray-500 font-mono font-medium"><i class="fa-regular fa-calendar text-[9px] text-indigo-400/80"></i> Est: ${formattedEstDate}</span>`
+                                : '';
+
+                            item.innerHTML = `
                         <div class="select-none flex flex-col gap-1">
                             <p class="font-semibold text-sm select-none leading-none">${p.name}</p>
                             <div class="flex items-center gap-2 flex-wrap">
@@ -1396,7 +1442,9 @@
                         </div>
                         <p class="font-bold text-sm text-indigo-400 select-none shrink-0">${formatCurrency(p.amount)}</p>
                     `;
-                    planContainer.appendChild(item);
+                            planContainer.appendChild(item);
+                        });
+                    }
                 });
             }
 
@@ -1562,7 +1610,7 @@
             if (!id) return; // Fail-safe exit if identifiers are missing
 
             // PATHWAY A: Dropping from Next Payment Plan (Moves the item)
-// PATHWAY A: Dropping from Next Payment Plan (Moves the item to Movements Ledger)
+            // PATHWAY A: Dropping from Next Payment Plan (Moves the item to Movements Ledger)
             if (origin === 'planification') {
                 const planIdx = state.planification.findIndex(p => p.id === id);
                 if (planIdx !== -1) {
@@ -1576,11 +1624,11 @@
                         date: new Date().toISOString().split('T')[0], // Authoritative calendar date takes over
                         updatedAt: Date.now()
                     });
-                    
+
                     // Register deletion tombstone for item-level sync
                     if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
                     state.tombstones.planification[id] = Date.now();
-                    
+
                     state.planification.splice(planIdx, 1); // Stripped out of plans cleanly
                     saveState();
                     renderAll();
@@ -1760,11 +1808,14 @@
 
                     tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer select-none";
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
+                    const [y, m, d] = m.date.split('-');
+                    const localizedLedgerDate = `${d} / ${m} / ${y}`;
+
                     tr.innerHTML = `
                         <td class="py-3 px-3 font-medium">${m.name}</td>
                         <td class="py-3 px-3 text-gray-400 text-xs"><span class="bg-gray-900 px-2 py-1 rounded-md border border-gray-800">${m.category}</span></td>
                         <td class="py-3 px-3 text-xs uppercase font-bold tracking-wider ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${m.type}</td>
-                        <td class="py-3 px-3 text-gray-400 text-xs">${m.date}</td>
+                        <td class="py-3 px-3 text-gray-400 text-xs font-mono">${localizedLedgerDate}</td>
                         <td class="py-3 px-3 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(m.amount)}</td>
                     `;
                     if (allMovementsTableBody) allMovementsTableBody.appendChild(tr);
@@ -3910,7 +3961,42 @@ async function checkAndTriggerReminders() {
                 }
             }
         });
+        // ========================================================
+        // NEXT PAYMENT PLAN SEQUENTIAL ORDER TOGGLE CONTROLLER
+        // ========================================================
+        const MoneycoPlanSort = {
+            currentMethod: localStorage.getItem('MONEYCO_PLAN_SORT_METHOD') || 'date',
 
+            init() {
+                this.updateUISelectionState();
+            },
+
+            setSort(method) {
+                this.currentMethod = method;
+                localStorage.setItem('MONEYCO_PLAN_SORT_METHOD', method);
+                this.updateUISelectionState();
+                if (typeof renderDashboard === 'function') renderDashboard();
+            },
+
+            updateUISelectionState() {
+                const methods = ['date', 'amount', 'title'];
+                methods.forEach(m => {
+                    const el = document.getElementById(`btnPlanSort${m.charAt(0).toUpperCase() + m.slice(1)}`);
+                    if (!el) return;
+
+                    if (m === this.currentMethod) {
+                        el.className = "px-2 py-1 rounded-lg bg-indigo-600 text-white shadow transition-all duration-150";
+                    } else {
+                        el.className = "px-2 py-1 rounded-lg hover:text-gray-200 transition-all duration-150 cursor-pointer";
+                    }
+                });
+            }
+        };
+
+        // Inject the layout highlighter directly into application DOMContentLoaded execution stacks
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => MoneycoPlanSort.init(), 120);
+        });
     </script>
 </body>
 
