@@ -1374,7 +1374,7 @@
             }
 
             // ========================================================
-            // PLANIFICATION LIST ASSEMBLY (FIXED LOOP STACK CRASH)
+            // PLANIFICATION LIST ASSEMBLY (UN-NESTED & COMPATIBLE)
             // ========================================================
             const planContainer = document.getElementById('planificationList');
             planContainer.innerHTML = '';
@@ -1385,6 +1385,7 @@
             } else {
                 document.getElementById('noPlanItems').classList.add('hidden');
 
+                // 1. Sort dataset array dynamically down a clean single-pass pipeline
                 const sortedPlans = [...state.planification].sort((a, b) => {
                     const method = MoneycoPlanSort.currentMethod;
                     if (method === 'amount') {
@@ -1398,6 +1399,7 @@
                     }
                 });
 
+                // 2. Build elements from cleanly sorted array bounds
                 sortedPlans.forEach(p => {
                     planTotal += parseFloat(p.amount);
                     const item = document.createElement('div');
