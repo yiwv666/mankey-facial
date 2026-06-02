@@ -291,21 +291,10 @@
                                 <h2 class="text-lg font-bold">Next Payment Plan</h2>
                                 <p class="text-xs text-gray-400">Draft upcoming budgets</p>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <div
-                                    class="flex items-center bg-gray-900 border border-gray-800 rounded-xl p-0.5 shadow-inner text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                                    <button onclick="MoneycoPlanSort.setSort('date')" id="btnPlanSortDate"
-                                        class="px-2 py-1 rounded-lg transition hover:text-white">Date</button>
-                                    <button onclick="MoneycoPlanSort.setSort('amount')" id="btnPlanSortAmount"
-                                        class="px-2 py-1 rounded-lg transition hover:text-white">Amt</button>
-                                    <button onclick="MoneycoPlanSort.setSort('title')" id="btnPlanSortTitle"
-                                        class="px-2 py-1 rounded-lg transition hover:text-white">Title</button>
-                                </div>
-                                <button onclick="openPlanModal()"
-                                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
-                                    <i class="fa-solid fa-plus text-xs"></i> Add Plan
-                                </button>
-                            </div>
+                            <button onclick="openPlanModal()"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
+                                <i class="fa-solid fa-plus text-xs"></i> Add Plan
+                            </button>
                         </div>
 
                         <div id="planDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
@@ -1303,6 +1292,7 @@
                 return dateDiff !== 0 ? dateDiff : state.movements.indexOf(b) - state.movements.indexOf(a);
             });
 
+            // INSIDE renderDashboard() -> OVERWRITE THE TOP METRICS CALCULATION AND ASSIGNMENT REGISTRY BLOCK:
             let incomeSum = 0;
             let expenseSum = 0;
             let savingsAccumulated = 0;
@@ -1314,7 +1304,7 @@
                 else expenseSum += parseFloat(m.amount) || 0;
             });
 
-            // 2. MATRIX CODE: Loop across ALL historical logs to parse historical Net Savings and Active Debts
+            // 2. NEW MATRIX CODE: Loop across ALL historical logs to parse historical Net Savings and Active Debts
             state.movements.forEach(m => {
                 const amt = parseFloat(m.amount) || 0;
                 if (m.category === 'Savings') {
@@ -1355,16 +1345,13 @@
                     tr.addEventListener('dragstart', handleDragStart);
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
 
-                    const [y, mm, dd] = m.date.split('-');
-                    const localizedMovementDate = `${dd} / ${mm} / ${y}`;
-
                     tr.innerHTML = `
                         <td class="py-3 px-2 font-medium">
                             <span class="inline-block w-2 h-2 rounded-full mr-2 ${m.type === 'income' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
                             ${m.name}
                         </td>
                         <td class="py-3 px-2 text-gray-400 text-xs">${m.category}</td>
-                        <td class="py-3 px-2 text-gray-400 text-xs font-mono">${localizedMovementDate}</td>
+                        <td class="py-3 px-2 text-gray-400 text-xs">${m.date}</td>
                         <td class="py-3 px-2 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
                             ${m.type === 'income' ? '+' : '-'}${formatCurrency(m.amount)}
                         </td>
@@ -1373,32 +1360,17 @@
                 });
             }
 
-            // ========================================================
-            // PLANIFICATION LIST ASSEMBLY (FIXED LOOP STACK CRASH)
-            // ========================================================
+            // Planification List Assembly
             const planContainer = document.getElementById('planificationList');
             planContainer.innerHTML = '';
             let planTotal = 0;
 
-            if (!state.planification || state.planification.length === 0) {
+            if (state.planification.length === 0) {
                 document.getElementById('noPlanItems').classList.remove('hidden');
             } else {
                 document.getElementById('noPlanItems').classList.add('hidden');
-
-                const sortedPlans = [...state.planification].sort((a, b) => {
-                    const method = MoneycoPlanSort.currentMethod;
-                    if (method === 'amount') {
-                        return b.amount - a.amount;
-                    } else if (method === 'title') {
-                        return a.name.localeCompare(b.name);
-                    } else {
-                        if (!a.estimatedDate) return 1;
-                        if (!b.estimatedDate) return -1;
-                        return a.estimatedDate.localeCompare(b.estimatedDate);
-                    }
-                });
-
-                sortedPlans.forEach(p => {
+                // LOCATE THE state.planification FOREACH INSIDE renderDashboard AND OVERWRITE ITS INNER CARD GENERATOR
+                state.planification.forEach(p => {
                     planTotal += parseFloat(p.amount);
                     const item = document.createElement('div');
                     item.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md";
@@ -1409,14 +1381,9 @@
                     item.addEventListener('dragstart', handleDragStart);
                     item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'planification', p.id));
 
-                    let formattedEstDate = '';
-                    if (p.estimatedDate) {
-                        const [y, mm, dd] = p.estimatedDate.split('-');
-                        formattedEstDate = `${dd} / ${mm} / ${y}`;
-                    }
-
-                    const dateBadge = formattedEstDate
-                        ? `<span class="text-[10px] text-gray-500 font-mono font-medium"><i class="fa-regular fa-calendar text-[9px] text-indigo-400/80"></i> Est: ${formattedEstDate}</span>`
+                    // Build dynamic sub-badge if an estimated date is present
+                    const dateBadge = p.estimatedDate
+                        ? `<span class="text-[10px] text-gray-500 font-mono"><i class="fa-regular fa-calendar text-[9px] text-indigo-400/80"></i> Est: ${p.estimatedDate}</span>`
                         : '';
 
                     item.innerHTML = `
@@ -1435,8 +1402,6 @@
 
             document.getElementById('dashPlanTotal').innerText = formatCurrency(planTotal);
             document.getElementById('planTotalSum').innerText = formatCurrency(planTotal);
-
-            // Frequent Templates Assembly
             const freqContainer = document.getElementById('frequentExpensesList');
             freqContainer.innerHTML = '';
 
@@ -1446,7 +1411,9 @@
                 document.getElementById('noFrequentItems').classList.add('hidden');
                 state.frequent.forEach(f => {
                     const item = document.createElement('div');
-                    let borderStyle = "border-l-4 border-l-teal-600";
+
+                    // NEW VISUAL CODE: Evaluate border treatment depending on type parameter
+                    let borderStyle = "border-l-4 border-l-teal-600"; // default styling
                     if (f.category === 'Savings') borderStyle = "border-2 border-emerald-500 shadow-emerald-950/20";
                     else if (f.category === 'Debts') borderStyle = "border-2 border-rose-500 shadow-rose-950/20";
 
@@ -1472,20 +1439,21 @@
                     }
 
                     item.innerHTML = `
-                        <div class="select-none">
-                            <p class="font-semibold text-sm select-none flex items-center gap-1.5">
-                                ${f.name}
-                                ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="${titleNote}"></i>` : ''}
-                            </p>
-                            <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
-                        </div>
-                        <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
-                    `;
+    <div class="select-none">
+        <p class="font-semibold text-sm select-none flex items-center gap-1.5">
+            ${f.name}
+            ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="${titleNote}"></i>` : ''}
+        </p>
+        <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
+    </div>
+    <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
+`;
                     freqContainer.appendChild(item);
                 });
             }
-
-            // Dashboard Live Notes Marquee Sync
+            // ========================================================
+            // NEW BLOCK: DASHBOARD LIVE NOTES SLIDER SYNC ENGINE
+            // ========================================================
             const currentSysMonthIdx = new Date().getMonth();
             const currentMonthKey = `month_${currentSysMonthIdx}`;
             const activeLiveNotes = (state.notes && state.notes[currentMonthKey]) ? state.notes[currentMonthKey] : [];
@@ -1494,6 +1462,7 @@
             const desktopEmpty = document.getElementById('dashDesktopNotesEmptyState');
             const mobileContainer = document.getElementById('mobileNotesModalFeedContainer');
 
+            // Set text month name string into mobile modal header
             const mobileHeader = document.getElementById('mobileNotesModalHeader');
             if (mobileHeader) {
                 mobileHeader.innerHTML = `<i class="fa-solid fa-note-sticky text-xs"></i> ${calendarMonthsNames[currentSysMonthIdx]} Reminders`;
@@ -1510,9 +1479,11 @@
             } else {
                 if (desktopEmpty) desktopEmpty.classList.add('hidden');
 
+                // Create the moving marquee track container element
                 const marqueeTrack = document.createElement('div');
                 marqueeTrack.className = "marquee-container gap-2";
 
+                // Build out the raw elements array list
                 const fragmentCards = [];
                 activeLiveNotes.forEach(note => {
                     const rawText = decodeSanitizedNoteString(note.text);
@@ -1524,6 +1495,7 @@
 
                     fragmentCards.push(noteBadge);
 
+                    // B. Keep Mobile Popup Builder mapping behavior completely untouched
                     if (mobileContainer) {
                         const noteBlock = document.createElement('div');
                         noteBlock.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 text-xs text-gray-200 break-words leading-relaxed shadow-md";
@@ -1532,30 +1504,44 @@
                     }
                 });
 
+                // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
+                // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
+                // SEAMLESS LOOP TRICK: Append the cards first, then append an exact clone right behind them
                 if (desktopWrapper) {
                     fragmentCards.forEach(card => marqueeTrack.appendChild(card));
+
+                    // Double the track list to prepare the continuous scrolling loop sequence
                     fragmentCards.forEach(card => marqueeTrack.appendChild(card.cloneNode(true)));
+
                     desktopWrapper.appendChild(marqueeTrack);
 
+                    // Using a micro-timeout guarantees the browser has fully calculated layout dimensions before checking widths
                     setTimeout(() => {
+                        // Read the actual visible boundary box width of the container element
                         const parentWidth = desktopWrapper.clientWidth;
+
+                        // Track total pixel depth of notes inside the flex layout track before it hits the loop duplication point
                         let notesCombinedWidth = 0;
                         const activeBadges = marqueeTrack.querySelectorAll('div');
 
+                        // Add up the widths of only the unique original cards (the first half of the array)
                         for (let i = 0; i < activeBadges.length / 2; i++) {
-                            notesCombinedWidth += activeBadges[i].offsetWidth + 8;
+                            notesCombinedWidth += activeBadges[i].offsetWidth + 8; // Card width + 8px gap margin space
                         }
 
+                        // If the unique cards fit entirely within the parent width, turn off animation
                         if (notesCombinedWidth <= parentWidth) {
                             marqueeTrack.style.animation = 'none';
                             marqueeTrack.style.width = '100%';
-                            marqueeTrack.classList.remove('marquee-container');
-                            marqueeTrack.className = "flex flex-wrap gap-2 pt-1";
+                            marqueeTrack.classList.remove('marquee-container'); // Disables track shifting parameters safely
+                            marqueeTrack.className = "flex flex-wrap gap-2 pt-1"; // Re-arranges static components natively
 
+                            // Clear out the duplicate loop clones since they are no longer needed for scrolling
                             while (marqueeTrack.children.length > activeLiveNotes.length) {
                                 marqueeTrack.removeChild(marqueeTrack.lastChild);
                             }
                         } else {
+                            // Re-enforce marquee styles explicitly if content overflows bounds
                             marqueeTrack.style.animation = '';
                             marqueeTrack.style.width = 'max-content';
                         }
@@ -1576,7 +1562,7 @@
             if (!id) return; // Fail-safe exit if identifiers are missing
 
             // PATHWAY A: Dropping from Next Payment Plan (Moves the item)
-            // PATHWAY A: Dropping from Next Payment Plan (Moves the item to Movements Ledger)
+// PATHWAY A: Dropping from Next Payment Plan (Moves the item to Movements Ledger)
             if (origin === 'planification') {
                 const planIdx = state.planification.findIndex(p => p.id === id);
                 if (planIdx !== -1) {
@@ -1590,11 +1576,11 @@
                         date: new Date().toISOString().split('T')[0], // Authoritative calendar date takes over
                         updatedAt: Date.now()
                     });
-
+                    
                     // Register deletion tombstone for item-level sync
                     if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
                     state.tombstones.planification[id] = Date.now();
-
+                    
                     state.planification.splice(planIdx, 1); // Stripped out of plans cleanly
                     saveState();
                     renderAll();
@@ -1774,14 +1760,11 @@
 
                     tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer select-none";
                     tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
-                    const [y, m, d] = m.date.split('-');
-                    const localizedLedgerDate = `${d} / ${m} / ${y}`;
-
                     tr.innerHTML = `
                         <td class="py-3 px-3 font-medium">${m.name}</td>
                         <td class="py-3 px-3 text-gray-400 text-xs"><span class="bg-gray-900 px-2 py-1 rounded-md border border-gray-800">${m.category}</span></td>
                         <td class="py-3 px-3 text-xs uppercase font-bold tracking-wider ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${m.type}</td>
-                        <td class="py-3 px-3 text-gray-400 text-xs font-mono">${localizedLedgerDate}</td>
+                        <td class="py-3 px-3 text-gray-400 text-xs">${m.date}</td>
                         <td class="py-3 px-3 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(m.amount)}</td>
                     `;
                     if (allMovementsTableBody) allMovementsTableBody.appendChild(tr);
@@ -2145,6 +2128,7 @@
                     category: sourceItem.category,
                     type: sourceItem.type || 'outcome',
                     date: sourceItem.date || new Date().toISOString().split('T')[0],
+                    date: new Date().toISOString().split('T')[0],
                     updatedAt: Date.now()
                 });
             } else if (targetZone === 'planification') {
@@ -3925,43 +3909,6 @@ async function checkAndTriggerReminders() {
                     openMovementModal();
                 }
             }
-        });
-
-        // ========================================================
-        // NEXT PAYMENT PLAN SEQUENTIAL ORDER TOGGLE CONTROLLER
-        // ========================================================
-        const MoneycoPlanSort = {
-            currentMethod: localStorage.getItem('MONEYCO_PLAN_SORT_METHOD') || 'date',
-
-            init() {
-                this.updateUISelectionState();
-            },
-
-            setSort(method) {
-                this.currentMethod = method;
-                localStorage.setItem('MONEYCO_PLAN_SORT_METHOD', method);
-                this.updateUISelectionState();
-                if (typeof renderDashboard === 'function') renderDashboard();
-            },
-
-            updateUISelectionState() {
-                const methods = ['date', 'amount', 'title'];
-                methods.forEach(m => {
-                    const el = document.getElementById(`btnPlanSort${m.charAt(0).toUpperCase() + m.slice(1)}`);
-                    if (!el) return;
-
-                    if (m === this.currentMethod) {
-                        el.className = "px-2 py-1 rounded-lg bg-indigo-600 text-white shadow transition-all duration-150";
-                    } else {
-                        el.className = "px-2 py-1 rounded-lg hover:text-gray-200 transition-all duration-150 cursor-pointer";
-                    }
-                });
-            }
-        };
-
-        // Securely bind the active selector elements into the layout startup pass
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => MoneycoPlanSort.init(), 120);
         });
 
     </script>
