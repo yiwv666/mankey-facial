@@ -2327,7 +2327,7 @@
                     if (resp.error !== undefined) throw (resp);
 
                     googleUserToken = resp;
-                    // Stamp an absolute expiration milestone timestamp (expires_in parameter maps seconds)
+                    // Stamp an absolute expiration milestone timestamp (expires_in maps seconds)
                     googleUserToken.expires_at = Date.now() + (parseInt(resp.expires_in) * 1000);
 
                     localStorage.setItem('MONEYCO_GD_AUTH_TOKEN', JSON.stringify(googleUserToken));
@@ -2353,7 +2353,7 @@
             try {
                 googleUserToken = JSON.parse(savedToken);
 
-                // Token rollover check: if less than 5 minutes remain on the token lifecycle, refresh it silently
+                // Token rollover check: if less than 5 minutes remain on the lifetime, refresh silently
                 const isTokenExpired = !googleUserToken.expires_at || (Date.now() >= googleUserToken.expires_at - 300000);
 
                 if (isTokenExpired) {
@@ -2405,7 +2405,6 @@
                     isCurrentlySyncingFlag = false;
                     console.warn("[Live Sync Heartbeat] Intercepted background exception status:", err.status || err);
 
-                    // Auto-resolve network token timeout states seamlessly without shifting UI focus parameters
                     if (err.status === 401) {
                         console.log("%c[Live Sync Engine] Token expiration identified. Running automated re-authentication sequence...", "color: #f43f5e; font-weight: bold;");
                         tokenClient.requestAccessToken({ prompt: 'none' });
@@ -2576,6 +2575,7 @@
             } catch (err) {
                 console.error('[Sync] Google Drive connection interrupted:', err);
                 if (err.status === 401) {
+                    console.log("%c[Sync Engine] Token expiration identified. Running automated re-authentication sequence...", "color: #f43f5e; font-weight: bold;");
                     tokenClient.requestAccessToken({ prompt: 'none' });
                 }
             }
@@ -2586,7 +2586,7 @@
             if (!local.tombstones) local.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
             if (!cloud.tombstones) cloud.tombstones = { movements: {}, planification: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
 
-            // Merge Deletion Tombstones authoritatively
+            // Merge Deletion Tombstones authoritatively (Highest unix timestamp wins deletion status)
             const mergedTombstones = {
                 movements: { ...safeObj(local.tombstones.movements), ...safeObj(cloud.tombstones.movements) },
                 planification: { ...safeObj(local.tombstones.planification), ...safeObj(cloud.tombstones.planification) },
@@ -2596,31 +2596,29 @@
                 notes: { ...safeObj(local.tombstones.notes), ...safeObj(cloud.tombstones.notes) }
             };
 
-            // FIXED: Helper to safely deduce an item's true modified time even if it came from an old, unsynced DB version
+            // Helper to safely deduce an item's true modified time even if it came from an old, unsynced DB version
             const getItemTimestamp = (item, parentMasterTime) => {
                 if (item && item.updatedAt) return item.updatedAt;
-                // Fallback 1: If it is a movement ledger row, parse its calendar entry date string into milliseconds
                 if (item && item.date) return new Date(item.date).getTime() || 1;
-                // Fallback 2: Use the parent database container's historic modification epoch or baseline to 1
                 return parentMasterTime || 1;
             };
 
             const mergeCollection = (localArr, cloudArr, tombstoneMap, localMasterTime, cloudMasterTime) => {
                 const itemMap = new Map();
 
-                // 1. Process local collection array sets
+                // Process local elements
                 (localArr || []).forEach(item => {
                     if (item && item.id) {
-                        item.updatedAt = getItemTimestamp(item, localMasterTime); // Self-heal missing values natively
+                        item.updatedAt = getItemTimestamp(item, localMasterTime);
                         itemMap.set(item.id, item);
                     }
                 });
 
-                // 2. Process cloud items and compare authoritative timeline metrics
+                // Compare timestamps against incoming cloud records
                 (cloudArr || []).forEach(cloudItem => {
                     if (!cloudItem || !cloudItem.id) return;
 
-                    cloudItem.updatedAt = getItemTimestamp(cloudItem, cloudMasterTime); // Self-heal incoming items
+                    cloudItem.updatedAt = getItemTimestamp(cloudItem, cloudMasterTime);
                     const localItem = itemMap.get(cloudItem.id);
 
                     if (!localItem || cloudItem.updatedAt > localItem.updatedAt) {
@@ -2628,14 +2626,13 @@
                     }
                 });
 
-                // 3. Filter out items flagged inside deletion tombstone registries
+                // Strip out anything logically deleted within our tombstones
                 return Array.from(itemMap.values()).filter(item => {
                     const deletionTime = tombstoneMap[item.id] || 0;
                     return !deletionTime || item.updatedAt > deletionTime;
                 });
             };
 
-            // Process mutations safely across flat collections with master time contextual bounds passed through
             const finalMovements = mergeCollection(local.movements, cloud.movements, mergedTombstones.movements, local.lastUpdated, cloud.lastUpdated);
             const finalPlan = mergeCollection(local.planification, cloud.planification, mergedTombstones.planification, local.lastUpdated, cloud.lastUpdated);
             const finalFreq = mergeCollection(local.frequent, cloud.frequent, mergedTombstones.frequent, local.lastUpdated, cloud.lastUpdated);
