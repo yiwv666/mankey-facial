@@ -1373,66 +1373,57 @@
                 });
             }
 
-            // Planification List Assembly
+            // ========================================================
+            // PLANIFICATION LIST ASSEMBLY (FIXED INFINITE LOOP BUG)
+            // ========================================================
             const planContainer = document.getElementById('planificationList');
             planContainer.innerHTML = '';
             let planTotal = 0;
 
-            if (state.planification.length === 0) {
+            if (!state.planification || state.planification.length === 0) {
                 document.getElementById('noPlanItems').classList.remove('hidden');
             } else {
                 document.getElementById('noPlanItems').classList.add('hidden');
-                // LOCATE THE state.planification FOREACH INSIDE renderDashboard AND OVERWRITE ITS INNER CARD GENERATOR
-                state.planification.forEach(p => {
-                    // --- OVERWRITE THE state.planification RENDER LAYER INSIDE renderDashboard WITH THIS ---
-                    const planContainer = document.getElementById('planificationList');
-                    planContainer.innerHTML = '';
-                    let planTotal = 0;
 
-                    if (state.planification.length === 0) {
-                        document.getElementById('noPlanItems').classList.remove('hidden');
+                // 1. Sort the underlying planificación dataset array clone dynamically 
+                const sortedPlans = [...state.planification].sort((a, b) => {
+                    const method = MoneycoPlanSort.currentMethod;
+                    if (method === 'amount') {
+                        return b.amount - a.amount; // Highest amounts on top
+                    } else if (method === 'title') {
+                        return a.name.localeCompare(b.name); // Alphabetical A-Z
                     } else {
-                        document.getElementById('noPlanItems').classList.add('hidden');
+                        // Date sort: Treat missing estimated dates as maximum bounds (pushed to bottom)
+                        if (!a.estimatedDate) return 1;
+                        if (!b.estimatedDate) return -1;
+                        return a.estimatedDate.localeCompare(b.estimatedDate);
+                    }
+                });
 
-                        // 1. Sort the underlying planificación dataset array clone dynamically 
-                        const sortedPlans = [...state.planification].sort((a, b) => {
-                            const method = MoneycoPlanSort.currentMethod;
-                            if (method === 'amount') {
-                                return b.amount - a.amount; // Highest amounts on top
-                            } else if (method === 'title') {
-                                return a.name.localeCompare(b.name); // Alphabetical A-Z
-                            } else {
-                                // Date sort: Treat missing estimated dates as maximum bounds (pushed to bottom)
-                                if (!a.estimatedDate) return 1;
-                                if (!b.estimatedDate) return -1;
-                                return a.estimatedDate.localeCompare(b.estimatedDate);
-                            }
-                        });
+                // 2. Generate elements from sorted iteration rules safely on a single pass layer
+                sortedPlans.forEach(p => {
+                    planTotal += parseFloat(p.amount);
+                    const item = document.createElement('div');
+                    item.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md";
+                    item.setAttribute('draggable', 'true');
+                    item.setAttribute('data-id', p.id);
+                    item.setAttribute('data-origin', 'planification');
 
-                        // 2. Generate elements from sorted iteration rules
-                        sortedPlans.forEach(p => {
-                            planTotal += parseFloat(p.amount);
-                            const item = document.createElement('div');
-                            item.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md";
-                            item.setAttribute('draggable', 'true');
-                            item.setAttribute('data-id', p.id);
-                            item.setAttribute('data-origin', 'planification');
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'planification', p.id));
 
-                            item.addEventListener('dragstart', handleDragStart);
-                            item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'planification', p.id));
+                    // REFORMAT DATE HOOK: Convert system YYYY-MM-DD to DD / MM / YYYY cleanly 
+                    let formattedEstDate = '';
+                    if (p.estimatedDate) {
+                        const [y, m, d] = p.estimatedDate.split('-');
+                        formattedEstDate = `${d} / ${m} / ${y}`;
+                    }
 
-                            // REFORMAT DATE HOOK: Convert system YYYY-MM-DD to DD / MM / YYYY cleanly 
-                            let formattedEstDate = '';
-                            if (p.estimatedDate) {
-                                const [y, m, d] = p.estimatedDate.split('-');
-                                formattedEstDate = `${d} / ${m} / ${y}`;
-                            }
+                    const dateBadge = formattedEstDate
+                        ? `<span class="text-[10px] text-gray-500 font-mono font-medium"><i class="fa-regular fa-calendar text-[9px] text-indigo-400/80"></i> Est: ${formattedEstDate}</span>`
+                        : '';
 
-                            const dateBadge = formattedEstDate
-                                ? `<span class="text-[10px] text-gray-500 font-mono font-medium"><i class="fa-regular fa-calendar text-[9px] text-indigo-400/80"></i> Est: ${formattedEstDate}</span>`
-                                : '';
-
-                            item.innerHTML = `
+                    item.innerHTML = `
                         <div class="select-none flex flex-col gap-1">
                             <p class="font-semibold text-sm select-none leading-none">${p.name}</p>
                             <div class="flex items-center gap-2 flex-wrap">
@@ -1442,9 +1433,7 @@
                         </div>
                         <p class="font-bold text-sm text-indigo-400 select-none shrink-0">${formatCurrency(p.amount)}</p>
                     `;
-                            planContainer.appendChild(item);
-                        });
-                    }
+                    planContainer.appendChild(item);
                 });
             }
 
@@ -2179,7 +2168,6 @@
                     category: sourceItem.category,
                     type: sourceItem.type || 'outcome',
                     date: sourceItem.date || new Date().toISOString().split('T')[0],
-                    date: new Date().toISOString().split('T')[0],
                     updatedAt: Date.now()
                 });
             } else if (targetZone === 'planification') {
