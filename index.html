@@ -217,9 +217,7 @@
         </div>
     </div>
 
-    <!-- LESS IMPORTANT STATS FOOTER ROW (MINIMIZED SUB-GRID) -->
     <div class="border-t border-gray-900 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-        <!-- Average Daily Spent & Remaining Calculations -->
         <div class="col-span-1 md:col-span-1 flex justify-between items-start gap-4">
             <div>
                 <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Avg. Daily Spent</span>
@@ -233,13 +231,11 @@
             </div>
         </div>
         
-        <!-- Total Savings -->
         <div class="border-t md:border-t-0 pt-2 md:pt-0 border-gray-900 md:border-x md:border-gray-900 md:px-4">
             <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Total Savings</span>
             <span id="dashSavingsTotal" class="text-sm font-bold text-emerald-500">$0.00</span>
         </div>
         
-        <!-- Total Debts -->
         <div class="border-t md:border-t-0 pt-2 md:pt-0 border-gray-900 pl-0 md:pl-2">
             <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Total Debts</span>
             <span id="dashDebtsTotal" class="text-sm font-bold text-rose-500">$0.00</span>
@@ -1402,14 +1398,6 @@
 
     let planPoolSum = (state.planification || []).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
 
-    // ========================================================
-    // ADVANCED CONSOLIDATED RATIO SYSTEMS MAPPINGS
-    // ========================================================
-
-    // ========================================================
-    // EXTENDED ADVANCED ANALYTICS CALCULATIONS
-    // ========================================================
-
     // 1. Average Daily Spent & Remaining Calculations Execution
     const targetDaysDelta = Math.ceil(computedDaysSpan);
     const averageDailySpentValue = targetDaysDelta > 0 ? (expenseSum / targetDaysDelta) : 0;
@@ -1555,7 +1543,7 @@
             let localizedDate = '';
             if (m.date && m.date.includes('-')) {
                 const parts = m.date.split('-');
-                localizedDate = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : m.date;
+                localizedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : m.date;
             } else {
                 localizedDate = m.date || '';
             }
@@ -1927,7 +1915,7 @@
                     let ledgerDateDisplay = '';
                     if (m.date && m.date.includes('-')) {
                         const parts = m.date.split('-');
-                        ledgerDateDisplay = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : m.date;
+                        ledgerDateDisplay = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : m.date;
                     } else {
                         ledgerDateDisplay = m.date || '';
                     }
@@ -2112,7 +2100,6 @@
             debtBody.innerHTML = '';
             let totalPlannedDebtsAmt = 0;
 
-            // UPDATED DATA QUERY MATRIX: Combines planning modules with direct debts pool evaluations
             const plannedDebtItems = (state.debtsPool || []);
 
             if (plannedDebtItems.length === 0) {
@@ -2156,12 +2143,6 @@
                 `;
                 tbody.appendChild(tr);
             });
-        }
-
-        function updateSavingsGoal(val) {
-            state.savingsGoal = Math.max(0, parseFloat(val)) || 0;
-            saveState();
-            renderCategoryStats();
         }
 
         let draggedItemId = null;
@@ -2254,7 +2235,6 @@
             if (!sourceItem) return;
 
             if (targetZone === 'movements') {
-                // REWRITTEN DISPATCH DETERMINISTIC LOGIC FRAMEWORK
                 let resolvedType = 'outcome';
                 if (origin === 'expectedIncome') {
                     resolvedType = 'income';
@@ -2446,14 +2426,12 @@
             const toPlansBtn = document.getElementById('ctxDebtToPlansBtn');
 
             if (splitBtn && toPlansBtn) {
-                // "Split in..." is now available for all 3 workspace sub-tabs
                 if (['planification', 'expectedIncome', 'debtsPool'].includes(type)) {
                     splitBtn.classList.remove('hidden');
                 } else {
                     splitBtn.classList.add('hidden');
                 }
 
-                // "Send to Plans" remains exclusive to the Debts Pool
                 if (type === 'debtsPool') {
                     toPlansBtn.classList.remove('hidden');
                 } else {
@@ -3609,7 +3587,12 @@ async function checkAndTriggerReminders() {
                 pool.push({ type: 'nav', title: 'Go to Google Drive Cloud Sync Configuration', sub: 'Navigation • Manage remote tokens', tab: 'settings', key: 'nav_set', meta: 'View' });
 
                 state.movements.forEach(m => {
-                    pool.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', key: `m_${m.id}` });
+                    let searchDisplayDate = m.date;
+                    if (m.date && m.date.includes('-')) {
+                        const chunks = m.date.split('-');
+                        searchDisplayDate = `${chunks[2]}/${chunks[1]}/${chunks[0]}`;
+                    }
+                    pool.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${searchDisplayDate}`, meta: formatCurrency(m.amount), tab: 'all-movements', key: `m_${m.id}` });
                 });
                 (state.planification || []).forEach(p => {
                     pool.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', key: `p_${p.id}` });
@@ -3624,9 +3607,6 @@ async function checkAndTriggerReminders() {
                     pool.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', key: `f_${f.id}` });
                 });
 
-                // --- NEW SEARCH POOL DATA MAPPINGS ---
-
-                // 1. Projects Matrix Mappings
                 (state.projects || []).forEach(proj => {
                     pool.push({
                         type: 'projectFolder',
@@ -3638,7 +3618,6 @@ async function checkAndTriggerReminders() {
                         key: `proj_${proj.id}`
                     });
 
-                    // 2. Wishlist Items Inside Projects
                     (proj.items || []).forEach(item => {
                         pool.push({
                             type: 'wishlistItem',
@@ -3653,7 +3632,6 @@ async function checkAndTriggerReminders() {
                     });
                 });
 
-                // 3. Financial Monthly Notes Mappings
                 if (state.notes) {
                     Object.keys(state.notes).forEach(monthKey => {
                         const monthIndex = parseInt(monthKey.replace('month_', ''), 10);
@@ -3802,14 +3780,12 @@ async function checkAndTriggerReminders() {
                         targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
                         this.glow(targetDOMElement);
                     }
-                    // --- HANDLING REDIRECTION FOR NEW EXTENSIONS ---
                     else if (result.type === 'projectFolder') {
                         focusOnSpecificProjectBlueprint(result.id);
                     }
                     else if (result.type === 'wishlistItem') {
                         focusOnSpecificProjectBlueprint(result.projectId);
                         setTimeout(() => {
-                            // Look through elements in the detailed list feed for item matches
                             const itemsRows = document.getElementById('wishlistItemsListFeed')?.children || [];
                             for (let el of itemsRows) {
                                 if (el.innerHTML.includes(`toggleWishItemCompletedState('${result.id}')`)) {
@@ -3838,62 +3814,6 @@ async function checkAndTriggerReminders() {
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 el.classList.add('search-glow-focus');
                 setTimeout(() => el.classList.remove('search-glow-focus'), 2500);
-            }
-        };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => MoneycoSearch.init(), 100);
-        });
-
-        const MoneycoDateMask = {
-            apply(inputEl) {
-                let value = inputEl.value.replace(/\D/g, '');
-                let dayNum = 0;
-                let monthNum = 0;
-
-                if (value.length >= 2) dayNum = parseInt(value.substring(0, 2), 10);
-                if (value.length >= 4) {
-                    monthNum = parseInt(value.substring(2, 4), 10);
-                    if (monthNum > 12) {
-                        monthNum = 12;
-                        value = value.substring(0, 2) + "12" + value.substring(4);
-                    }
-                    if (monthNum === 0 && value.length === 4) monthNum = 1;
-                }
-
-                if (value.length >= 2) {
-                    let maxDaysAllowed = 31;
-                    if (monthNum === 2) maxDaysAllowed = 28;
-                    else if ([4, 6, 9, 11].includes(monthNum)) maxDaysAllowed = 30;
-
-                    if (dayNum > maxDaysAllowed) {
-                        dayNum = maxDaysAllowed;
-                        value = String(maxDaysAllowed).padStart(2, '0') + value.substring(2);
-                    }
-                    if (dayNum === 0 && value.length === 2) dayNum = 1;
-                }
-
-                let formatted = '';
-                if (value.length > 0) {
-                    formatted = value.substring(0, 2);
-                    if (value.length > 2) {
-                        formatted += '/' + value.substring(2, 4);
-                        if (value.length > 4) formatted += '/' + value.substring(4, 8);
-                    }
-                }
-                inputEl.value = formatted;
-
-                const hiddenInput = document.getElementById('plEstimatedDate');
-                if (hiddenInput) {
-                    if (value.length === 8) {
-                        const d = String(dayNum).padStart(2, '0');
-                        const m = String(monthNum).padStart(2, '0');
-                        const y = value.substring(4, 8);
-                        hiddenInput.value = `${y}-${m}-${d}`;
-                    } else {
-                        hiddenInput.value = "";
-                    }
-                }
             }
         };
 
@@ -3940,6 +3860,7 @@ async function checkAndTriggerReminders() {
 
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => MoneycoPlanSort.init(), 120);
+            setTimeout(() => MoneycoSearch.init(), 100);
         });
 
         // ==========================================
@@ -3952,7 +3873,6 @@ async function checkAndTriggerReminders() {
             const debtItem = state.debtsPool.find(d => d.id === contextTarget.id);
             if (!debtItem) return;
 
-            // Duplicate target specs directly over into the planification collection arrays
             state.planification.push({
                 id: crypto.randomUUID(),
                 name: `${debtItem.name} (Copy)`,
@@ -3968,7 +3888,6 @@ async function checkAndTriggerReminders() {
         }
 
         function triggerContextDebtSplit() {
-            // Upgraded guard clause to whitelist all planning components
             if (!contextTarget || !['planification', 'expectedIncome', 'debtsPool'].includes(contextTarget.type)) return;
 
             const modal = document.getElementById('debtSplitModal');
@@ -4039,14 +3958,11 @@ async function checkAndTriggerReminders() {
                 }
             }
 
-            // Filter original item out from its respective pool array
             state[contextTarget.type] = activeWorkspaceArray.filter(item => item.id !== sourceItem.id);
 
-            // Register an atomic deletion tombstone signature inside the matching bucket index
             if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, expectedIncome: {}, debtsPool: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
             state.tombstones[contextTarget.type][sourceItem.id] = Date.now();
 
-            // Inject your newly calculated split items into the active pool
             partSpecs.forEach((amtValue, index) => {
                 state[contextTarget.type].push({
                     id: crypto.randomUUID(),
@@ -4062,6 +3978,58 @@ async function checkAndTriggerReminders() {
             renderAll();
             closeDebtSplitModal();
         }
+
+        const MoneycoDateMask = {
+            apply(inputEl) {
+                let value = inputEl.value.replace(/\D/g, '');
+                let dayNum = 0;
+                let monthNum = 0;
+
+                if (value.length >= 2) dayNum = parseInt(value.substring(0, 2), 10);
+                if (value.length >= 4) {
+                    monthNum = parseInt(value.substring(2, 4), 10);
+                    if (monthNum > 12) {
+                        monthNum = 12;
+                        value = value.substring(0, 2) + "12" + value.substring(4);
+                    }
+                    if (monthNum === 0 && value.length === 4) monthNum = 1;
+                }
+
+                if (value.length >= 2) {
+                    let maxDaysAllowed = 31;
+                    if (monthNum === 2) maxDaysAllowed = 28;
+                    else if ([4, 6, 9, 11].includes(monthNum)) maxDaysAllowed = 30;
+
+                    if (dayNum > maxDaysAllowed) {
+                        dayNum = maxDaysAllowed;
+                        value = String(maxDaysAllowed).padStart(2, '0') + value.substring(2);
+                    }
+                    if (dayNum === 0 && value.length === 2) dayNum = 1;
+                }
+
+                let formatted = '';
+                if (value.length > 0) {
+                    formatted = value.substring(0, 2);
+                    if (value.length > 2) {
+                        formatted += '/' + value.substring(2, 4);
+                        if (value.length > 4) formatted += '/' + value.substring(4, 8);
+                    }
+                }
+                inputEl.value = formatted;
+
+                const hiddenInput = document.getElementById('plEstimatedDate');
+                if (hiddenInput) {
+                    if (value.length === 8) {
+                        const d = String(dayNum).padStart(2, '0');
+                        const m = String(monthNum).padStart(2, '0');
+                        const y = value.substring(4, 8);
+                        hiddenInput.value = `${y}-${m}-${d}`;
+                    } else {
+                        hiddenInput.value = "";
+                    }
+                }
+            }
+        };
 
     </script>
 </body>
