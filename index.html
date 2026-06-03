@@ -104,7 +104,9 @@
                         <i class="fa-solid fa-wallet text-xl"></i>
                     </div>
                     <div class="flex flex-col">
-                        <h1 class="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent leading-none">Moneyco</h1>
+                        <h1
+                            class="text-xl font-bold tracking-wider bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent leading-none">
+                            Moneyco</h1>
                         <div id="navSyncIndicator" class="mt-1"></div>
                     </div>
                 </div>
@@ -114,31 +116,41 @@
             </div>
 
             <div id="navLinks" class="hidden md:flex flex-col gap-2">
-                <button onclick="switchTab('dashboard')" data-tab="dashboard" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium bg-blue-600 text-white">
+                <button onclick="switchTab('dashboard')" data-tab="dashboard"
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium bg-blue-600 text-white">
                     <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
                 </button>
-                <button onclick="switchTab('all-movements')" data-tab="all-movements" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                <button onclick="switchTab('all-movements')" data-tab="all-movements"
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-list-ul w-5"></i> All Movements
                 </button>
-                <button onclick="switchTab('wishlists')" data-tab="wishlists" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                <button onclick="switchTab('wishlists')" data-tab="wishlists"
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-wand-magic-sparkles w-5"></i> Wishlists & Projects
                 </button>
-                <button onclick="switchTab('categories')" data-tab="categories" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                <button onclick="switchTab('categories')" data-tab="categories"
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-tags w-5"></i> Categories
                 </button>
-                <button onclick="switchTab('notes')" data-tab="notes" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                <button onclick="switchTab('notes')" data-tab="notes"
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-note-sticky w-5"></i> Monthly Notes
                 </button>
-                <button onclick="switchTab('settings')" data-tab="settings" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                <button onclick="switchTab('settings')" data-tab="settings"
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
                     <i class="fa-solid fa-cloud-arrow-up w-5"></i> Cloud Sync
                 </button>
             </div>
-            <div onclick="MoneycoSearch.open()" class="w-full bg-gray-900 hover:bg-gray-800 border border-gray-800/80 hover:border-gray-700 px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-gray-400 transition flex items-center justify-between cursor-pointer group select-none shadow-inner mt-4">
+            <div onclick="MoneycoSearch.open()"
+                class="w-full bg-gray-900 hover:bg-gray-800 border border-gray-800/80 hover:border-gray-700 px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-gray-400 transition flex items-center justify-between cursor-pointer group select-none shadow-inner mt-4">
                 <span class="flex items-center gap-2">
-                    <i class="fa-solid fa-magnifying-glass text-[11px] text-gray-600 group-hover:text-blue-500 transition"></i>
+                    <i
+                        class="fa-solid fa-magnifying-glass text-[11px] text-gray-600 group-hover:text-blue-500 transition"></i>
                     Search records...
                 </span>
-                <kbd class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-600 font-bold group-hover:text-gray-400">Ctrl K</kbd>
+                <kbd
+                    class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-600 font-bold group-hover:text-gray-400">Ctrl
+                    K</kbd>
             </div>
         </nav>
 
@@ -146,55 +158,68 @@
 
             <div id="tab-dashboard" class="tab-content space-y-6">
                 <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl">
-                    <div class="grid grid-cols-2 md:grid-cols-5 divide-y divide-gray-800 md:divide-y-0 md:divide-x divide-dashed">
+                    <div
+                        class="grid grid-cols-2 md:grid-cols-5 divide-y divide-gray-800 md:divide-y-0 md:divide-x divide-dashed">
 
                         <div class="p-3 flex items-center justify-between col-span-2 sm:col-span-1">
                             <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Recent Income</p>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Recent
+                                    Income</p>
                                 <h3 id="dashIncome" class="text-xl font-black text-emerald-400 mt-0.5">$0.00</h3>
                             </div>
-                            <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-sm"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                            <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-sm"><i
+                                    class="fa-solid fa-arrow-trend-up"></i></div>
                         </div>
 
                         <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
                             <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Recent Expenses</p>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Recent
+                                    Expenses</p>
                                 <h3 id="dashExpense" class="text-xl font-black text-rose-400 mt-0.5">$0.00</h3>
                             </div>
-                            <div class="p-2 bg-rose-500/10 text-rose-400 rounded-lg text-sm"><i class="fa-solid fa-arrow-trend-down"></i></div>
+                            <div class="p-2 bg-rose-500/10 text-rose-400 rounded-lg text-sm"><i
+                                    class="fa-solid fa-arrow-trend-down"></i></div>
                         </div>
 
                         <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
                             <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Planning Pool</p>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Planning
+                                    Pool</p>
                                 <h3 id="dashPlanTotal" class="text-xl font-black text-blue-400 mt-0.5">$0.00</h3>
                             </div>
-                            <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg text-sm"><i class="fa-solid fa-layer-group"></i></div>
+                            <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg text-sm"><i
+                                    class="fa-solid fa-layer-group"></i></div>
                         </div>
 
                         <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
                             <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Total Savings</p>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Total
+                                    Savings</p>
                                 <h3 id="dashSavingsTotal" class="text-xl font-black text-emerald-500 mt-0.5">$0.00</h3>
                             </div>
-                            <div class="p-2 bg-emerald-500/15 text-emerald-500 rounded-lg text-sm"><i class="fa-solid fa-piggy-bank"></i></div>
+                            <div class="p-2 bg-emerald-500/15 text-emerald-500 rounded-lg text-sm"><i
+                                    class="fa-solid fa-piggy-bank"></i></div>
                         </div>
 
                         <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
                             <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Total Debts</p>
+                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Total Debts
+                                </p>
                                 <h3 id="dashDebtsTotal" class="text-xl font-black text-rose-500 mt-0.5">$0.00</h3>
                             </div>
-                            <div class="p-2 bg-rose-500/15 text-rose-500 rounded-lg text-sm"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                            <div class="p-2 bg-rose-500/15 text-rose-500 rounded-lg text-sm"><i
+                                    class="fa-solid fa-hand-holding-dollar"></i></div>
                         </div>
 
                     </div>
                     <div class="mt-4 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl">
                         <div class="flex items-center justify-between mb-2">
-                            <h4 class="text-xs uppercase font-bold tracking-wider text-blue-400 flex items-center gap-2">
+                            <h4
+                                class="text-xs uppercase font-bold tracking-wider text-blue-400 flex items-center gap-2">
                                 <i class="fa-solid fa-note-sticky text-[11px]"></i> This month notes:
                             </h4>
-                            <button onclick="openMobileNotesModal()" class="md:hidden bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-xl border border-blue-500/20 transition flex items-center gap-1.5 shadow-sm">
+                            <button onclick="openMobileNotesModal()"
+                                class="md:hidden bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-xl border border-blue-500/20 transition flex items-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-expand text-[10px]"></i> View Notes
                             </button>
                         </div>
@@ -202,34 +227,43 @@
                         <div class="hidden md:block w-full overflow-hidden relative bg-gray-900/20 rounded-xl p-1.5">
                             <div class="flex items-center gap-2" id="dashDesktopNotesScrollWrapper"></div>
                         </div>
-                        <div id="dashDesktopNotesEmptyState" class="hidden text-xs text-gray-600 italic py-1 pl-2">No reminders logged for this month.</div>
+                        <div id="dashDesktopNotesEmptyState" class="hidden text-xs text-gray-600 italic py-1 pl-2">No
+                            reminders logged for this month.</div>
                     </div>
 
-                    <dialog id="mobileDashboardNotesModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-11/12 backdrop:bg-black/80">
+                    <dialog id="mobileDashboardNotesModal"
+                        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-11/12 backdrop:bg-black/80">
                         <div class="flex items-center justify-between border-b border-gray-800 pb-2 mb-4">
-                            <h3 id="mobileNotesModalHeader" class="text-sm font-bold text-blue-400 flex items-center gap-2">
+                            <h3 id="mobileNotesModalHeader"
+                                class="text-sm font-bold text-blue-400 flex items-center gap-2">
                                 <i class="fa-solid fa-note-sticky text-xs"></i> Current Month Notes
                             </h3>
-                            <button onclick="closeMobileNotesModal()" class="text-gray-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+                            <button onclick="closeMobileNotesModal()" class="text-gray-400 hover:text-white p-1"><i
+                                    class="fa-solid fa-xmark text-lg"></i></button>
                         </div>
-                        <div id="mobileNotesModalFeedContainer" class="space-y-2.5 max-h-[350px] overflow-y-auto pr-1"></div>
+                        <div id="mobileNotesModalFeedContainer" class="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
+                        </div>
                     </dialog>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                    <div class="lg:col-span-7 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
+                    <div
+                        class="lg:col-span-7 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
                         <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                             <div>
                                 <h2 class="text-lg font-bold">Recent Movements</h2>
                                 <p class="text-xs text-gray-400">Past 2.5 weeks (18 days)</p>
                             </div>
-                            <button onclick="openMovementModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
+                            <button onclick="openMovementModal()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
                                 <i class="fa-solid fa-plus text-xs"></i> Add Entry
                             </button>
                         </div>
 
-                        <div id="movementDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="handleGlobalDrop(event)" data-zone="movements" class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px] overflow-x-auto">
+                        <div id="movementDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
+                            ondrop="handleGlobalDrop(event)" data-zone="movements"
+                            class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px] overflow-x-auto">
                             <table class="w-full text-left border-collapse min-w-[500px]">
                                 <thead>
                                     <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
@@ -241,21 +275,32 @@
                                 </thead>
                                 <tbody id="recentMovementsTable"></tbody>
                             </table>
-                            <div id="noRecentMovements" class="hidden text-center py-12 text-gray-500 text-sm">No items in the past 18 days.</div>
+                            <div id="noRecentMovements" class="hidden text-center py-12 text-gray-500 text-sm">No items
+                                in the past 18 days.</div>
                         </div>
                     </div>
 
-                    <div class="lg:col-span-5 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
+                    <div
+                        class="lg:col-span-5 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl flex flex-col">
                         <div class="flex flex-col gap-3 mb-4">
                             <div class="flex items-center justify-between flex-wrap gap-2">
-                                <div class="flex bg-gray-900 p-1 border border-gray-800 rounded-xl select-none text-xs font-bold uppercase tracking-wide">
-                                    <button onclick="switchWorkspaceTab('planification')" id="workspace-tab-planification" class="px-3 py-1.5 rounded-lg transition duration-150 bg-indigo-600 text-white shadow">Plans</button>
-                                    <button onclick="switchWorkspaceTab('expectedIncome')" id="workspace-tab-expectedIncome" class="px-3 py-1.5 rounded-lg transition duration-150 text-gray-400 hover:text-white">Expected Income</button>
-                                    <button onclick="switchWorkspaceTab('debtsPool')" id="workspace-tab-debtsPool" class="px-3 py-1.5 rounded-lg transition duration-150 text-gray-400 hover:text-white">Debts</button>
+                                <div
+                                    class="flex bg-gray-900 p-1 border border-gray-800 rounded-xl select-none text-xs font-bold uppercase tracking-wide">
+                                    <button onclick="switchWorkspaceTab('planification')"
+                                        id="workspace-tab-planification"
+                                        class="px-3 py-1.5 rounded-lg transition duration-150 bg-indigo-600 text-white shadow">Plans</button>
+                                    <button onclick="switchWorkspaceTab('expectedIncome')"
+                                        id="workspace-tab-expectedIncome"
+                                        class="px-3 py-1.5 rounded-lg transition duration-150 text-gray-400 hover:text-white">Expected
+                                        Income</button>
+                                    <button onclick="switchWorkspaceTab('debtsPool')" id="workspace-tab-debtsPool"
+                                        class="px-3 py-1.5 rounded-lg transition duration-150 text-gray-400 hover:text-white">Debts</button>
                                 </div>
 
-                                <button onclick="openWorkspaceItemModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
-                                    <i class="fa-solid fa-plus text-xs"></i> <span id="lblWorkspaceAddBtn">Add Plan</span>
+                                <button onclick="openWorkspaceItemModal()"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
+                                    <i class="fa-solid fa-plus text-xs"></i> <span id="lblWorkspaceAddBtn">Add
+                                        Plan</span>
                                 </button>
                             </div>
 
@@ -265,21 +310,29 @@
                                     <p id="lblWorkspaceSub" class="text-xs text-gray-400">Draft upcoming budgets</p>
                                 </div>
 
-                                <div class="flex items-center bg-gray-900 border border-gray-800 rounded-xl p-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 shadow-inner select-none">
-                                    <button onclick="MoneycoPlanSort.toggle('date')" id="btnPlanSortDate" class="px-2.5 py-1 rounded-lg transition duration-150">Date</button>
-                                    <button onclick="MoneycoPlanSort.toggle('amount')" id="btnPlanSortAmount" class="px-2.5 py-1 rounded-lg transition duration-150">Amount</button>
-                                    <button onclick="MoneycoPlanSort.toggle('name')" id="btnPlanSortName" class="px-2.5 py-1 rounded-lg transition duration-150">Name</button>
+                                <div
+                                    class="flex items-center bg-gray-900 border border-gray-800 rounded-xl p-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 shadow-inner select-none">
+                                    <button onclick="MoneycoPlanSort.toggle('date')" id="btnPlanSortDate"
+                                        class="px-2.5 py-1 rounded-lg transition duration-150">Date</button>
+                                    <button onclick="MoneycoPlanSort.toggle('amount')" id="btnPlanSortAmount"
+                                        class="px-2.5 py-1 rounded-lg transition duration-150">Amount</button>
+                                    <button onclick="MoneycoPlanSort.toggle('name')" id="btnPlanSortName"
+                                        class="px-2.5 py-1 rounded-lg transition duration-150">Name</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="planDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="handleGlobalDrop(event)" data-zone="planification" class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]">
+                        <div id="planDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
+                            ondrop="handleGlobalDrop(event)" data-zone="planification"
+                            class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[350px]">
                             <div class="space-y-2" id="planificationList"></div>
-                            <div id="noPlanItems" class="hidden text-center py-12 text-gray-500 text-sm">Drag movements here or add items to schedule next payment.</div>
+                            <div id="noPlanItems" class="hidden text-center py-12 text-gray-500 text-sm">Drag movements
+                                here or add items to schedule next payment.</div>
                         </div>
 
                         <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between items-center">
-                            <span id="lblWorkspaceSumTitle" class="font-semibold text-sm tracking-wide text-gray-400">Total Planned:</span>
+                            <span id="lblWorkspaceSumTitle"
+                                class="font-semibold text-sm tracking-wide text-gray-400">Total Planned:</span>
                             <span id="planTotalSum" class="text-xl font-extrabold text-indigo-400">$0.00</span>
                         </div>
 
@@ -289,14 +342,18 @@
                                     <h2 class="text-lg font-bold">Frequent Expenses</h2>
                                     <p class="text-xs text-gray-400">Templates for recurring costs</p>
                                 </div>
-                                <button onclick="openFrequentModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
+                                <button onclick="openFrequentModal()"
+                                    class="bg-teal-600 hover:bg-teal-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
                                     <i class="fa-solid fa-plus text-xs"></i> Add Template
                                 </button>
                             </div>
 
-                            <div id="frequentDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="handleGlobalDrop(event)" data-zone="frequent" class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[200px]">
+                            <div id="frequentDropZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
+                                ondrop="handleGlobalDrop(event)" data-zone="frequent"
+                                class="flex-1 border border-transparent rounded-xl transition p-1 min-h-[200px]">
                                 <div class="space-y-2" id="frequentExpensesList"></div>
-                                <div id="noFrequentItems" class="hidden text-center py-8 text-gray-500 text-sm">Add templates to drag-and-drop quick entries into your movements.</div>
+                                <div id="noFrequentItems" class="hidden text-center py-8 text-gray-500 text-sm">Add
+                                    templates to drag-and-drop quick entries into your movements.</div>
                             </div>
                         </div>
 
@@ -312,25 +369,30 @@
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Filter Month</label>
-                            <input type="month" id="filterMonth" onchange="applyFilters()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            <input type="month" id="filterMonth" onchange="applyFilters()"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category</label>
-                            <select id="filterCategory" onchange="applyFilters()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            <select id="filterCategory" onchange="applyFilters()"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                                 <option value="all">All Categories</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Type</label>
-                            <select id="filterType" onchange="applyFilters()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            <select id="filterType" onchange="applyFilters()"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                                 <option value="all">Income & Outcome</option>
                                 <option value="income">Income Only</option>
                                 <option value="outcome">Outcome Only</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Sort By Amount</label>
-                            <select id="filterSort" onchange="applyFilters()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Sort By
+                                Amount</label>
+                            <select id="filterSort" onchange="applyFilters()"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                                 <option value="date-desc">Newest First</option>
                                 <option value="date-asc">Oldest First</option>
                                 <option value="amount-desc">Highest Amount</option>
@@ -352,7 +414,8 @@
                             </thead>
                             <tbody id="allMovementsTable"></tbody>
                         </table>
-                        <div id="allMovementsEmpty" class="hidden text-center py-12 text-gray-500 text-sm">No entries matched your selection criteria.</div>
+                        <div id="allMovementsEmpty" class="hidden text-center py-12 text-gray-500 text-sm">No entries
+                            matched your selection criteria.</div>
                     </div>
                 </div>
             </div>
@@ -363,26 +426,35 @@
                     <div class="lg:col-span-4 bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl h-fit">
                         <h2 class="text-lg font-bold mb-3">Custom Categories</h2>
                         <form id="categoryForm" onsubmit="addCategory(event)" class="flex gap-2 mb-4">
-                            <input type="text" id="newCategoryName" maxlength="30" placeholder="e.g., Subscriptions" required class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition shrink-0">Add</button>
+                            <input type="text" id="newCategoryName" maxlength="30" placeholder="e.g., Subscriptions"
+                                required
+                                class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                            <button type="submit"
+                                class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition shrink-0">Add</button>
                         </form>
                         <div id="categoryManageList" class="space-y-1.5 max-h-[400px] overflow-y-auto pr-1"></div>
                     </div>
 
                     <div class="lg:col-span-8 space-y-6">
 
-                        <div class="bg-gradient-to-br from-emerald-950/40 to-gray-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div
+                            class="bg-gradient-to-br from-emerald-950/40 to-gray-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                             <div class="absolute top-0 right-0 p-6 opacity-10 text-emerald-400 pointer-events-none">
                                 <i class="fa-solid fa-piggy-bank text-7xl"></i>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
-                                    <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">Total Asset Reserve</span>
-                                    <h2 id="savingsAllTimeTotal" class="text-4xl font-black text-emerald-400 mt-1">$0.00</h2>
+                                    <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">Total
+                                        Asset Reserve</span>
+                                    <h2 id="savingsAllTimeTotal" class="text-4xl font-black text-emerald-400 mt-1">$0.00
+                                    </h2>
                                 </div>
                                 <div class="flex flex-col items-end gap-1">
-                                    <input type="number" id="savingsGoalInput" placeholder="Set Savings Goal" onchange="updateSavingsGoal(this.value)" class="bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-emerald-500 w-36 text-center">
-                                    <span id="savingsGoalTargetLabel" class="text-[10px] text-gray-400 font-semibold tracking-wide hidden pr-1"></span>
+                                    <input type="number" id="savingsGoalInput" placeholder="Set Savings Goal"
+                                        onchange="updateSavingsGoal(this.value)"
+                                        class="bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-emerald-500 w-36 text-center">
+                                    <span id="savingsGoalTargetLabel"
+                                        class="text-[10px] text-gray-400 font-semibold tracking-wide hidden pr-1"></span>
                                 </div>
                             </div>
                             <div id="savingsProgressWrapper" class="mt-4 hidden space-y-1.5">
@@ -390,8 +462,11 @@
                                     <span id="savingsProgressPercent" class="text-emerald-400">0% achieved</span>
                                     <span id="savingsProgressMetrics" class="text-gray-500"></span>
                                 </div>
-                                <div class="w-full bg-gray-900 border border-gray-800 rounded-full h-2.5 overflow-hidden">
-                                    <div id="savingsProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                                <div
+                                    class="w-full bg-gray-900 border border-gray-800 rounded-full h-2.5 overflow-hidden">
+                                    <div id="savingsProgressBar"
+                                        class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
+                                        style="width: 0%"></div>
                                 </div>
                             </div>
                         </div>
@@ -400,25 +475,30 @@
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                                 <h2 class="text-lg font-bold">Category Distribution Analytics</h2>
                                 <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                                    <select id="statsSort" onchange="renderCategoryStats()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500 text-gray-300 max-w-[150px] sm:max-w-none">
+                                    <select id="statsSort" onchange="renderCategoryStats()"
+                                        class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500 text-gray-300 max-w-[150px] sm:max-w-none">
                                         <option value="none">Default Order</option>
                                         <option value="name-asc">Name (A-Z)</option>
                                         <option value="name-desc">Name (Z-A)</option>
                                         <option value="expense-month">Most Expended (Month)</option>
                                         <option value="expense-all">Most Expended (All-Time)</option>
                                     </select>
-                                    <input type="month" id="statsMonth" onchange="renderCategoryStats()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
+                                    <input type="month" id="statsMonth" onchange="renderCategoryStats()"
+                                        class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
                                 </div>
                             </div>
                             <div class="overflow-x-auto -mx-5 px-5">
                                 <table class="w-full text-left border-collapse min-w-[650px]">
                                     <thead>
-                                        <tr class="text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-800">
+                                        <tr
+                                            class="text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-800">
                                             <th class="py-3 px-2">Category</th>
                                             <th class="py-3 px-2 text-right text-emerald-400">Month Income</th>
-                                            <th class="py-3 px-2 text-right text-emerald-500 bg-emerald-950/10">All-Time Income</th>
+                                            <th class="py-3 px-2 text-right text-emerald-500 bg-emerald-950/10">All-Time
+                                                Income</th>
                                             <th class="py-3 px-2 text-right text-rose-400">Month Expenses</th>
-                                            <th class="py-3 px-2 text-right text-rose-500 bg-rose-950/10">All-Time Expenses</th>
+                                            <th class="py-3 px-2 text-right text-rose-500 bg-rose-950/10">All-Time
+                                                Expenses</th>
                                         </tr>
                                     </thead>
                                     <tbody id="categoryStatsTable"></tbody>
@@ -433,19 +513,23 @@
                                         <i class="fa-solid fa-hand-holding-dollar text-sm"></i> Planned Debt Commitments
                                     </h2>
                                 </div>
-                                <span id="plannedDebtTotalBadge" class="text-xs bg-rose-500/10 text-rose-400 font-bold px-2.5 py-1 rounded-full border border-rose-500/20">$0.00 Total</span>
+                                <span id="plannedDebtTotalBadge"
+                                    class="text-xs bg-rose-500/10 text-rose-400 font-bold px-2.5 py-1 rounded-full border border-rose-500/20">$0.00
+                                    Total</span>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
-                                        <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                                        <tr
+                                            class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
                                             <th class="py-2 px-2">Planned Item Name</th>
                                             <th class="py-2 px-2 text-right">Allocated Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody id="plannedDebtsTableBody"></tbody>
                                 </table>
-                                <div id="plannedDebtsEmptyState" class="hidden text-center py-6 text-gray-500 text-xs">No debt planning configurations added to your active list.</div>
+                                <div id="plannedDebtsEmptyState" class="hidden text-center py-6 text-gray-500 text-xs">
+                                    No debt planning configurations added to your active list.</div>
                             </div>
                         </div>
 
@@ -457,10 +541,12 @@
                 <div class="max-w-2xl bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl space-y-6">
                     <div>
                         <h2 class="text-xl font-bold tracking-wide">Google Drive Automated Cloud Sync</h2>
-                        <p class="text-sm text-gray-400 mt-1">Bind your application database securely to your personal Google Drive account. Changes persist in real-time instantly.</p>
+                        <p class="text-sm text-gray-400 mt-1">Bind your application database securely to your personal
+                            Google Drive account. Changes persist in real-time instantly.</p>
                     </div>
 
-                    <div class="p-4 bg-gray-900/60 border border-gray-800 rounded-xl flex items-center justify-between flex-wrap gap-4">
+                    <div
+                        class="p-4 bg-gray-900/60 border border-gray-800 rounded-xl flex items-center justify-between flex-wrap gap-4">
                         <div class="flex items-center gap-3">
                             <div id="gdriveStatusIcon" class="w-3 h-3 bg-rose-500 rounded-full animate-pulse"></div>
                             <div>
@@ -469,15 +555,19 @@
                             </div>
                         </div>
                         <div class="flex gap-2">
-                            <button id="btnConnectDrive" onclick="handleAuthClick()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition">Connect Account</button>
-                            <button id="btnDisconnectDrive" onclick="handleSignoutClick()" class="hidden bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition">Disconnect</button>
+                            <button id="btnConnectDrive" onclick="handleAuthClick()"
+                                class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition">Connect
+                                Account</button>
+                            <button id="btnDisconnectDrive" onclick="handleSignoutClick()"
+                                class="hidden bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition">Disconnect</button>
                         </div>
                     </div>
 
                     <div class="space-y-3 pt-2 text-sm text-gray-400">
                         <h4 class="font-bold text-gray-200">How it works:</h4>
                         <ul class="list-disc list-inside space-y-1 text-xs">
-                            <li>Creates a hidden, isolated config file inside your private Google Drive appData folder.</li>
+                            <li>Creates a hidden, isolated config file inside your private Google Drive appData folder.
+                            </li>
                             <li>Updates instantly whenever you add, change, drag, or drop entries.</li>
                             <li>Allows cross-device syncing securely without exposing your broader filesystem.</li>
                         </ul>
@@ -489,26 +579,33 @@
                     <div class="flex items-center justify-between flex-wrap gap-2">
                         <div>
                             <h2 class="text-xl font-bold tracking-wide">Financial Memorandums</h2>
-                            <p class="text-sm text-gray-400 mt-1">Add quick context logs, reminders, or financial checklists for each month.</p>
+                            <p class="text-sm text-gray-400 mt-1">Add quick context logs, reminders, or financial
+                                checklists for each month.</p>
                         </div>
-                        <span id="saveStatusIndicator" class="text-xs text-gray-500 flex items-center gap-1.5 bg-gray-900 px-3 py-1.5 rounded-xl border border-gray-800">
+                        <span id="saveStatusIndicator"
+                            class="text-xs text-gray-500 flex items-center gap-1.5 bg-gray-900 px-3 py-1.5 rounded-xl border border-gray-800">
                             <i class="fa-solid fa-cloud"></i> Ready
                         </span>
                     </div>
 
                     <div class="mt-6 border-b border-gray-800 pb-4">
                         <div class="block md:hidden">
-                            <label class="block text-xs uppercase font-bold tracking-wider text-gray-500 mb-1.5">Select Active Month</label>
-                            <select id="monthsMobileDropdown" onchange="selectNotesMonth(parseInt(this.value))" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500"></select>
+                            <label class="block text-xs uppercase font-bold tracking-wider text-gray-500 mb-1.5">Select
+                                Active Month</label>
+                            <select id="monthsMobileDropdown" onchange="selectNotesMonth(parseInt(this.value))"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500"></select>
                         </div>
 
                         <div class="hidden md:block">
-                            <span class="text-[10px] uppercase font-bold tracking-wider text-gray-500 block mb-2">Calendar Timeline</span>
+                            <span
+                                class="text-[10px] uppercase font-bold tracking-wider text-gray-500 block mb-2">Calendar
+                                Timeline</span>
                             <div id="monthsSelectorContainer" class="grid grid-cols-6 lg:grid-cols-12 gap-2"></div>
                         </div>
                     </div>
 
-                    <div class="bg-gray-900/30 border border-gray-800 rounded-xl p-4 md:p-5 flex flex-col space-y-5 mt-6">
+                    <div
+                        class="bg-gray-900/30 border border-gray-800 rounded-xl p-4 md:p-5 flex flex-col space-y-5 mt-6">
                         <div class="flex flex-col space-y-2">
 
                             <div class="flex items-center justify-between">
@@ -519,22 +616,33 @@
                                 <span id="noteCharCounter" class="text-[11px] font-mono text-gray-500">0/200</span>
                             </div>
                             <div class="relative">
-                                <input type="text" id="noteInputBox" onkeydown="handleNoteKeyDown(event)" oninput="handleNoteInputCounter(this)" placeholder="Type a note and press Enter to save..." class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition duration-150 shadow-inner">
-                                <button onclick="triggerNoteSubmitFromButton()" class="absolute right-3 top-2.5 text-gray-500 hover:text-blue-400 p-1 transition"><i class="fa-solid fa-arrow-turn-down rotate-90 text-sm"></i></button>
+                                <input type="text" id="noteInputBox" onkeydown="handleNoteKeyDown(event)"
+                                    oninput="handleNoteInputCounter(this)"
+                                    placeholder="Type a note and press Enter to save..."
+                                    class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition duration-150 shadow-inner">
+                                <button onclick="triggerNoteSubmitFromButton()"
+                                    class="absolute right-3 top-2.5 text-gray-500 hover:text-blue-400 p-1 transition"><i
+                                        class="fa-solid fa-arrow-turn-down rotate-90 text-sm"></i></button>
                             </div>
                         </div>
 
-                        <div id="monthlyNotesFeedContainer" class="flex flex-wrap gap-2 items-start max-h-[350px] overflow-y-auto pr-1 pt-1"></div>
+                        <div id="monthlyNotesFeedContainer"
+                            class="flex flex-wrap gap-2 items-start max-h-[350px] overflow-y-auto pr-1 pt-1"></div>
                     </div>
                 </div>
             </div>
-            <div id="mobileDragOverlaysContainer" class="hidden fixed bottom-4 left-4 right-4 z-50 md:hidden flex justify-between gap-4 pointer-events-none transition-all duration-300 transform translate-y-24">
-                <div id="mobileEditDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)" ondrop="handleMobileActionDrop(event, 'edit')" data-action="edit" class="pointer-events-auto flex-1 bg-blue-600/95 border-2 border-dashed border-blue-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
+            <div id="mobileDragOverlaysContainer"
+                class="hidden fixed bottom-4 left-4 right-4 z-50 md:hidden flex justify-between gap-4 pointer-events-none transition-all duration-300 transform translate-y-24">
+                <div id="mobileEditDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)"
+                    ondrop="handleMobileActionDrop(event, 'edit')" data-action="edit"
+                    class="pointer-events-auto flex-1 bg-blue-600/95 border-2 border-dashed border-blue-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
                     <i class="fa-solid fa-pen-to-square text-lg animate-bounce"></i>
                     <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Edit</span>
                 </div>
 
-                <div id="mobileDeleteDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)" ondrop="handleMobileActionDrop(event, 'delete')" data-action="delete" class="pointer-events-auto flex-1 bg-rose-600/95 border-2 border-dashed border-rose-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
+                <div id="mobileDeleteDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)"
+                    ondrop="handleMobileActionDrop(event, 'delete')" data-action="delete"
+                    class="pointer-events-auto flex-1 bg-rose-600/95 border-2 border-dashed border-rose-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
                     <i class="fa-solid fa-trash text-lg animate-bounce"></i>
                     <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Delete</span>
                 </div>
@@ -545,9 +653,11 @@
                     <div class="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-4 mb-4">
                         <div>
                             <h2 class="text-xl font-bold tracking-wide">Wishlists & Projects</h2>
-                            <p class="text-sm text-gray-400 mt-1">Draft sandbox item specs, allocate goals, or track project material costs before logging expenses.</p>
+                            <p class="text-sm text-gray-400 mt-1">Draft sandbox item specs, allocate goals, or track
+                                project material costs before logging expenses.</p>
                         </div>
-                        <button onclick="openProjectModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 shadow-lg">
+                        <button onclick="openProjectModal()"
+                            class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 shadow-lg">
                             <i class="fa-solid fa-folder-plus text-xs"></i> Create Project
                         </button>
                     </div>
@@ -555,20 +665,30 @@
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
 
                         <div id="projectMasterPanel" class="md:col-span-12 transition-all duration-500 ease-in-out">
-                            <div id="projectDeckGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-                            <div id="projectDeckEmptyState" class="hidden text-center py-16 text-gray-600 text-sm italic">No blueprints or wishlists initialized. Create a folder matrix above to get started!</div>
+                            <div id="projectDeckGrid"
+                                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                            <div id="projectDeckEmptyState"
+                                class="hidden text-center py-16 text-gray-600 text-sm italic">No blueprints or wishlists
+                                initialized. Create a folder matrix above to get started!</div>
                         </div>
 
-                        <div id="projectDetailPanel" class="hidden md:col-span-8 bg-gray-900/20 border border-gray-800 rounded-2xl p-5 flex flex-col space-y-4 animate-fade-in">
-                            <div class="flex items-center justify-between border-b border-gray-800 pb-3 flex-wrap gap-2">
+                        <div id="projectDetailPanel"
+                            class="hidden md:col-span-8 bg-gray-900/20 border border-gray-800 rounded-2xl p-5 flex flex-col space-y-4 animate-fade-in">
+                            <div
+                                class="flex items-center justify-between border-b border-gray-800 pb-3 flex-wrap gap-2">
                                 <div class="flex items-center gap-2">
-                                    <button onclick="closeProjectFocusMode()" class="text-gray-400 hover:text-white p-1 mr-1" title="Back to Full Deck View"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <button onclick="closeProjectFocusMode()"
+                                        class="text-gray-400 hover:text-white p-1 mr-1"
+                                        title="Back to Full Deck View"><i class="fa-solid fa-arrow-left"></i></button>
                                     <div>
-                                        <h3 id="focusProjectTitle" class="text-lg font-bold text-white leading-tight">Project Spec Sheets</h3>
-                                        <p id="focusProjectTotals" class="text-xs text-gray-400 mt-0.5">Allocated items: 0 | Total Target Footprint: $0.00</p>
+                                        <h3 id="focusProjectTitle" class="text-lg font-bold text-white leading-tight">
+                                            Project Spec Sheets</h3>
+                                        <p id="focusProjectTotals" class="text-xs text-gray-400 mt-0.5">Allocated items:
+                                            0 | Total Target Footprint: $0.00</p>
                                     </div>
                                 </div>
-                                <button onclick="openWishItemModal()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-semibold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                                <button onclick="openWishItemModal()"
+                                    class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-semibold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
                                     <i class="fa-solid fa-cart-plus text-blue-400"></i> Add Item
                                 </button>
                             </div>
@@ -580,173 +700,234 @@
                 </div>
             </div>
 
-            <dialog id="projectCreationModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+            <dialog id="projectCreationModal"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
                 <div class="flex items-center justify-between mb-4">
                     <h3 id="projectModalTitle" class="text-lg font-bold">Initialize Folder Blueprint</h3>
-                    <button onclick="closeProjectModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    <button onclick="closeProjectModal()" class="text-gray-400 hover:text-white"><i
+                            class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
                 <form id="projectCreationForm" onsubmit="saveProjectForm(event)" class="space-y-4">
                     <input type="hidden" id="editProjectId">
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Project Name</label>
-                        <input type="text" id="projName" maxlength="30" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <input type="text" id="projName" maxlength="30" required
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Identify Color Marker Badge</label>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Identify Color Marker
+                            Badge</label>
                         <div id="projectColorPaletteSelectionGrid" class="grid grid-cols-8 gap-2.5"></div>
                         <input type="hidden" id="projSelectedColor" value="blue" required>
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeProjectModal()" class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save Project</button>
+                        <button type="button" onclick="closeProjectModal()"
+                            class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
+                            Project</button>
                     </div>
                 </form>
             </dialog>
 
-            <dialog id="wishlistItemModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70">
+            <dialog id="wishlistItemModal"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70">
                 <div class="flex items-center justify-between mb-4">
                     <h3 id="wishItemModalTitle" class="text-sm font-bold">Append Specification Record</h3>
-                    <button onclick="closeWishItemModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    <button onclick="closeWishItemModal()" class="text-gray-400 hover:text-white"><i
+                            class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
                 <form id="wishlistItemForm" onsubmit="saveWishItemForm(event)" class="space-y-4">
                     <input type="hidden" id="editWishItemId">
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Item Title Name</label>
-                        <input type="text" id="wishItemName" maxlength="30" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <input type="text" id="wishItemName" maxlength="30" required
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Unit Cost</label>
-                        <input type="number" step="0.01" id="wishItemPrice" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Unit
+                            Cost</label>
+                        <input type="number" step="0.01" id="wishItemPrice" required
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Target Purchase URL (Optional)</label>
-                        <input type="url" id="wishItemUrl" placeholder="https://example.com/item" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Target Purchase URL
+                            (Optional)</label>
+                        <input type="url" id="wishItemUrl" placeholder="https://example.com/item"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeWishItemModal()" class="px-3 py-1.5 border border-gray-800 rounded-xl text-xs hover:bg-gray-900 transition">Cancel</button>
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">Save Spec</button>
+                        <button type="button" onclick="closeWishItemModal()"
+                            class="px-3 py-1.5 border border-gray-800 rounded-xl text-xs hover:bg-gray-900 transition">Cancel</button>
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">Save
+                            Spec</button>
                     </div>
                 </form>
             </dialog>
 
-            <dialog id="commandPaletteModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl text-gray-100 w-11/12 md:w-[500px] h-fit max-h-[450px] backdrop:bg-black/80 backdrop:backdrop-blur-sm z-50 overflow-hidden focus:outline-none">
+            <dialog id="commandPaletteModal"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl text-gray-100 w-11/12 md:w-[500px] h-fit max-h-[450px] backdrop:bg-black/80 backdrop:backdrop-blur-sm z-50 overflow-hidden focus:outline-none">
                 <div class="flex flex-col h-full">
                     <div class="flex items-center gap-3 px-4 py-3.5 border-b border-gray-900 bg-gray-950 shrink-0">
                         <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm"></i>
-                        <input type="text" id="paletteSearchBox" placeholder="Search movements, budgets, plans, folders, notes..." class="w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none" autocomplete="off">
-                        <button onclick="MoneycoSearch.close()" class="text-gray-500 hover:text-white px-1 text-xs font-mono bg-gray-900 border border-gray-800 rounded">ESC</button>
+                        <input type="text" id="paletteSearchBox"
+                            placeholder="Search movements, budgets, plans, folders, notes..."
+                            class="w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none"
+                            autocomplete="off">
+                        <button onclick="MoneycoSearch.close()"
+                            class="text-gray-500 hover:text-white px-1 text-xs font-mono bg-gray-900 border border-gray-800 rounded">ESC</button>
                     </div>
-                    <div id="paletteResultsFeed" class="flex-1 overflow-y-auto bg-gray-950/40 p-2 space-y-0.5 max-h-[320px]"></div>
-                    <div class="px-4 py-2 bg-gray-950 border-t border-gray-900 text-[10px] text-gray-600 flex items-center justify-between shrink-0 font-medium select-none">
+                    <div id="paletteResultsFeed"
+                        class="flex-1 overflow-y-auto bg-gray-950/40 p-2 space-y-0.5 max-h-[320px]"></div>
+                    <div
+                        class="px-4 py-2 bg-gray-950 border-t border-gray-900 text-[10px] text-gray-600 flex items-center justify-between shrink-0 font-medium select-none">
                         <div class="flex items-center gap-4">
-                            <span><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i> Navigate</span>
+                            <span><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i>
+                                Navigate</span>
                             <span><i class="fa-solid fa-arrow-turn-down rotate-90"></i> Select</span>
                         </div>
-                        <span class="text-amber-500/60 font-semibold flex items-center gap-1"><kbd class="font-mono bg-gray-900 px-1 border border-gray-800 rounded text-[9px]">/</kbd> Commands Mode</span>
+                        <span class="text-amber-500/60 font-semibold flex items-center gap-1"><kbd
+                                class="font-mono bg-gray-900 px-1 border border-gray-800 rounded text-[9px]">/</kbd>
+                            Commands Mode</span>
                     </div>
                 </div>
             </dialog>
         </main>
     </div>
 
-    <div id="customContextMenu" class="hidden absolute bg-gray-950 border border-gray-800 shadow-2xl rounded-xl py-1 text-sm min-w-[140px] z-50">
-        <button onclick="triggerContextEdit()" class="w-full text-left px-4 py-2.5 text-gray-300 hover:bg-blue-600 hover:text-white flex items-center gap-2 transition">
+    <div id="customContextMenu"
+        class="hidden absolute bg-gray-950 border border-gray-800 shadow-2xl rounded-xl py-1 text-sm min-w-[140px] z-50">
+        <button onclick="triggerContextEdit()"
+            class="w-full text-left px-4 py-2.5 text-gray-300 hover:bg-blue-600 hover:text-white flex items-center gap-2 transition">
             <i class="fa-solid fa-pen-to-square text-xs"></i> Edit Item
         </button>
-        <button onclick="triggerContextDelete()" class="w-full text-left px-4 py-2.5 text-rose-400 hover:bg-rose-600 hover:text-white flex items-center gap-2 transition">
+        <button id="ctxDebtSplitBtn" onclick="triggerContextDebtSplit()"
+            class="hidden w-full text-left px-4 py-2.5 text-gray-300 hover:bg-indigo-600 hover:text-white flex items-center gap-2 transition">
+            <i class="fa-solid fa-scissors text-xs"></i> Split in...
+        </button>
+        <button id="ctxDebtToPlansBtn" onclick="triggerContextDebtToPlans()"
+            class="hidden w-full text-left px-4 py-2.5 text-gray-300 hover:bg-indigo-600 hover:text-white flex items-center gap-2 transition">
+            <i class="fa-solid fa-copy text-xs"></i> Send to Plans
+        </button>
+        <button onclick="triggerContextDelete()"
+            class="w-full text-left px-4 py-2.5 text-rose-400 hover:bg-rose-600 hover:text-white flex items-center gap-2 transition">
             <i class="fa-solid fa-trash text-xs"></i> Delete Item
         </button>
     </div>
 
-    <dialog id="movementModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+    <dialog id="movementModal"
+        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
         <div class="flex items-center justify-between mb-4">
             <h3 id="movementModalTitle" class="text-lg font-bold">Add Movement</h3>
-            <button onclick="closeMovementModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button onclick="closeMovementModal()" class="text-gray-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <form id="movementForm" onsubmit="saveMovementForm(event)" class="space-y-4">
             <input type="hidden" id="editMovementId">
             <div>
                 <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Name</label>
-                <input type="text" id="mvName" required maxlength="30" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                <input type="text" id="mvName" required maxlength="30"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Type</label>
-                    <select id="mvType" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <select id="mvType"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                         <option value="income">Income</option>
                         <option value="outcome">Outcome</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category</label>
-                    <select id="mvCategory" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <select id="mvCategory"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </select>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Amount</label>
-                    <input type="number" step="0.01" id="mvAmount" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <input type="number" step="0.01" id="mvAmount" required
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Date</label>
-                    <input type="date" id="mvDate" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <input type="date" id="mvDate" required
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="closeMovementModal()" class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save Entry</button>
+                <button type="button" onclick="closeMovementModal()"
+                    class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
+                    Entry</button>
             </div>
         </form>
     </dialog>
 
-    <dialog id="editCategoryModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70">
+    <dialog id="editCategoryModal"
+        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-bold">Edit Category</h3>
-            <button onclick="closeEditCategoryModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button onclick="closeEditCategoryModal()" class="text-gray-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <form id="editCategoryForm" onsubmit="saveEditCategoryForm(event)" class="space-y-4">
             <input type="hidden" id="oldCategoryNameHidden">
             <div>
                 <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category Name</label>
-                <input type="text" id="editCategoryNameInput" required maxlength="30" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                <input type="text" id="editCategoryNameInput" required maxlength="30"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="closeEditCategoryModal()" class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save Changes</button>
+                <button type="button" onclick="closeEditCategoryModal()"
+                    class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                <button type="submit"
+                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
+                    Changes</button>
             </div>
         </form>
     </dialog>
 
-    <dialog id="frequentModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+    <dialog id="frequentModal"
+        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
         <div class="flex items-center justify-between mb-4">
             <h3 id="frequentModalTitle" class="text-lg font-bold">Add Frequent Expense</h3>
-            <button onclick="closeFrequentModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button onclick="closeFrequentModal()" class="text-gray-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <form id="frequentForm" onsubmit="saveFrequentForm(event)" class="space-y-4">
             <input type="hidden" id="editFrequentId">
             <div>
                 <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Expense Name</label>
-                <input type="text" id="frName" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                <input type="text" id="frName" required
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Standard Amount</label>
-                    <input type="number" step="0.01" id="frAmount" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <input type="number" step="0.01" id="frAmount" required
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category</label>
-                    <select id="frCategory" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <select id="frCategory"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </select>
                 </div>
             </div>
             <div class="border-t border-gray-800 pt-3 space-y-3">
-                <label class="block text-xs font-semibold uppercase text-teal-400 tracking-wide">Reminder Configuration</label>
+                <label class="block text-xs font-semibold uppercase text-teal-400 tracking-wide">Reminder
+                    Configuration</label>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] text-gray-400 mb-1">Frequency Type</label>
-                        <select id="frReminderInterval" onchange="toggleReminderFields()" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <select id="frReminderInterval" onchange="toggleReminderFields()"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                             <option value="none">No Reminder</option>
                             <option value="daily">Daily</option>
                             <option value="weekly">Weekly</option>
@@ -756,13 +937,15 @@
                     </div>
                     <div>
                         <label class="block text-[11px] text-gray-400 mb-1">Alert Time</label>
-                        <input type="time" id="frReminderTime" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <input type="time" id="frReminderTime"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </div>
                 </div>
 
                 <div id="wrapperWeekly" class="hidden">
                     <label class="block text-[11px] text-gray-400 mb-1">Day of the Week</label>
-                    <select id="frReminderWeeklyDay" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <select id="frReminderWeeklyDay"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                         <option value="1">Monday</option>
                         <option value="2">Tuesday</option>
                         <option value="3">Wednesday</option>
@@ -775,17 +958,20 @@
 
                 <div id="wrapperMonthly" class="hidden">
                     <label class="block text-[11px] text-gray-400 mb-1">Day of the Month (1-31)</label>
-                    <input type="number" id="frReminderMonthlyDay" min="1" max="31" placeholder="e.g., 15" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <input type="number" id="frReminderMonthlyDay" min="1" max="31" placeholder="e.g., 15"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                 </div>
 
                 <div id="wrapperCustom" class="hidden grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] text-gray-400 mb-1">Interval Value (X)</label>
-                        <input type="number" id="frReminderCustomValue" min="1" placeholder="e.g., 3" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <input type="number" id="frReminderCustomValue" min="1" placeholder="e.g., 3"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
                         <label class="block text-[11px] text-gray-400 mb-1">Unit</label>
-                        <select id="frReminderCustomUnit" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        <select id="frReminderCustomUnit"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                             <option value="days">Days</option>
                             <option value="weeks">Weeks</option>
                             <option value="months">Months</option>
@@ -794,42 +980,93 @@
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="closeFrequentModal()" class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
-                <button type="submit" class="bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save Template</button>
+                <button type="button" onclick="closeFrequentModal()"
+                    class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                <button type="submit"
+                    class="bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
+                    Template</button>
             </div>
         </form>
     </dialog>
 
-    <dialog id="planModal" class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+    <dialog id="planModal"
+        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
         <div class="flex items-center justify-between mb-4">
             <h3 id="planModalTitle" class="text-lg font-bold">Add Planned Item</h3>
-            <button onclick="closePlanModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button onclick="closePlanModal()" class="text-gray-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <form id="planForm" onsubmit="savePlanForm(event)" class="space-y-4">
             <input type="hidden" id="editPlanId">
             <div>
                 <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Item Title / Name</label>
-                <input type="text" id="plName" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                <input type="text" id="plName" required
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Amount</label>
-                    <input type="number" step="0.01" id="plAmount" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <input type="number" step="0.01" id="plAmount" required
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Category</label>
-                    <select id="plCategory" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <select id="plCategory"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </select>
                 </div>
             </div>
             <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Date (Optional)</label>
-                <input type="text" id="plEstimatedDateVisual" placeholder="DD/MM/YYYY" maxlength="10" oninput="MoneycoDateMask.apply(this)" onblur="if(this.value.length < 10) { this.value = ''; document.getElementById('plEstimatedDate').value = ''; }" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 font-mono">
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Date
+                    (Optional)</label>
+                <input type="text" id="plEstimatedDateVisual" placeholder="DD/MM/YYYY" maxlength="10"
+                    oninput="MoneycoDateMask.apply(this)"
+                    onblur="if(this.value.length < 10) { this.value = ''; document.getElementById('plEstimatedDate').value = ''; }"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 font-mono">
                 <input type="hidden" id="plEstimatedDate">
             </div>
             <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="closePlanModal()" class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save Workspace Item</button>
+                <button type="button" onclick="closePlanModal()"
+                    class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
+                    Workspace Item</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="debtSplitModal"
+        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold">Split Debt Entry</h3>
+            <button onclick="closeDebtSplitModal()" class="text-gray-400 hover:text-white"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <form id="debtSplitForm" onsubmit="saveDebtSplitForm(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Split Strategy</label>
+                <select id="splitStrategy" onchange="toggleSplitStrategyFields()"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    <option value="parts">Split into X equal parts</option>
+                    <option value="amount">Split into parts of X amount</option>
+                </select>
+            </div>
+            <div id="wrapperSplitParts">
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Number of Parts</label>
+                <input type="number" id="splitPartsCount" min="2" placeholder="e.g., 3"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+            </div>
+            <div id="wrapperSplitAmount" class="hidden">
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Target Base Amount</label>
+                <input type="number" step="0.01" id="splitBaseAmount" min="0.01" placeholder="e.g., 50.00"
+                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeDebtSplitModal()"
+                    class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Process
+                    Split</button>
             </div>
         </form>
     </dialog>
@@ -1052,29 +1289,39 @@
             const btnPlan = document.getElementById('workspace-tab-planification');
             const btnInc = document.getElementById('workspace-tab-expectedIncome');
             const btnDebt = document.getElementById('workspace-tab-debtsPool');
-            const btnAdd = document.getElementById('lblWorkspaceAddBtn');
+            const btnAdd = document.getElementById('workspace-tab-add-btn') || document.querySelector("button[onclick='openWorkspaceItemModal()']");
             const zone = document.getElementById('planDropZone');
 
-            [btnPlan, btnInc, btnDebt].forEach(b => b.className = "px-3 py-1.5 rounded-lg transition duration-150 text-gray-400 hover:text-white");
-            document.getElementById(`workspace-tab-${tab}`).className = "px-3 py-1.5 rounded-lg transition duration-150 bg-indigo-600 text-white shadow";
-            
+            // Reset layout navigation button elements back to baseline styles cleanly
+            [btnPlan, btnInc, btnDebt].forEach(b => b.className = "px-3 py-1.5 rounded-lg transition duration-150 text-gray-400 hover:text-white cursor-pointer");
+
             zone.setAttribute('data-zone', tab);
 
+            // Apply color-coded system highlights systematically based on active selection vectors
             if (tab === 'planification') {
+                btnPlan.className = "px-3 py-1.5 rounded-lg transition duration-150 bg-indigo-600 text-white shadow font-semibold";
+                if (btnAdd) btnAdd.className = "bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg";
+
                 document.getElementById('lblWorkspaceTitle').innerText = "Next Payment Plan";
                 document.getElementById('lblWorkspaceSub').innerText = "Draft upcoming budgets";
                 document.getElementById('lblWorkspaceSumTitle').innerText = "Total Planned:";
-                btnAdd.innerText = "Add Plan";
+                if (btnAdd) btnAdd.innerHTML = `<i class="fa-solid fa-plus text-xs"></i> Add Plan`;
             } else if (tab === 'expectedIncome') {
+                btnInc.className = "px-3 py-1.5 rounded-lg transition duration-150 bg-emerald-600 text-white shadow font-semibold";
+                if (btnAdd) btnAdd.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg";
+
                 document.getElementById('lblWorkspaceTitle').innerText = "Expected Income Pool";
                 document.getElementById('lblWorkspaceSub').innerText = "Track future arriving cash assets";
                 document.getElementById('lblWorkspaceSumTitle').innerText = "Total Expected:";
-                btnAdd.innerText = "Add Income";
+                if (btnAdd) btnAdd.innerHTML = `<i class="fa-solid fa-plus text-xs"></i> Add Income`;
             } else if (tab === 'debtsPool') {
+                btnDebt.className = "px-3 py-1.5 rounded-lg transition duration-150 bg-rose-600 text-white shadow font-semibold";
+                if (btnAdd) btnAdd.className = "bg-rose-600 hover:bg-rose-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg";
+
                 document.getElementById('lblWorkspaceTitle').innerText = "Active Debts Pool";
                 document.getElementById('lblWorkspaceSub').innerText = "Track timeline balance obligations";
                 document.getElementById('lblWorkspaceSumTitle').innerText = "Total Debts:";
-                btnAdd.innerText = "Add Debt";
+                if (btnAdd) btnAdd.innerHTML = `<i class="fa-solid fa-plus text-xs"></i> Add Debt`;
             }
 
             MoneycoPlanSort.updateUI();
@@ -1173,7 +1420,7 @@
 
             const planContainer = document.getElementById('planificationList');
             planContainer.innerHTML = '';
-            
+
             let activeArray = state[currentWorkspaceTab] || [];
             let displayedWorkspaceSum = 0;
 
@@ -1198,7 +1445,23 @@
                 sortedCollection.forEach(p => {
                     displayedWorkspaceSum += parseFloat(p.amount);
                     const item = document.createElement('div');
-                    item.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md";
+
+                    // DEFINE DYNAMIC VISUAL ELEMENT CLASSES CONTEXTUALLY
+                    let borderTheme = "border-gray-800 hover:border-gray-700 shadow-md";
+                    let badgeColorTheme = "bg-indigo-950 text-indigo-300 border-indigo-800/60";
+                    let amountColorTheme = "text-indigo-400";
+
+                    if (currentWorkspaceTab === 'expectedIncome') {
+                        borderTheme = "border-emerald-900/50 hover:border-emerald-500/40 shadow-emerald-950/10";
+                        badgeColorTheme = "bg-emerald-950 text-emerald-300 border-emerald-800/60";
+                        amountColorTheme = "text-emerald-400";
+                    } else if (currentWorkspaceTab === 'debtsPool') {
+                        borderTheme = "border-rose-900/50 hover:border-rose-500/40 shadow-rose-950/10";
+                        badgeColorTheme = "bg-rose-950 text-rose-300 border-rose-800/60";
+                        amountColorTheme = "text-rose-400";
+                    }
+
+                    item.className = `bg-gray-900 border rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing transition select-none ${borderTheme}`;
                     item.setAttribute('draggable', 'true');
                     item.setAttribute('data-id', p.id);
                     item.setAttribute('data-origin', currentWorkspaceTab);
@@ -1213,28 +1476,32 @@
                     }
 
                     const dateBadge = displayEstDate
-                        ? `<span class="text-[10px] text-gray-500 font-mono font-medium flex items-center gap-1"><i class="fa-regular fa-calendar text-[9px] text-indigo-400/80"></i> Est: ${displayEstDate}</span>`
+                        ? `<span class="text-[10px] text-gray-500 font-mono font-medium flex items-center gap-1"><i class="fa-regular fa-calendar text-[9px] ${amountColorTheme}/80"></i> Est: ${displayEstDate}</span>`
                         : '';
 
-                    let badgeColorTheme = "bg-indigo-950 text-indigo-300 border-indigo-800/60";
-                    if (currentWorkspaceTab === 'expectedIncome') badgeColorTheme = "bg-emerald-950 text-emerald-300 border-emerald-800/60";
-                    if (currentWorkspaceTab === 'debtsPool') badgeColorTheme = "bg-rose-950 text-rose-300 border-rose-800/60";
-
                     item.innerHTML = `
-                        <div class="select-none flex flex-col gap-1.5">
-                            <p class="font-semibold text-sm select-none leading-none text-gray-200">${p.name}</p>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border select-none ${badgeColorTheme}">${p.category}</span>
-                                ${dateBadge}
-                            </div>
-                        </div>
-                        <p class="font-bold text-sm text-indigo-400 select-none shrink-0">${formatCurrency(p.amount)}</p>
-                    `;
+        <div class="select-none flex flex-col gap-1.5">
+            <p class="font-semibold text-sm select-none leading-none text-gray-200">${p.name}</p>
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border select-none ${badgeColorTheme}">${p.category}</span>
+                ${dateBadge}
+            </div>
+        </div>
+        <p class="font-bold text-sm select-none shrink-0 ${amountColorTheme}">${formatCurrency(p.amount)}</p>
+    `;
                     planContainer.appendChild(item);
                 });
             }
 
-            document.getElementById('planTotalSum').innerText = formatCurrency(displayedWorkspaceSum);
+            const sumTotalLabel = document.getElementById('planTotalSum');
+            if (currentWorkspaceTab === 'expectedIncome') {
+                sumTotalLabel.className = "text-xl font-extrabold text-emerald-400";
+            } else if (currentWorkspaceTab === 'debtsPool') {
+                sumTotalLabel.className = "text-xl font-extrabold text-rose-400";
+            } else {
+                sumTotalLabel.className = "text-xl font-extrabold text-indigo-400";
+            }
+            sumTotalLabel.innerText = formatCurrency(displayedWorkspaceSum);
 
             const freqContainer = document.getElementById('frequentExpensesList');
             freqContainer.innerHTML = '';
@@ -2018,10 +2285,24 @@
             contextTarget = { type: type, id: id };
 
             const menu = document.getElementById('customContextMenu');
+
+            // Toggle contextual buttons based on type parameter
+            const splitBtn = document.getElementById('ctxDebtSplitBtn');
+            const toPlansBtn = document.getElementById('ctxDebtToPlansBtn');
+            if (splitBtn && toPlansBtn) {
+                if (type === 'debtsPool') {
+                    splitBtn.classList.remove('hidden');
+                    toPlansBtn.classList.remove('hidden');
+                } else {
+                    splitBtn.classList.add('hidden');
+                    toPlansBtn.classList.add('hidden');
+                }
+            }
+
             menu.classList.remove('hidden');
 
             const menuWidth = 150;
-            const menuHeight = 100;
+            const menuHeight = 150; // Increased allocation buffer space for new buttons
             let targetX = e.pageX;
             let targetY = e.pageY;
 
@@ -2439,7 +2720,7 @@ async function checkAndTriggerReminders() {
                             navigator.serviceWorker.controller.postMessage({ type: 'CHECK_REMINDERS' });
                         }
                     }, 60000);
-                } catch (err) {}
+                } catch (err) { }
             });
         }
 
@@ -2549,7 +2830,7 @@ async function checkAndTriggerReminders() {
         }
 
         function triggerNoteSubmitFromButton() {
-            handleNoteKeyDown({ key: 'Enter', preventDefault: () => {} });
+            handleNoteKeyDown({ key: 'Enter', preventDefault: () => { } });
         }
 
         function selectNotesMonth(monthIndex) {
@@ -3111,311 +3392,433 @@ async function checkAndTriggerReminders() {
                 return 1000 - index;
             },
 
-        query(rawText) {
-            this.feed.innerHTML = '';
-            this.activeIndex = -1;
-            this.results = [];
+            query(rawText) {
+                this.feed.innerHTML = '';
+                this.activeIndex = -1;
+                this.results = [];
 
-            const trimmedInput = rawText.trim();
-            const searchStr = trimmedInput.toLowerCase();
+                const trimmedInput = rawText.trim();
+                const searchStr = trimmedInput.toLowerCase();
 
-            if (trimmedInput.startsWith('/')) {
-                const commands = [
-                    { key: '/note', title: 'Create a new note', sub: 'Action • Adds a quick memorandum reminder', action: () => { this.close(); switchTab('notes'); setTimeout(() => document.getElementById('noteInputBox')?.focus(), 150); } },
-                    { key: '/pay', title: 'Log a new movement entry', sub: 'Action • Launch transaction ledger modal forms', action: () => { this.close(); openMovementModal(); } },
-                    { key: '/plan', title: 'Schedule an upcoming item', sub: 'Action • Launch workspace target creation modal', action: () => { this.close(); openPlanModal(); } },
-                    { key: '/template', title: 'Create a dynamic recurring cost template', sub: 'Action • Launch automated blueprint modal configurations', action: () => { this.close(); openFrequentModal(); } },
-                    { key: '/project', title: 'Initialize a new wishlist folder milestone', sub: 'Action • Launch project canvas modal context', action: () => { this.close(); openProjectModal(); } },
-                    { key: '/category', title: 'Register a new custom evaluation category', sub: 'Action • Shifts focus straight to categories fields', action: () => { this.close(); switchTab('categories'); setTimeout(() => document.getElementById('newCategoryName')?.focus(), 150); } }
-                ];
+                if (trimmedInput.startsWith('/')) {
+                    const commands = [
+                        { key: '/note', title: 'Create a new note', sub: 'Action • Adds a quick memorandum reminder', action: () => { this.close(); switchTab('notes'); setTimeout(() => document.getElementById('noteInputBox')?.focus(), 150); } },
+                        { key: '/pay', title: 'Log a new movement entry', sub: 'Action • Launch transaction ledger modal forms', action: () => { this.close(); openMovementModal(); } },
+                        { key: '/plan', title: 'Schedule an upcoming item', sub: 'Action • Launch workspace target creation modal', action: () => { this.close(); openPlanModal(); } },
+                        { key: '/template', title: 'Create a dynamic recurring cost template', sub: 'Action • Launch automated blueprint modal configurations', action: () => { this.close(); openFrequentModal(); } },
+                        { key: '/project', title: 'Initialize a new wishlist folder milestone', sub: 'Action • Launch project canvas modal context', action: () => { this.close(); openProjectModal(); } },
+                        { key: '/category', title: 'Register a new custom evaluation category', sub: 'Action • Shifts focus straight to categories fields', action: () => { this.close(); switchTab('categories'); setTimeout(() => document.getElementById('newCategoryName')?.focus(), 150); } }
+                    ];
 
-                const matchedCommands = commands.filter(cmd => cmd.key.startsWith(searchStr));
+                    const matchedCommands = commands.filter(cmd => cmd.key.startsWith(searchStr));
 
-                if (matchedCommands.length > 0) {
-                    const header = document.createElement('div');
-                    header.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-amber-500/80 select-none flex items-center gap-1.5";
-                    header.innerHTML = `<i class="fa-solid fa-terminal text-[9px]"></i> Action Command Shortcodes`;
-                    this.feed.appendChild(header);
+                    if (matchedCommands.length > 0) {
+                        const header = document.createElement('div');
+                        header.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-amber-500/80 select-none flex items-center gap-1.5";
+                        header.innerHTML = `<i class="fa-solid fa-terminal text-[9px]"></i> Action Command Shortcodes`;
+                        this.feed.appendChild(header);
 
-                    matchedCommands.forEach((cmd, idx) => {
-                        const row = document.createElement('div');
-                        row.id = `palette-row-${idx}`;
-                        row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
-                        row.innerHTML = `
+                        matchedCommands.forEach((cmd, idx) => {
+                            const row = document.createElement('div');
+                            row.id = `palette-row-${idx}`;
+                            row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
+                            row.innerHTML = `
                             <div class="truncate flex-1 pointer-events-none">
                                 <p class="text-sm font-semibold text-amber-400 group-hover:text-amber-300 transition truncate">${cmd.key}</p>
                                 <span class="text-[10px] font-medium text-gray-500 tracking-wide">${cmd.title} — ${cmd.sub}</span>
                             </div>
                             <span class="text-[9px] font-bold text-amber-500/80 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded shadow-sm shrink-0 uppercase tracking-wider font-mono">Run</span>
                         `;
-                        row.addEventListener('click', () => cmd.action());
-                        row.addEventListener('mouseenter', () => this.highlight(idx));
-                        this.feed.appendChild(row);
-                    });
-                    this.results = matchedCommands.map(cmd => ({ type: 'command', action: cmd.action }));
-                    return;
-                }
-            }
-
-            const pool = [];
-            pool.push({ type: 'nav', title: 'Go to Dashboard Overview', sub: 'Navigation • Open main metrics asset pools', tab: 'dashboard', key: 'nav_dash', meta: 'View' });
-            pool.push({ type: 'nav', title: 'Go to All Movements Complete Ledger', sub: 'Navigation • Open advanced monthly historical lookup grids', tab: 'all-movements', key: 'nav_move', meta: 'View' });
-            pool.push({ type: 'nav', title: 'Go to Wishlists & Projects Incubator', sub: 'Navigation • Open project blueprints sandbox', tab: 'wishlists', key: 'nav_wish', meta: 'View' });
-            pool.push({ type: 'nav', title: 'Go to Category Distribution Analytics', sub: 'Navigation • Open category statistics matrix maps', tab: 'categories', key: 'nav_cat', meta: 'View' });
-            pool.push({ type: 'nav', title: 'Go to Financial Memorandums Notes', sub: 'Navigation • Track macro calendar annotations', tab: 'notes', key: 'nav_note', meta: 'View' });
-            pool.push({ type: 'nav', title: 'Go to Google Drive Cloud Sync Configuration', sub: 'Navigation • Manage remote tokens', tab: 'settings', key: 'nav_set', meta: 'View' });
-
-            state.movements.forEach(m => {
-                pool.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', key: `m_${m.id}` });
-            });
-            (state.planification || []).forEach(p => {
-                pool.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', key: `p_${p.id}` });
-            });
-            (state.expectedIncome || []).forEach(p => {
-                pool.push({ type: 'expectedIncome', id: p.id, title: p.name, sub: `Expected Income Pool • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', key: `ei_${p.id}` });
-            });
-            (state.debtsPool || []).forEach(p => {
-                pool.push({ type: 'debtsPool', id: p.id, title: p.name, sub: `Active Debts Pool • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', key: `dp_${p.id}` });
-            });
-            (state.frequent || []).forEach(f => {
-                pool.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', key: `f_${f.id}` });
-            });
-
-            if (!searchStr) {
-                const historyList = this.getHistory();
-                const matchedHistoryItems = [];
-                for (let i = 0; i < historyList.length; i++) {
-                    const match = pool.find(item => item.key === historyList[i]);
-                    if (match) {
-                        matchedHistoryItems.push(match);
-                        if (matchedHistoryItems.length === 3) break;
+                            row.addEventListener('click', () => cmd.action());
+                            row.addEventListener('mouseenter', () => this.highlight(idx));
+                            this.feed.appendChild(row);
+                        });
+                        this.results = matchedCommands.map(cmd => ({ type: 'command', action: cmd.action }));
+                        return;
                     }
                 }
-                if (matchedHistoryItems.length === 0) {
-                    const defaultNavOptions = pool.filter(item => item.type === 'nav').slice(0, 3);
-                    const bannerHeader = document.createElement('div');
-                    bannerHeader.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
-                    bannerHeader.innerHTML = `<i class="fa-solid fa-compass text-[9px]"></i> Quick Navigation Shortcuts`;
-                    this.feed.appendChild(bannerHeader);
-                    this.results = defaultNavOptions;
-                } else {
-                    const header = document.createElement('div');
-                    header.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
-                    header.innerHTML = `<i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Recent Searches`;
-                    this.feed.appendChild(header);
-                    this.results = matchedHistoryItems;
-                }
-            } else {
-                this.results = pool.filter(item => {
-                    return item.title.toLowerCase().includes(searchStr) || item.sub.toLowerCase().includes(searchStr);
-                }).sort((a, b) => {
-                    if (a.type === 'nav' && b.type !== 'nav') return -1;
-                    if (b.type === 'nav' && a.type !== 'nav') return 1;
-                    const indexA = a.title.toLowerCase().indexOf(searchStr);
-                    const indexB = b.title.toLowerCase().indexOf(searchStr);
-                    if (indexA !== indexB) return indexA - indexB;
-                    return this.getSelectionFrequency(b.key) - this.getSelectionFrequency(a.key);
-                }).slice(0, 15);
-            }
-            this.render();
-        },
 
-        render() {
-            if (this.results.length === 0) {
-                this.feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No matched database profiles located.</div>`;
-                return;
-            }
-            this.results.forEach((result, idx) => {
-                const row = document.createElement('div');
-                row.id = `palette-row-${idx}`;
-                row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
-                row.innerHTML = `
+                const pool = [];
+                pool.push({ type: 'nav', title: 'Go to Dashboard Overview', sub: 'Navigation • Open main metrics asset pools', tab: 'dashboard', key: 'nav_dash', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to All Movements Complete Ledger', sub: 'Navigation • Open advanced monthly historical lookup grids', tab: 'all-movements', key: 'nav_move', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to Wishlists & Projects Incubator', sub: 'Navigation • Open project blueprints sandbox', tab: 'wishlists', key: 'nav_wish', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to Category Distribution Analytics', sub: 'Navigation • Open category statistics matrix maps', tab: 'categories', key: 'nav_cat', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to Financial Memorandums Notes', sub: 'Navigation • Track macro calendar annotations', tab: 'notes', key: 'nav_note', meta: 'View' });
+                pool.push({ type: 'nav', title: 'Go to Google Drive Cloud Sync Configuration', sub: 'Navigation • Manage remote tokens', tab: 'settings', key: 'nav_set', meta: 'View' });
+
+                state.movements.forEach(m => {
+                    pool.push({ type: 'movement', id: m.id, title: m.name, sub: `Movement • ${m.category} • ${m.date}`, meta: formatCurrency(m.amount), tab: 'all-movements', key: `m_${m.id}` });
+                });
+                (state.planification || []).forEach(p => {
+                    pool.push({ type: 'plan', id: p.id, title: p.name, sub: `Planned Budget • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', key: `p_${p.id}` });
+                });
+                (state.expectedIncome || []).forEach(p => {
+                    pool.push({ type: 'expectedIncome', id: p.id, title: p.name, sub: `Expected Income Pool • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', key: `ei_${p.id}` });
+                });
+                (state.debtsPool || []).forEach(p => {
+                    pool.push({ type: 'debtsPool', id: p.id, title: p.name, sub: `Active Debts Pool • ${p.category}`, meta: formatCurrency(p.amount), tab: 'dashboard', key: `dp_${p.id}` });
+                });
+                (state.frequent || []).forEach(f => {
+                    pool.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', key: `f_${f.id}` });
+                });
+
+                if (!searchStr) {
+                    const historyList = this.getHistory();
+                    const matchedHistoryItems = [];
+                    for (let i = 0; i < historyList.length; i++) {
+                        const match = pool.find(item => item.key === historyList[i]);
+                        if (match) {
+                            matchedHistoryItems.push(match);
+                            if (matchedHistoryItems.length === 3) break;
+                        }
+                    }
+                    if (matchedHistoryItems.length === 0) {
+                        const defaultNavOptions = pool.filter(item => item.type === 'nav').slice(0, 3);
+                        const bannerHeader = document.createElement('div');
+                        bannerHeader.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
+                        bannerHeader.innerHTML = `<i class="fa-solid fa-compass text-[9px]"></i> Quick Navigation Shortcuts`;
+                        this.feed.appendChild(bannerHeader);
+                        this.results = defaultNavOptions;
+                    } else {
+                        const header = document.createElement('div');
+                        header.className = "px-3 py-1.5 text-[10px] uppercase tracking-wider font-extrabold text-blue-500/80 select-none flex items-center gap-1.5";
+                        header.innerHTML = `<i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Recent Searches`;
+                        this.feed.appendChild(header);
+                        this.results = matchedHistoryItems;
+                    }
+                } else {
+                    this.results = pool.filter(item => {
+                        return item.title.toLowerCase().includes(searchStr) || item.sub.toLowerCase().includes(searchStr);
+                    }).sort((a, b) => {
+                        if (a.type === 'nav' && b.type !== 'nav') return -1;
+                        if (b.type === 'nav' && a.type !== 'nav') return 1;
+                        const indexA = a.title.toLowerCase().indexOf(searchStr);
+                        const indexB = b.title.toLowerCase().indexOf(searchStr);
+                        if (indexA !== indexB) return indexA - indexB;
+                        return this.getSelectionFrequency(b.key) - this.getSelectionFrequency(a.key);
+                    }).slice(0, 15);
+                }
+                this.render();
+            },
+
+            render() {
+                if (this.results.length === 0) {
+                    this.feed.innerHTML = `<div class="text-center py-8 text-gray-600 text-xs italic">No matched database profiles located.</div>`;
+                    return;
+                }
+                this.results.forEach((result, idx) => {
+                    const row = document.createElement('div');
+                    row.id = `palette-row-${idx}`;
+                    row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
+                    row.innerHTML = `
                     <div class="truncate flex-1 pointer-events-none">
                         <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
                         <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
                     </div>
                     <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
                 `;
-                row.addEventListener('click', () => this.select(result));
-                row.addEventListener('mouseenter', () => this.highlight(idx));
-                this.feed.appendChild(row);
-            });
-        },
+                    row.addEventListener('click', () => this.select(result));
+                    row.addEventListener('mouseenter', () => this.highlight(idx));
+                    this.feed.appendChild(row);
+                });
+            },
 
-        highlight(index) {
-            if (this.activeIndex >= 0) {
-                document.getElementById(`palette-row-${this.activeIndex}`)?.classList.remove('bg-blue-600/10', 'border-blue-500/30');
-            }
-            this.activeIndex = index;
-            if (this.activeIndex >= 0) {
-                const row = document.getElementById(`palette-row-${this.activeIndex}`);
-                row?.classList.add('bg-blue-600/10', 'border-blue-500/30');
-                row?.scrollIntoView({ block: 'nearest' });
-            }
-        },
-
-        navigate(e) {
-            if (this.results.length === 0) return;
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                this.highlight((this.activeIndex + 1) % this.results.length);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                this.highlight(this.activeIndex <= 0 ? this.results.length - 1 : this.activeIndex - 1);
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                const targetIndex = this.activeIndex >= 0 ? this.activeIndex : 0;
-                if (this.results[targetIndex]) this.select(this.results[targetIndex]);
-            }
-        },
-
-        select(result) {
-            if (result.type === 'command') {
-                if (typeof result.action === 'function') result.action();
-                return;
-            }
-            if (result.type !== 'nav') this.saveHistory(result.key);
-            this.close();
-            switchTab(result.tab);
-            if (result.type === 'nav') return;
-
-            setTimeout(() => {
-                let targetDOMElement = null;
-                if (result.type === 'movement') {
-                    if (result.tab === 'all-movements') {
-                        const mItem = state.movements.find(m => m.id === result.id);
-                        if (mItem && mItem.date) {
-                            const fIn = document.getElementById('filterMonth');
-                            if (fIn) { fIn.value = mItem.date.substring(0, 7); applyFilters(); }
-                        }
-                    }
-                    targetDOMElement = document.querySelector(`tr[data-id="${result.id}"]`);
+            highlight(index) {
+                if (this.activeIndex >= 0) {
+                    document.getElementById(`palette-row-${this.activeIndex}`)?.classList.remove('bg-blue-600/10', 'border-blue-500/30');
                 }
-                else if (['plan', 'expectedIncome', 'debtsPool'].includes(result.type)) {
-                    let destTab = 'planification';
-                    if (result.type === 'expectedIncome') destTab = 'expectedIncome';
-                    if (result.type === 'debtsPool') destTab = 'debtsPool';
-                    switchWorkspaceTab(destTab);
-                    setTimeout(() => {
-                        targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
-                        this.glow(targetDOMElement);
-                    }, 50);
+                this.activeIndex = index;
+                if (this.activeIndex >= 0) {
+                    const row = document.getElementById(`palette-row-${this.activeIndex}`);
+                    row?.classList.add('bg-blue-600/10', 'border-blue-500/30');
+                    row?.scrollIntoView({ block: 'nearest' });
+                }
+            },
+
+            navigate(e) {
+                if (this.results.length === 0) return;
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.highlight((this.activeIndex + 1) % this.results.length);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.highlight(this.activeIndex <= 0 ? this.results.length - 1 : this.activeIndex - 1);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const targetIndex = this.activeIndex >= 0 ? this.activeIndex : 0;
+                    if (this.results[targetIndex]) this.select(this.results[targetIndex]);
+                }
+            },
+
+            select(result) {
+                if (result.type === 'command') {
+                    if (typeof result.action === 'function') result.action();
                     return;
                 }
-                else if (result.type === 'frequent') {
-                    targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
+                if (result.type !== 'nav') this.saveHistory(result.key);
+                this.close();
+                switchTab(result.tab);
+                if (result.type === 'nav') return;
+
+                setTimeout(() => {
+                    let targetDOMElement = null;
+                    if (result.type === 'movement') {
+                        if (result.tab === 'all-movements') {
+                            const mItem = state.movements.find(m => m.id === result.id);
+                            if (mItem && mItem.date) {
+                                const fIn = document.getElementById('filterMonth');
+                                if (fIn) { fIn.value = mItem.date.substring(0, 7); applyFilters(); }
+                            }
+                        }
+                        targetDOMElement = document.querySelector(`tr[data-id="${result.id}"]`);
+                    }
+                    else if (['plan', 'expectedIncome', 'debtsPool'].includes(result.type)) {
+                        let destTab = 'planification';
+                        if (result.type === 'expectedIncome') destTab = 'expectedIncome';
+                        if (result.type === 'debtsPool') destTab = 'debtsPool';
+                        switchWorkspaceTab(destTab);
+                        setTimeout(() => {
+                            targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
+                            this.glow(targetDOMElement);
+                        }, 50);
+                        return;
+                    }
+                    else if (result.type === 'frequent') {
+                        targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
+                    }
+                    this.glow(targetDOMElement);
+                }, 150);
+            },
+            glow(el) {
+                if (!el) return;
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('search-glow-focus');
+                setTimeout(() => el.classList.remove('search-glow-focus'), 2500);
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => MoneycoSearch.init(), 100);
+        });
+
+        const MoneycoDateMask = {
+            apply(inputEl) {
+                let value = inputEl.value.replace(/\D/g, '');
+                let dayNum = 0;
+                let monthNum = 0;
+
+                if (value.length >= 2) dayNum = parseInt(value.substring(0, 2), 10);
+                if (value.length >= 4) {
+                    monthNum = parseInt(value.substring(2, 4), 10);
+                    if (monthNum > 12) {
+                        monthNum = 12;
+                        value = value.substring(0, 2) + "12" + value.substring(4);
+                    }
+                    if (monthNum === 0 && value.length === 4) monthNum = 1;
                 }
-                this.glow(targetDOMElement);
-            }, 150);
-        },
-        glow(el) {
-            if (!el) return;
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.classList.add('search-glow-focus');
-            setTimeout(() => el.classList.remove('search-glow-focus'), 2500);
-        }
-    };
 
-    window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => MoneycoSearch.init(), 100);
-    });
+                if (value.length >= 2) {
+                    let maxDaysAllowed = 31;
+                    if (monthNum === 2) maxDaysAllowed = 28;
+                    else if ([4, 6, 9, 11].includes(monthNum)) maxDaysAllowed = 30;
 
-    const MoneycoDateMask = {
-        apply(inputEl) {
-            let value = inputEl.value.replace(/\D/g, '');
-            let dayNum = 0;
-            let monthNum = 0;
-
-            if (value.length >= 2) dayNum = parseInt(value.substring(0, 2), 10);
-            if (value.length >= 4) {
-                monthNum = parseInt(value.substring(2, 4), 10);
-                if (monthNum > 12) {
-                    monthNum = 12;
-                    value = value.substring(0, 2) + "12" + value.substring(4);
+                    if (dayNum > maxDaysAllowed) {
+                        dayNum = maxDaysAllowed;
+                        value = String(maxDaysAllowed).padStart(2, '0') + value.substring(2);
+                    }
+                    if (dayNum === 0 && value.length === 2) dayNum = 1;
                 }
-                if (monthNum === 0 && value.length === 4) monthNum = 1;
+
+                let formatted = '';
+                if (value.length > 0) {
+                    formatted = value.substring(0, 2);
+                    if (value.length > 2) {
+                        formatted += '/' + value.substring(2, 4);
+                        if (value.length > 4) formatted += '/' + value.substring(4, 8);
+                    }
+                }
+                inputEl.value = formatted;
+
+                const hiddenInput = document.getElementById('plEstimatedDate');
+                if (hiddenInput) {
+                    if (value.length === 8) {
+                        const d = String(dayNum).padStart(2, '0');
+                        const m = String(monthNum).padStart(2, '0');
+                        const y = value.substring(4, 8);
+                        hiddenInput.value = `${y}-${m}-${d}`;
+                    } else {
+                        hiddenInput.value = "";
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+            const isZKey = e.key.toLowerCase() === 'z';
+
+            if ((e.ctrlKey || e.metaKey) && isZKey) {
+                if (e.shiftKey) { e.preventDefault(); MoneycoHistory.redo(); }
+                else { e.preventDefault(); MoneycoHistory.undo(); }
             }
 
-            if (value.length >= 2) {
-                let maxDaysAllowed = 31;
-                if (monthNum === 2) maxDaysAllowed = 28;
-                else if ([4, 6, 9, 11].includes(monthNum)) maxDaysAllowed = 30;
-
-                if (dayNum > maxDaysAllowed) {
-                    dayNum = maxDaysAllowed;
-                    value = String(maxDaysAllowed).padStart(2, '0') + value.substring(2);
-                }
-                if (dayNum === 0 && value.length === 2) dayNum = 1;
+            if (e.altKey && !e.ctrlKey && !e.metaKey) {
+                if (e.key === '1') { e.preventDefault(); switchTab('dashboard'); }
+                else if (e.key === '2') { e.preventDefault(); switchTab('all-movements'); }
+                else if (e.key === '3') { e.preventDefault(); switchTab('wishlists'); }
+                else if (e.key === '4') { e.preventDefault(); switchTab('categories'); }
+                else if (e.key === '5') { e.preventDefault(); switchTab('notes'); }
+                else if (e.key.toLowerCase() === 'n') { e.preventDefault(); openMovementModal(); }
             }
+        });
 
-            let formatted = '';
-            if (value.length > 0) {
-                formatted = value.substring(0, 2);
-                if (value.length > 2) {
-                    formatted += '/' + value.substring(2, 4);
-                    if (value.length > 4) formatted += '/' + value.substring(4, 8);
-                }
+        const MoneycoPlanSort = {
+            activeCriteria: localStorage.getItem('MONEYCO_PLAN_SORT_CRITERIA') || 'date',
+            init() { this.updateUI(); },
+            toggle(targetCriteria) {
+                this.activeCriteria = targetCriteria;
+                localStorage.setItem('MONEYCO_PLAN_SORT_CRITERIA', targetCriteria);
+                this.updateUI();
+                if (typeof renderDashboard === 'function') renderDashboard();
+            },
+            updateUI() {
+                ['date', 'amount', 'name'].forEach(metric => {
+                    const btn = document.getElementById(`btnPlanSort${metric.charAt(0).toUpperCase() + metric.slice(1)}`);
+                    if (!btn) return;
+                    if (metric === this.activeCriteria) {
+                        btn.className = "px-2.5 py-1 rounded-lg bg-indigo-600 text-white shadow transition-all duration-150 cursor-default";
+                    } else {
+                        btn.className = "px-2.5 py-1 rounded-lg text-gray-400 hover:text-gray-200 transition-all duration-150 cursor-pointer";
+                    }
+                });
             }
-            inputEl.value = formatted;
+        };
 
-            const hiddenInput = document.getElementById('plEstimatedDate');
-            if (hiddenInput) {
-                if (value.length === 8) {
-                    const d = String(dayNum).padStart(2, '0');
-                    const m = String(monthNum).padStart(2, '0');
-                    const y = value.substring(4, 8);
-                    hiddenInput.value = `${y}-${m}-${d}`;
-                } else {
-                    hiddenInput.value = "";
-                }
-            }
-        }
-    };
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => MoneycoPlanSort.init(), 120);
+        });
 
-    window.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-        const isZKey = e.key.toLowerCase() === 'z';
+        // ==========================================
+        // DEBTS WORKSPACE MATRIX SUB-EXTENSIONS
+        // ==========================================
 
-        if ((e.ctrlKey || e.metaKey) && isZKey) {
-            if (e.shiftKey) { e.preventDefault(); MoneycoHistory.redo(); }
-            else { e.preventDefault(); MoneycoHistory.undo(); }
-        }
+        function triggerContextDebtToPlans() {
+            if (!contextTarget || contextTarget.type !== 'debtsPool') return;
 
-        if (e.altKey && !e.ctrlKey && !e.metaKey) {
-            if (e.key === '1') { e.preventDefault(); switchTab('dashboard'); }
-            else if (e.key === '2') { e.preventDefault(); switchTab('all-movements'); }
-            else if (e.key === '3') { e.preventDefault(); switchTab('wishlists'); }
-            else if (e.key === '4') { e.preventDefault(); switchTab('categories'); }
-            else if (e.key === '5') { e.preventDefault(); switchTab('notes'); }
-            else if (e.key.toLowerCase() === 'n') { e.preventDefault(); openMovementModal(); }
-        }
-    });
+            const debtItem = state.debtsPool.find(d => d.id === contextTarget.id);
+            if (!debtItem) return;
 
-    const MoneycoPlanSort = {
-        activeCriteria: localStorage.getItem('MONEYCO_PLAN_SORT_CRITERIA') || 'date',
-        init() { this.updateUI(); },
-        toggle(targetCriteria) {
-            this.activeCriteria = targetCriteria;
-            localStorage.setItem('MONEYCO_PLAN_SORT_CRITERIA', targetCriteria);
-            this.updateUI();
-            if (typeof renderDashboard === 'function') renderDashboard();
-        },
-        updateUI() {
-            ['date', 'amount', 'name'].forEach(metric => {
-                const btn = document.getElementById(`btnPlanSort${metric.charAt(0).toUpperCase() + metric.slice(1)}`);
-                if (!btn) return;
-                if (metric === this.activeCriteria) {
-                    btn.className = "px-2.5 py-1 rounded-lg bg-indigo-600 text-white shadow transition-all duration-150 cursor-default";
-                } else {
-                    btn.className = "px-2.5 py-1 rounded-lg text-gray-400 hover:text-gray-200 transition-all duration-150 cursor-pointer";
-                }
+            // Duplicate target specs directly over into the planification collection arrays
+            state.planification.push({
+                id: crypto.randomUUID(),
+                name: `${debtItem.name} (Copy)`,
+                amount: parseFloat(debtItem.amount),
+                category: debtItem.category || "Debts",
+                estimatedDate: debtItem.estimatedDate || new Date().toISOString().split('T')[0],
+                updatedAt: Date.now()
             });
-        }
-    };
 
-    window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => MoneycoPlanSort.init(), 120);
-    });
+            saveState();
+            renderAll();
+            alert(`"${debtItem.name}" duplicated directly into your primary Plans Workspace Pool!`);
+        }
+
+        function triggerContextDebtSplit() {
+            if (!contextTarget || contextTarget.type !== 'debtsPool') return;
+
+            const modal = document.getElementById('debtSplitModal');
+            document.getElementById('debtSplitForm').reset();
+            toggleSplitStrategyFields();
+            modal.showModal();
+        }
+
+        function closeDebtSplitModal() {
+            document.getElementById('debtSplitModal').close();
+        }
+
+        function toggleSplitStrategyFields() {
+            const strategy = document.getElementById('splitStrategy').value;
+            if (strategy === 'parts') {
+                document.getElementById('wrapperSplitParts').classList.remove('hidden');
+                document.getElementById('wrapperSplitAmount').classList.add('hidden');
+            } else {
+                document.getElementById('wrapperSplitParts').classList.add('hidden');
+                document.getElementById('wrapperSplitAmount').classList.remove('hidden');
+            }
+        }
+
+        function saveDebtSplitForm(e) {
+            e.preventDefault();
+            if (!contextTarget || contextTarget.type !== 'debtsPool') return;
+
+            const debtItem = state.debtsPool.find(d => d.id === contextTarget.id);
+            if (!debtItem) return;
+
+            const strategy = document.getElementById('splitStrategy').value;
+            const totalAmount = parseFloat(debtItem.amount);
+            let partSpecs = [];
+
+            if (strategy === 'parts') {
+                const partsCount = parseInt(document.getElementById('splitPartsCount').value, 10);
+                if (isNaN(partsCount) || partsCount < 2) {
+                    alert("Please input a valid division segment number greater than or equal to 2.");
+                    return;
+                }
+
+                const exactSplitValue = parseFloat((totalAmount / partsCount).toFixed(2));
+                let runningAccumulator = 0;
+
+                for (let i = 0; i < partsCount - 1; i++) {
+                    partSpecs.push(exactSplitValue);
+                    runningAccumulator += exactSplitValue;
+                }
+                // Last item inherits remaining balance to account for rounding errors
+                partSpecs.push(parseFloat((totalAmount - runningAccumulator).toFixed(2)));
+
+            } else {
+                const targetBaseAmount = parseFloat(document.getElementById('splitBaseAmount').value);
+                if (isNaN(targetBaseAmount) || targetBaseAmount <= 0 || targetBaseAmount >= totalAmount) {
+                    alert("Target base amount must be a positive value lower than the item total.");
+                    return;
+                }
+
+                let remainingBalance = totalAmount;
+                while (remainingBalance > 0) {
+                    if (remainingBalance >= targetBaseAmount) {
+                        partSpecs.push(targetBaseAmount);
+                        remainingBalance = parseFloat((remainingBalance - targetBaseAmount).toFixed(2));
+                    } else {
+                        // Collect remainder fraction
+                        partSpecs.push(parseFloat(remainingBalance.toFixed(2)));
+                        remainingBalance = 0;
+                    }
+                }
+            }
+
+            // Replace original debt item with split entries
+            state.debtsPool = state.debtsPool.filter(d => d.id !== debtItem.id);
+
+            // Register original item deletion tombstone for data compliance pipelines
+            if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, expectedIncome: {}, debtsPool: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
+            state.tombstones.debtsPool[debtItem.id] = Date.now();
+
+            partSpecs.forEach((amtValue, index) => {
+                state.debtsPool.push({
+                    id: crypto.randomUUID(),
+                    name: `${debtItem.name} (Part ${index + 1}/${partSpecs.length})`,
+                    amount: amtValue,
+                    category: debtItem.category || "Debts",
+                    estimatedDate: debtItem.estimatedDate || new Date().toISOString().split('T')[0],
+                    updatedAt: Date.now()
+                });
+            });
+
+            saveState();
+            renderAll();
+            closeDebtSplitModal();
+        }
+
     </script>
 </body>
+
 </html>
