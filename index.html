@@ -2286,15 +2286,21 @@
 
             const menu = document.getElementById('customContextMenu');
 
-            // Toggle contextual buttons based on type parameter
             const splitBtn = document.getElementById('ctxDebtSplitBtn');
             const toPlansBtn = document.getElementById('ctxDebtToPlansBtn');
+
             if (splitBtn && toPlansBtn) {
-                if (type === 'debtsPool') {
+                // "Split in..." is now available for all 3 workspace sub-tabs
+                if (['planification', 'expectedIncome', 'debtsPool'].includes(type)) {
                     splitBtn.classList.remove('hidden');
-                    toPlansBtn.classList.remove('hidden');
                 } else {
                     splitBtn.classList.add('hidden');
+                }
+
+                // "Send to Plans" remains exclusive to the Debts Pool
+                if (type === 'debtsPool') {
+                    toPlansBtn.classList.remove('hidden');
+                } else {
                     toPlansBtn.classList.add('hidden');
                 }
             }
@@ -2302,7 +2308,7 @@
             menu.classList.remove('hidden');
 
             const menuWidth = 150;
-            const menuHeight = 150; // Increased allocation buffer space for new buttons
+            const menuHeight = 150;
             let targetX = e.pageX;
             let targetY = e.pageY;
 
@@ -3724,7 +3730,8 @@ async function checkAndTriggerReminders() {
         }
 
         function triggerContextDebtSplit() {
-            if (!contextTarget || contextTarget.type !== 'debtsPool') return;
+            // Upgraded guard clause to whitelist all planning components
+            if (!contextTarget || !['planification', 'expectedIncome', 'debtsPool'].includes(contextTarget.type)) return;
 
             const modal = document.getElementById('debtSplitModal');
             document.getElementById('debtSplitForm').reset();
@@ -3749,13 +3756,14 @@ async function checkAndTriggerReminders() {
 
         function saveDebtSplitForm(e) {
             e.preventDefault();
-            if (!contextTarget || contextTarget.type !== 'debtsPool') return;
+            if (!contextTarget || !['planification', 'expectedIncome', 'debtsPool'].includes(contextTarget.type)) return;
 
-            const debtItem = state.debtsPool.find(d => d.id === contextTarget.id);
-            if (!debtItem) return;
+            const activeWorkspaceArray = state[contextTarget.type];
+            const sourceItem = activeWorkspaceArray.find(item => item.id === contextTarget.id);
+            if (!sourceItem) return;
 
             const strategy = document.getElementById('splitStrategy').value;
-            const totalAmount = parseFloat(debtItem.amount);
+            const totalAmount = parseFloat(sourceItem.amount);
             let partSpecs = [];
 
             if (strategy === 'parts') {
@@ -3772,7 +3780,6 @@ async function checkAndTriggerReminders() {
                     partSpecs.push(exactSplitValue);
                     runningAccumulator += exactSplitValue;
                 }
-                // Last item inherits remaining balance to account for rounding errors
                 partSpecs.push(parseFloat((totalAmount - runningAccumulator).toFixed(2)));
 
             } else {
@@ -3788,27 +3795,27 @@ async function checkAndTriggerReminders() {
                         partSpecs.push(targetBaseAmount);
                         remainingBalance = parseFloat((remainingBalance - targetBaseAmount).toFixed(2));
                     } else {
-                        // Collect remainder fraction
                         partSpecs.push(parseFloat(remainingBalance.toFixed(2)));
                         remainingBalance = 0;
                     }
                 }
             }
 
-            // Replace original debt item with split entries
-            state.debtsPool = state.debtsPool.filter(d => d.id !== debtItem.id);
+            // Filter original item out from its respective pool array
+            state[contextTarget.type] = activeWorkspaceArray.filter(item => item.id !== sourceItem.id);
 
-            // Register original item deletion tombstone for data compliance pipelines
+            // Register an atomic deletion tombstone signature inside the matching bucket index
             if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, expectedIncome: {}, debtsPool: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
-            state.tombstones.debtsPool[debtItem.id] = Date.now();
+            state.tombstones[contextTarget.type][sourceItem.id] = Date.now();
 
+            // Inject your newly calculated split items into the active pool
             partSpecs.forEach((amtValue, index) => {
-                state.debtsPool.push({
+                state[contextTarget.type].push({
                     id: crypto.randomUUID(),
-                    name: `${debtItem.name} (Part ${index + 1}/${partSpecs.length})`,
+                    name: `${sourceItem.name} (Part ${index + 1}/${partSpecs.length})`,
                     amount: amtValue,
-                    category: debtItem.category || "Debts",
-                    estimatedDate: debtItem.estimatedDate || new Date().toISOString().split('T')[0],
+                    category: sourceItem.category,
+                    estimatedDate: sourceItem.estimatedDate || new Date().toISOString().split('T')[0],
                     updatedAt: Date.now()
                 });
             });
