@@ -157,94 +157,111 @@
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
 
             <div id="tab-dashboard" class="tab-content space-y-6">
-                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl">
-                    <div
-                        class="grid grid-cols-2 md:grid-cols-5 divide-y divide-gray-800 md:divide-y-0 md:divide-x divide-dashed">
+                <div class="bg-gray-950 p-6 rounded-2xl shadow-xl space-y-6">
+    <div class="flex items-center justify-between border-b border-gray-900 pb-4">
+        <div>
+            <h2 class="text-base font-bold text-gray-100 tracking-wide">Dashboard Metrics</h2>
+            <p class="text-xs text-gray-500">Overview based on your selected timeline</p>
+        </div>
+        <div class="flex items-center bg-gray-900 border border-gray-800 rounded-xl px-2 py-1 gap-1.5 shadow-inner">
+            <input type="number" id="dashRangeValue" value="1" min="1" oninput="renderAll()"
+                class="w-12 bg-transparent text-xs text-center text-gray-100 font-bold focus:outline-none">
+            <select id="dashRangeUnit" onchange="renderAll()"
+                class="bg-transparent text-xs font-semibold text-gray-400 focus:outline-none cursor-pointer">
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
+                <option value="months" selected>Months</option>
+                <option value="years">Years</option>
+            </select>
+        </div>
+    </div>
 
-                        <div class="p-3 flex items-center justify-between col-span-2 sm:col-span-1">
-                            <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Recent
-                                    Income</p>
-                                <h3 id="dashIncome" class="text-xl font-black text-emerald-400 mt-0.5">$0.00</h3>
-                            </div>
-                            <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-sm"><i
-                                    class="fa-solid fa-arrow-trend-up"></i></div>
-                        </div>
-
-                        <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
-                            <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Recent
-                                    Expenses</p>
-                                <h3 id="dashExpense" class="text-xl font-black text-rose-400 mt-0.5">$0.00</h3>
-                            </div>
-                            <div class="p-2 bg-rose-500/10 text-rose-400 rounded-lg text-sm"><i
-                                    class="fa-solid fa-arrow-trend-down"></i></div>
-                        </div>
-
-                        <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
-                            <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Planning
-                                    Pool</p>
-                                <h3 id="dashPlanTotal" class="text-xl font-black text-blue-400 mt-0.5">$0.00</h3>
-                            </div>
-                            <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg text-sm"><i
-                                    class="fa-solid fa-layer-group"></i></div>
-                        </div>
-
-                        <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
-                            <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Total
-                                    Savings</p>
-                                <h3 id="dashSavingsTotal" class="text-xl font-black text-emerald-500 mt-0.5">$0.00</h3>
-                            </div>
-                            <div class="p-2 bg-emerald-500/15 text-emerald-500 rounded-lg text-sm"><i
-                                    class="fa-solid fa-piggy-bank"></i></div>
-                        </div>
-
-                        <div class="p-3 flex items-center justify-between pt-4 md:pt-3">
-                            <div>
-                                <p class="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Total Debts
-                                </p>
-                                <h3 id="dashDebtsTotal" class="text-xl font-black text-rose-500 mt-0.5">$0.00</h3>
-                            </div>
-                            <div class="p-2 bg-rose-500/15 text-rose-500 rounded-lg text-sm"><i
-                                    class="fa-solid fa-hand-holding-dollar"></i></div>
-                        </div>
-
-                    </div>
-                    <div class="mt-4 bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl">
-                        <div class="flex items-center justify-between mb-2">
-                            <h4
-                                class="text-xs uppercase font-bold tracking-wider text-blue-400 flex items-center gap-2">
-                                <i class="fa-solid fa-note-sticky text-[11px]"></i> This month notes:
-                            </h4>
-                            <button onclick="openMobileNotesModal()"
-                                class="md:hidden bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-xl border border-blue-500/20 transition flex items-center gap-1.5 shadow-sm">
-                                <i class="fa-solid fa-expand text-[10px]"></i> View Notes
-                            </button>
-                        </div>
-
-                        <div class="hidden md:block w-full overflow-hidden relative bg-gray-900/20 rounded-xl p-1.5">
-                            <div class="flex items-center gap-2" id="dashDesktopNotesScrollWrapper"></div>
-                        </div>
-                        <div id="dashDesktopNotesEmptyState" class="hidden text-xs text-gray-600 italic py-1 pl-2">No
-                            reminders logged for this month.</div>
-                    </div>
-
-                    <dialog id="mobileDashboardNotesModal"
-                        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-11/12 backdrop:bg-black/80">
-                        <div class="flex items-center justify-between border-b border-gray-800 pb-2 mb-4">
-                            <h3 id="mobileNotesModalHeader"
-                                class="text-sm font-bold text-blue-400 flex items-center gap-2">
-                                <i class="fa-solid fa-note-sticky text-xs"></i> Current Month Notes
-                            </h3>
-                            <button onclick="closeMobileNotesModal()" class="text-gray-400 hover:text-white p-1"><i
-                                    class="fa-solid fa-xmark text-lg"></i></button>
-                        </div>
-                        <div id="mobileNotesModalFeedContainer" class="space-y-2.5 max-h-[350px] overflow-y-auto pr-1">
-                        </div>
-                    </dialog>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 py-2">
+        
+        <div class="space-y-2">
+            <div class="flex items-baseline justify-between">
+                <div>
+                    <span class="text-xs uppercase font-bold tracking-wider text-gray-400">Income vs Spent & Planned</span>
+                    <h3 id="statIncomeOutcomeRatio" class="text-2xl font-black text-gray-100 mt-1">0% ratio</h3>
                 </div>
+                <span id="statIncomeOutcomeHealth" class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">No Data</span>
+            </div>
+            
+            <div class="w-full bg-gray-900 h-3 rounded-full overflow-hidden flex ring-1 ring-black/50">
+                <div id="statBarSpentSegment" class="h-full bg-rose-500 transition-all duration-300" style="width: 0%" title="Spent"></div>
+                <div id="statBarPlannedSegment" class="h-full bg-indigo-500 transition-all duration-300" style="width: 0%" title="Planned"></div>
+            </div>
+            
+            <div class="flex justify-between items-center text-xs font-mono font-medium text-gray-500 pt-0.5">
+                <span id="statIncomeOutcomeRawNumbers">$0.00 spent / $0.00 earned</span>
+                <span id="statIncomeOutcomePlannedMargin" class="text-gray-400">$0.00 planned</span>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <div class="flex items-baseline justify-between">
+                <div>
+                    <span class="text-xs uppercase font-bold tracking-wider text-gray-400">Planned vs Expected Income</span>
+                    <h3 id="statForecastRatio" class="text-2xl font-black text-amber-400 mt-1">0.0%</h3>
+                </div>
+                <span id="statForecastNetValue" class="text-xs font-mono font-bold text-gray-400">$0.00 left</span>
+            </div>
+            
+            <div class="w-full bg-gray-900 h-3 rounded-full overflow-hidden border border-gray-900 shadow-inner">
+                <div id="statForecastBar" class="h-full bg-amber-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+            
+            <div class="text-xs font-mono font-medium text-gray-500 pt-0.5">
+                <span id="statForecastRawNumbers">$0.00 planned / $0.00 expected</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- LESS IMPORTANT STATS FOOTER ROW (MINIMIZED SUB-GRID) -->
+    <div class="border-t border-gray-900 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+        <!-- Average Daily Spent & Remaining Calculations -->
+        <div class="col-span-1 md:col-span-1 flex justify-between items-start gap-4">
+            <div>
+                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Avg. Daily Spent</span>
+                <span id="statDailySpent" class="text-sm font-bold text-gray-300">$0.00</span>
+                <span id="statDailySpentDaysCount" class="text-[9px] text-gray-600 font-mono block sm:inline sm:ml-1">(0 days)</span>
+            </div>
+            <div class="text-right md:text-left md:border-l md:border-gray-900 md:pl-4 flex-1">
+                <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Remaining</span>
+                <span id="statRemainingActual" class="text-sm font-bold text-gray-200">$0.00</span>
+                <span id="statRemainingAfterPlans" class="text-[9px] text-gray-500 font-medium block mt-0.5">$0.00 after plans</span>
+            </div>
+        </div>
+        
+        <!-- Total Savings -->
+        <div class="border-t md:border-t-0 pt-2 md:pt-0 border-gray-900 md:border-x md:border-gray-900 md:px-4">
+            <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Total Savings</span>
+            <span id="dashSavingsTotal" class="text-sm font-bold text-emerald-500">$0.00</span>
+        </div>
+        
+        <!-- Total Debts -->
+        <div class="border-t md:border-t-0 pt-2 md:pt-0 border-gray-900 pl-0 md:pl-2">
+            <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Total Debts</span>
+            <span id="dashDebtsTotal" class="text-sm font-bold text-rose-500">$0.00</span>
+        </div>
+    </div>
+
+    <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 shadow-xl">
+        <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs uppercase font-bold tracking-wider text-blue-400 flex items-center gap-2">
+                <i class="fa-solid fa-note-sticky text-[11px]"></i> This month notes:
+            </h4>
+            <button onclick="openMobileNotesModal()"
+                class="md:hidden bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-xl border border-blue-500/20 transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-expand text-[10px]"></i> View Notes
+            </button>
+        </div>
+        <div class="hidden md:block w-full overflow-hidden relative bg-gray-900/20 rounded-xl p-1.5">
+            <div class="flex items-center gap-2" id="dashDesktopNotesScrollWrapper"></div>
+        </div>
+        <div id="dashDesktopNotesEmptyState" class="hidden text-xs text-gray-600 italic py-1 pl-2">No reminders logged for this month.</div>
+    </div>
+</div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -253,7 +270,6 @@
                         <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                             <div>
                                 <h2 class="text-lg font-bold">Recent Movements</h2>
-                                <p class="text-xs text-gray-400">Past 2.5 weeks (18 days)</p>
                             </div>
                             <button onclick="openMovementModal()"
                                 class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-lg">
@@ -1333,297 +1349,437 @@
         }
 
         function renderDashboard() {
-            const boundaryDate = new Date();
-            boundaryDate.setDate(boundaryDate.getDate() - 18);
-            boundaryDate.setHours(0, 0, 0, 0);
+    // --- TIME WINDOW ADJUSTMENTS MATRIX ---
+    const rangeValInput = parseInt(document.getElementById('dashRangeValue').value, 10) || 30;
+    const rangeUnitSelector = document.getElementById('dashRangeUnit').value;
+    
+    let computedDaysSpan = rangeValInput;
+    if (rangeUnitSelector === 'weeks') computedDaysSpan = rangeValInput * 7;
+    else if (rangeUnitSelector === 'months') computedDaysSpan = rangeValInput * 30.43; // Average month timeline length
+    else if (rangeUnitSelector === 'years') computedDaysSpan = rangeValInput * 365.25;
 
-            const recentItems = state.movements.filter(m => {
-                const d = new Date(m.date);
-                return d >= boundaryDate;
-            }).sort((a, b) => {
-                const dateDiff = new Date(b.date) - new Date(a.date);
-                return dateDiff !== 0 ? dateDiff : state.movements.indexOf(b) - state.movements.indexOf(a);
-            });
+    const boundaryDate = new Date();
+    boundaryDate.setDate(boundaryDate.getDate() - Math.ceil(computedDaysSpan));
+    boundaryDate.setHours(0, 0, 0, 0);
 
-            let incomeSum = 0;
-            let expenseSum = 0;
-            let savingsAccumulated = 0;
-            let debtsAccumulated = 0;
+    // Filter historical logs over lookup thresholds
+    const recentItems = state.movements.filter(m => {
+        const d = new Date(m.date);
+        return d >= boundaryDate;
+    }).sort((a, b) => {
+        const dateDiff = new Date(b.date) - new Date(a.date);
+        return dateDiff !== 0 ? dateDiff : state.movements.indexOf(b) - state.movements.indexOf(a);
+    });
 
-            recentItems.forEach(m => {
-                if (m.type === 'income') incomeSum += parseFloat(m.amount) || 0;
-                else expenseSum += parseFloat(m.amount) || 0;
-            });
+    let incomeSum = 0;
+    let expenseSum = 0;
+    let savingsAccumulated = 0;
+    let debtsAccumulated = 0;
 
-            state.movements.forEach(m => {
-                const amt = parseFloat(m.amount) || 0;
-                if (m.category === 'Savings') {
-                    if (m.type === 'income') savingsAccumulated += amt;
-                    else if (m.type === 'outcome') savingsAccumulated -= amt;
-                }
-            });
+    recentItems.forEach(m => {
+        if (m.type === 'income') incomeSum += parseFloat(m.amount) || 0;
+        else expenseSum += parseFloat(m.amount) || 0;
+    });
 
-            // UPDATED CONFIGURATION: Dynamic calculations drawing from active collection loops
-            (state.debtsPool || []).forEach(d => {
-                debtsAccumulated += (parseFloat(d.amount) || 0);
-            });
-
-            savingsAccumulated = Math.max(0, savingsAccumulated);
-            debtsAccumulated = Math.max(0, debtsAccumulated);
-
-            document.getElementById('dashIncome').innerText = formatCurrency(incomeSum);
-            document.getElementById('dashExpense').innerText = formatCurrency(expenseSum);
-            document.getElementById('dashSavingsTotal').innerText = formatCurrency(savingsAccumulated);
-            document.getElementById('dashDebtsTotal').innerText = formatCurrency(debtsAccumulated);
-
-            let planPoolSum = (state.planification || []).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
-            document.getElementById('dashPlanTotal').innerText = formatCurrency(planPoolSum);
-
-            const tableBody = document.getElementById('recentMovementsTable');
-            tableBody.innerHTML = '';
-
-            if (recentItems.length === 0) {
-                document.getElementById('noRecentMovements').classList.remove('hidden');
-            } else {
-                document.getElementById('noRecentMovements').classList.add('hidden');
-                recentItems.forEach(m => {
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer transition select-none";
-                    tr.setAttribute('draggable', 'true');
-                    tr.setAttribute('data-id', m.id);
-                    tr.setAttribute('data-origin', 'movement');
-                    tr.addEventListener('dragstart', handleDragStart);
-                    tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
-
-                    let localizedDate = '';
-                    if (m.date && m.date.includes('-')) {
-                        const parts = m.date.split('-');
-                        localizedDate = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : m.date;
-                    } else {
-                        localizedDate = m.date || '';
-                    }
-
-                    tr.innerHTML = `
-                        <td class="py-3 px-2 font-medium">
-                            <span class="inline-block w-2 h-2 rounded-full mr-2 ${m.type === 'income' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
-                            ${m.name}
-                        </td>
-                        <td class="py-3 px-2 text-gray-400 text-xs">${m.category}</td>
-                        <td class="py-3 px-2 text-gray-400 text-xs font-mono">${localizedDate}</td>
-                        <td class="py-3 px-2 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
-                            ${m.type === 'income' ? '+' : '-'}${formatCurrency(m.amount)}
-                        </td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-            }
-
-            const planContainer = document.getElementById('planificationList');
-            planContainer.innerHTML = '';
-
-            let activeArray = state[currentWorkspaceTab] || [];
-            let displayedWorkspaceSum = 0;
-
-            if (activeArray.length === 0) {
-                document.getElementById('noPlanItems').classList.remove('hidden');
-            } else {
-                document.getElementById('noPlanItems').classList.add('hidden');
-
-                const sortedCollection = [...activeArray].sort((a, b) => {
-                    const criteria = MoneycoPlanSort.activeCriteria;
-                    if (criteria === 'amount') {
-                        return (parseFloat(b.amount) || 0) - (parseFloat(a.amount) || 0);
-                    } else if (criteria === 'name') {
-                        return (a.name || '').localeCompare(b.name || '');
-                    } else {
-                        if (!a.estimatedDate) return 1;
-                        if (!b.estimatedDate) return -1;
-                        return a.estimatedDate.localeCompare(b.estimatedDate);
-                    }
-                });
-
-                sortedCollection.forEach(p => {
-                    displayedWorkspaceSum += parseFloat(p.amount);
-                    const item = document.createElement('div');
-
-                    // DEFINE DYNAMIC VISUAL ELEMENT CLASSES CONTEXTUALLY
-                    let borderTheme = "border-gray-800 hover:border-gray-700 shadow-md";
-                    let badgeColorTheme = "bg-indigo-950 text-indigo-300 border-indigo-800/60";
-                    let amountColorTheme = "text-indigo-400";
-
-                    if (currentWorkspaceTab === 'expectedIncome') {
-                        borderTheme = "border-emerald-900/50 hover:border-emerald-500/40 shadow-emerald-950/10";
-                        badgeColorTheme = "bg-emerald-950 text-emerald-300 border-emerald-800/60";
-                        amountColorTheme = "text-emerald-400";
-                    } else if (currentWorkspaceTab === 'debtsPool') {
-                        borderTheme = "border-rose-900/50 hover:border-rose-500/40 shadow-rose-950/10";
-                        badgeColorTheme = "bg-rose-950 text-rose-300 border-rose-800/60";
-                        amountColorTheme = "text-rose-400";
-                    }
-
-                    item.className = `bg-gray-900 border rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing transition select-none ${borderTheme}`;
-                    item.setAttribute('draggable', 'true');
-                    item.setAttribute('data-id', p.id);
-                    item.setAttribute('data-origin', currentWorkspaceTab);
-
-                    item.addEventListener('dragstart', handleDragStart);
-                    item.addEventListener('contextmenu', (e) => handleContextOpen(e, currentWorkspaceTab, p.id));
-
-                    let displayEstDate = '';
-                    if (p.estimatedDate && p.estimatedDate.includes('-')) {
-                        const chunks = p.estimatedDate.split('-');
-                        displayEstDate = chunks.length === 3 ? `${chunks[2]}/${chunks[1]}/${chunks[0]}` : p.estimatedDate;
-                    }
-
-                    const dateBadge = displayEstDate
-                        ? `<span class="text-[10px] text-gray-500 font-mono font-medium flex items-center gap-1"><i class="fa-regular fa-calendar text-[9px] ${amountColorTheme}/80"></i> Est: ${displayEstDate}</span>`
-                        : '';
-
-                    item.innerHTML = `
-        <div class="select-none flex flex-col gap-1.5">
-            <p class="font-semibold text-sm select-none leading-none text-gray-200">${p.name}</p>
-            <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border select-none ${badgeColorTheme}">${p.category}</span>
-                ${dateBadge}
-            </div>
-        </div>
-        <p class="font-bold text-sm select-none shrink-0 ${amountColorTheme}">${formatCurrency(p.amount)}</p>
-    `;
-                    planContainer.appendChild(item);
-                });
-            }
-
-            const sumTotalLabel = document.getElementById('planTotalSum');
-            if (currentWorkspaceTab === 'expectedIncome') {
-                sumTotalLabel.className = "text-xl font-extrabold text-emerald-400";
-            } else if (currentWorkspaceTab === 'debtsPool') {
-                sumTotalLabel.className = "text-xl font-extrabold text-rose-400";
-            } else {
-                sumTotalLabel.className = "text-xl font-extrabold text-indigo-400";
-            }
-            sumTotalLabel.innerText = formatCurrency(displayedWorkspaceSum);
-
-            const freqContainer = document.getElementById('frequentExpensesList');
-            freqContainer.innerHTML = '';
-
-            if (!state.frequent || state.frequent.length === 0) {
-                document.getElementById('noFrequentItems').classList.remove('hidden');
-            } else {
-                document.getElementById('noFrequentItems').classList.add('hidden');
-                state.frequent.forEach(f => {
-                    const item = document.createElement('div');
-                    let borderStyle = "border-l-4 border-l-teal-600";
-                    if (f.category === 'Savings') borderStyle = "border-2 border-emerald-500 shadow-emerald-950/20";
-                    else if (f.category === 'Debts') borderStyle = "border-2 border-rose-500 shadow-rose-950/20";
-
-                    item.className = `bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md ${borderStyle}`;
-                    item.setAttribute('draggable', 'true');
-                    item.setAttribute('data-id', f.id);
-                    item.setAttribute('data-origin', 'frequent');
-
-                    item.addEventListener('dragstart', handleDragStart);
-                    item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'frequent', f.id));
-
-                    const hasReminder = f.reminderInterval && f.reminderInterval !== 'none';
-                    let titleNote = '';
-
-                    if (hasReminder) {
-                        if (f.reminderInterval === 'daily') titleNote = `Daily at ${f.reminderTime}`;
-                        else if (f.reminderInterval === 'weekly') {
-                            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                            titleNote = `Weekly on ${days[f.reminderWeeklyDay || 1]} at ${f.reminderTime}`;
-                        }
-                        else if (f.reminderInterval === 'monthly') titleNote = `Every ${f.reminderMonthlyDay || 1}th of the month at ${f.reminderTime}`;
-                        else if (f.reminderInterval === 'custom') titleNote = `Every ${f.reminderCustomValue || 1} ${f.reminderCustomUnit} at ${f.reminderTime}`;
-                    }
-
-                    item.innerHTML = `
-                        <div class="select-none">
-                            <p class="font-semibold text-sm select-none flex items-center gap-1.5">
-                                ${f.name}
-                                ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="${titleNote}"></i>` : ''}
-                            </p>
-                            <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
-                        </div>
-                        <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
-                    `;
-                    freqContainer.appendChild(item);
-                });
-            }
-
-            const currentSysMonthIdx = new Date().getMonth();
-            const currentMonthKey = `month_${currentSysMonthIdx}`;
-            const activeLiveNotes = (state.notes && state.notes[currentMonthKey]) ? state.notes[currentMonthKey] : [];
-
-            const desktopWrapper = document.getElementById('dashDesktopNotesScrollWrapper');
-            const desktopEmpty = document.getElementById('dashDesktopNotesEmptyState');
-            const mobileContainer = document.getElementById('mobileNotesModalFeedContainer');
-
-            const mobileHeader = document.getElementById('mobileNotesModalHeader');
-            if (mobileHeader) {
-                mobileHeader.innerHTML = `<i class="fa-solid fa-note-sticky text-xs"></i> ${calendarMonthsNames[currentSysMonthIdx]} Reminders`;
-            }
-
-            if (desktopWrapper) desktopWrapper.innerHTML = '';
-            if (mobileContainer) mobileContainer.innerHTML = '';
-
-            if (activeLiveNotes.length === 0) {
-                if (desktopEmpty) desktopEmpty.classList.remove('hidden');
-                if (mobileContainer) {
-                    mobileContainer.innerHTML = `<div class="text-center py-6 text-gray-600 text-xs italic">No notes logged for this month.</div>`;
-                }
-            } else {
-                if (desktopEmpty) desktopEmpty.classList.add('hidden');
-                const marqueeTrack = document.createElement('div');
-                marqueeTrack.className = "marquee-container gap-2";
-
-                const fragmentCards = [];
-                activeLiveNotes.forEach(note => {
-                    const rawText = decodeSanitizedNoteString(note.text);
-                    const noteBadge = document.createElement('div');
-                    noteBadge.className = "w-max max-w-xs shrink-0 bg-gray-900/90 border border-gray-800 rounded-xl px-3.5 py-1.5 text-xs text-gray-300 select-none shadow-sm cursor-help transition hover:border-gray-700";
-                    noteBadge.innerText = rawText;
-                    noteBadge.title = rawText;
-                    fragmentCards.push(noteBadge);
-
-                    if (mobileContainer) {
-                        const noteBlock = document.createElement('div');
-                        noteBlock.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 text-xs text-gray-200 break-words leading-relaxed shadow-md";
-                        noteBlock.innerText = rawText;
-                        mobileContainer.appendChild(noteBlock);
-                    }
-                });
-
-                if (desktopWrapper) {
-                    fragmentCards.forEach(card => marqueeTrack.appendChild(card));
-                    fragmentCards.forEach(card => marqueeTrack.appendChild(card.cloneNode(true)));
-                    desktopWrapper.appendChild(marqueeTrack);
-
-                    setTimeout(() => {
-                        const parentWidth = desktopWrapper.clientWidth;
-                        let notesCombinedWidth = 0;
-                        const activeBadges = marqueeTrack.querySelectorAll('div');
-
-                        for (let i = 0; i < activeBadges.length / 2; i++) {
-                            notesCombinedWidth += activeBadges[i].offsetWidth + 8;
-                        }
-
-                        if (notesCombinedWidth <= parentWidth) {
-                            marqueeTrack.style.animation = 'none';
-                            marqueeTrack.style.width = '100%';
-                            marqueeTrack.classList.remove('marquee-container');
-                            marqueeTrack.className = "flex flex-wrap gap-2 pt-1";
-                            while (marqueeTrack.children.length > activeLiveNotes.length) {
-                                marqueeTrack.removeChild(marqueeTrack.lastChild);
-                            }
-                        } else {
-                            marqueeTrack.style.animation = '';
-                            marqueeTrack.style.width = 'max-content';
-                        }
-                    }, 50);
-                }
-            }
+    state.movements.forEach(m => {
+        const amt = parseFloat(m.amount) || 0;
+        if (m.category === 'Savings') {
+            if (m.type === 'income') savingsAccumulated += amt;
+            else if (m.type === 'outcome') savingsAccumulated -= amt;
         }
+    });
+
+    (state.debtsPool || []).forEach(d => {
+        debtsAccumulated += (parseFloat(d.amount) || 0);
+    });
+
+    savingsAccumulated = Math.max(0, savingsAccumulated);
+    debtsAccumulated = Math.max(0, debtsAccumulated);
+
+    // Populate minimized sub-footer layout points cleanly
+    document.getElementById('dashSavingsTotal').innerText = formatCurrency(savingsAccumulated);
+    document.getElementById('dashDebtsTotal').innerText = formatCurrency(debtsAccumulated);
+
+    let planPoolSum = (state.planification || []).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+
+    // ========================================================
+    // ADVANCED CONSOLIDATED RATIO SYSTEMS MAPPINGS
+    // ========================================================
+
+    // ========================================================
+    // EXTENDED ADVANCED ANALYTICS CALCULATIONS
+    // ========================================================
+
+    // 1. Average Daily Spent & Remaining Calculations Execution
+    const targetDaysDelta = Math.ceil(computedDaysSpan);
+    const averageDailySpentValue = targetDaysDelta > 0 ? (expenseSum / targetDaysDelta) : 0;
+    
+    document.getElementById('statDailySpent').innerText = formatCurrency(averageDailySpentValue);
+    document.getElementById('statDailySpentDaysCount').innerText = `(${targetDaysDelta}d)`;
+
+    // Calculate actual remaining cash (Incomes - Outcomes)
+    const netActualRemaining = incomeSum - expenseSum;
+    const remainingActualEl = document.getElementById('statRemainingActual');
+    remainingActualEl.innerText = formatCurrency(netActualRemaining);
+    
+    // Apply safety colors based on current net margins
+    if (netActualRemaining >= 0) {
+        remainingActualEl.className = "text-sm font-bold text-gray-200";
+    } else {
+        remainingActualEl.className = "text-sm font-bold text-rose-400";
+    }
+
+    // Calculate left-over safety net after active Planning items are compiled
+    const netRemainingAfterPlans = netActualRemaining - planPoolSum;
+    const remainingAfterPlansEl = document.getElementById('statRemainingAfterPlans');
+    
+    if (planPoolSum > 0) {
+        remainingAfterPlansEl.classList.remove('hidden');
+        remainingAfterPlansEl.innerText = `${formatCurrency(netRemainingAfterPlans)} after plans`;
+        
+        if (netRemainingAfterPlans >= 0) {
+            remainingAfterPlansEl.className = "text-[9px] text-gray-500 font-medium block mt-0.5";
+        } else {
+            remainingAfterPlansEl.className = "text-[9px] text-rose-500/80 font-bold block mt-0.5 animate-pulse";
+        }
+    } else {
+        // If there are no planned entries, match standard remaining text context elegantly
+        remainingAfterPlansEl.innerText = "No upcoming plans scheduled";
+        remainingAfterPlansEl.className = "text-[9px] text-gray-600 italic block mt-0.5";
+    }
+
+    // 2. Merged Multi-Segment Core Stack Tracker (Spent + Planned vs Earned)
+    const totalOutflowObligations = expenseSum + planPoolSum;
+    let baselineRatioPercent = 0;
+    if (incomeSum > 0) {
+        baselineRatioPercent = Math.round((totalOutflowObligations / incomeSum) * 100);
+    } else if (totalOutflowObligations > 0) {
+        baselineRatioPercent = 100;
+    }
+
+    const ratioLabelEl = document.getElementById('statIncomeOutcomeRatio');
+    const healthBadgeEl = document.getElementById('statIncomeOutcomeHealth');
+    const spentBarSegment = document.getElementById('statBarSpentSegment');
+    const plannedBarSegment = document.getElementById('statBarPlannedSegment');
+    const numbersLabelEl = document.getElementById('statIncomeOutcomeRawNumbers');
+    const marginLabelEl = document.getElementById('statIncomeOutcomePlannedMargin');
+
+    numbersLabelEl.innerText = `${formatCurrency(expenseSum)} spent / ${formatCurrency(incomeSum)} earned`;
+    marginLabelEl.innerText = `+ ${formatCurrency(planPoolSum)} planned`;
+
+    if (incomeSum === 0 && totalOutflowObligations === 0) {
+        ratioLabelEl.innerText = "0% ratio";
+        healthBadgeEl.className = "text-[9px] px-1.5 py-0.5 rounded border border-gray-800 font-bold bg-gray-900 text-gray-500 uppercase tracking-wider";
+        healthBadgeEl.innerText = "No Data";
+        spentBarSegment.style.width = "0%";
+        plannedBarSegment.style.width = "0%";
+    } else {
+        ratioLabelEl.innerText = `${baselineRatioPercent}% utilized`;
+
+        // Calculate dimensional footprint weights mathematically
+        const baseFactor = incomeSum > 0 ? incomeSum : totalOutflowObligations;
+        let spentWidthWeight = (expenseSum / baseFactor) * 100;
+        let plannedWidthWeight = (planPoolSum / baseFactor) * 100;
+
+        // Cap values to prevent visual overflow
+        if (spentWidthWeight + plannedWidthWeight > 100) {
+            const scaleDownRatio = 100 / (spentWidthWeight + plannedWidthWeight);
+            spentWidthWeight *= scaleDownRatio;
+            plannedWidthWeight *= scaleDownRatio;
+        }
+
+        spentBarSegment.style.width = `${spentWidthWeight}%`;
+        plannedBarSegment.style.width = `${plannedWidthWeight}%`;
+
+        if (baselineRatioPercent <= 70) {
+            healthBadgeEl.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider";
+            healthBadgeEl.innerText = "Good Saving";
+        } else if (baselineRatioPercent <= 100) {
+            healthBadgeEl.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wider";
+            healthBadgeEl.innerText = "Balanced";
+        } else {
+            healthBadgeEl.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase tracking-wider";
+            healthBadgeEl.innerText = "Over Budget";
+        }
+    }
+
+    // 3. Expected Income vs Workspace Budget Layout Models
+    let expectedPoolIncomeSum = (state.expectedIncome || []).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+    let coverageRatioPercentage = 0;
+    
+    if (expectedPoolIncomeSum > 0) {
+        coverageRatioPercentage = ((planPoolSum / expectedPoolIncomeSum) * 100).toFixed(1);
+    } else if (planPoolSum > 0) {
+        coverageRatioPercentage = "100+";
+    }
+
+    const netForecastSpreadAmount = expectedPoolIncomeSum - planPoolSum;
+    document.getElementById('statForecastRatio').innerText = `${coverageRatioPercentage}% allocation`;
+    document.getElementById('statForecastRawNumbers').innerText = `${formatCurrency(planPoolSum)} planned / ${formatCurrency(expectedPoolIncomeSum)} expected`;
+    
+    const spreadLabelEl = document.getElementById('statForecastNetValue');
+    spreadLabelEl.innerText = `${netForecastSpreadAmount >= 0 ? '+' : ''}${formatCurrency(netForecastSpreadAmount)} left`;
+    if (netForecastSpreadAmount >= 0) {
+        spreadLabelEl.className = "text-xs font-mono font-bold text-emerald-400";
+    } else {
+        spreadLabelEl.className = "text-xs font-mono font-bold text-rose-400";
+    }
+
+    const forecastProgressBarEl = document.getElementById('statForecastBar');
+    forecastProgressBarEl.style.width = `${Math.min(100, parseFloat(coverageRatioPercentage) || 0)}%`;
+    if (parseFloat(coverageRatioPercentage) > 100) {
+        forecastProgressBarEl.className = "h-full bg-rose-500 transition-all duration-300";
+    } else {
+        forecastProgressBarEl.className = "h-full bg-amber-500 transition-all duration-300";
+    }
+
+    // ========================================================
+    // RE-RENDER RECENT TRANSACTION LOG DATA ROWS
+    // ========================================================
+    const tableBody = document.getElementById('recentMovementsTable');
+    tableBody.innerHTML = '';
+
+    if (recentItems.length === 0) {
+        document.getElementById('noRecentMovements').classList.remove('hidden');
+    } else {
+        document.getElementById('noRecentMovements').classList.add('hidden');
+        recentItems.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 cursor-pointer transition select-none";
+            tr.setAttribute('draggable', 'true');
+            tr.setAttribute('data-id', m.id);
+            tr.setAttribute('data-origin', 'movement');
+            tr.addEventListener('dragstart', handleDragStart);
+            tr.addEventListener('contextmenu', (e) => handleContextOpen(e, 'movement', m.id));
+
+            let localizedDate = '';
+            if (m.date && m.date.includes('-')) {
+                const parts = m.date.split('-');
+                localizedDate = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : m.date;
+            } else {
+                localizedDate = m.date || '';
+            }
+
+            tr.innerHTML = `
+                <td class="py-3 px-2 font-medium">
+                    <span class="inline-block w-2 h-2 rounded-full mr-2 ${m.type === 'income' ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+                    ${m.name}
+                </td>
+                <td class="py-3 px-2 text-gray-400 text-xs">${m.category}</td>
+                <td class="py-3 px-2 text-gray-400 text-xs font-mono">${localizedDate}</td>
+                <td class="py-3 px-2 text-right font-semibold ${m.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}">
+                    ${m.type === 'income' ? '+' : '-'}${formatCurrency(m.amount)}
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    const planContainer = document.getElementById('planificationList');
+    planContainer.innerHTML = '';
+
+    let activeArray = state[currentWorkspaceTab] || [];
+    let displayedWorkspaceSum = 0;
+
+    if (activeArray.length === 0) {
+        document.getElementById('noPlanItems').classList.remove('hidden');
+    } else {
+        document.getElementById('noPlanItems').classList.add('hidden');
+
+        const sortedCollection = [...activeArray].sort((a, b) => {
+            const criteria = MoneycoPlanSort.activeCriteria;
+            if (criteria === 'amount') {
+                return (parseFloat(b.amount) || 0) - (parseFloat(a.amount) || 0);
+            } else if (criteria === 'name') {
+                return (a.name || '').localeCompare(b.name || '');
+            } else {
+                if (!a.estimatedDate) return 1;
+                if (!b.estimatedDate) return -1;
+                return a.estimatedDate.localeCompare(b.estimatedDate);
+            }
+        });
+
+        sortedCollection.forEach(p => {
+            displayedWorkspaceSum += parseFloat(p.amount);
+            const item = document.createElement('div');
+
+            let borderTheme = "border-gray-800 hover:border-gray-700 shadow-md";
+            let badgeColorTheme = "bg-indigo-950 text-indigo-300 border-indigo-800/60";
+            let amountColorTheme = "text-indigo-400";
+
+            if (currentWorkspaceTab === 'expectedIncome') {
+                borderTheme = "border-emerald-900/50 hover:border-emerald-500/40 shadow-emerald-950/10";
+                badgeColorTheme = "bg-emerald-950 text-emerald-300 border-emerald-800/60";
+                amountColorTheme = "text-emerald-400";
+            } else if (currentWorkspaceTab === 'debtsPool') {
+                borderTheme = "border-rose-900/50 hover:border-rose-500/40 shadow-rose-950/10";
+                badgeColorTheme = "bg-rose-950 text-rose-300 border-rose-800/60";
+                amountColorTheme = "text-rose-400";
+            }
+
+            item.className = `bg-gray-900 border rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing transition select-none ${borderTheme}`;
+            item.setAttribute('draggable', 'true');
+            item.setAttribute('data-id', p.id);
+            item.setAttribute('data-origin', currentWorkspaceTab);
+
+            item.addEventListener('dragstart', handleDragStart);
+            item.addEventListener('contextmenu', (e) => handleContextOpen(e, currentWorkspaceTab, p.id));
+
+            let displayEstDate = '';
+            if (p.estimatedDate && p.estimatedDate.includes('-')) {
+                const chunks = p.estimatedDate.split('-');
+                displayEstDate = chunks.length === 3 ? `${chunks[2]}/${chunks[1]}/${chunks[0]}` : p.estimatedDate;
+            }
+
+            const dateBadge = displayEstDate
+                ? `<span class="text-[10px] text-gray-500 font-mono font-medium flex items-center gap-1"><i class="fa-regular fa-calendar text-[9px] ${amountColorTheme}/80"></i> Est: ${displayEstDate}</span>`
+                : '';
+
+            item.innerHTML = `
+                <div class="select-none flex flex-col gap-1.5">
+                    <p class="font-semibold text-sm select-none leading-none text-gray-200">${p.name}</p>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border select-none ${badgeColorTheme}">${p.category}</span>
+                        ${dateBadge}
+                    </div>
+                </div>
+                <p class="font-bold text-sm select-none shrink-0 ${amountColorTheme}">${formatCurrency(p.amount)}</p>
+            `;
+            planContainer.appendChild(item);
+        });
+    }
+
+    const sumTotalLabel = document.getElementById('planTotalSum');
+    if (currentWorkspaceTab === 'expectedIncome') {
+        sumTotalLabel.className = "text-xl font-extrabold text-emerald-400";
+    } else if (currentWorkspaceTab === 'debtsPool') {
+        sumTotalLabel.className = "text-xl font-extrabold text-rose-400";
+    } else {
+        sumTotalLabel.className = "text-xl font-extrabold text-indigo-400";
+    }
+    sumTotalLabel.innerText = formatCurrency(displayedWorkspaceSum);
+
+    const freqContainer = document.getElementById('frequentExpensesList');
+    freqContainer.innerHTML = '';
+
+    if (!state.frequent || state.frequent.length === 0) {
+        document.getElementById('noFrequentItems').classList.remove('hidden');
+    } else {
+        document.getElementById('noFrequentItems').classList.add('hidden');
+        state.frequent.forEach(f => {
+            const item = document.createElement('div');
+            let borderStyle = "border-l-4 border-l-teal-600";
+            if (f.category === 'Savings') borderStyle = "border-2 border-emerald-500 shadow-emerald-950/20";
+            else if (f.category === 'Debts') borderStyle = "border-2 border-rose-500 shadow-rose-950/20";
+
+            item.className = `bg-gray-900 border border-gray-800 rounded-xl p-3 flex justify-between items-center cursor-grab active:cursor-grabbing hover:border-gray-700 transition select-none shadow-md ${borderStyle}`;
+            item.setAttribute('draggable', 'true');
+            item.setAttribute('data-id', f.id);
+            item.setAttribute('data-origin', 'frequent');
+
+            item.addEventListener('dragstart', handleDragStart);
+            item.addEventListener('contextmenu', (e) => handleContextOpen(e, 'frequent', f.id));
+
+            const hasReminder = f.reminderInterval && f.reminderInterval !== 'none';
+            let titleNote = '';
+
+            if (hasReminder) {
+                if (f.reminderInterval === 'daily') titleNote = `Daily at ${f.reminderTime}`;
+                else if (f.reminderInterval === 'weekly') {
+                    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                    titleNote = `Weekly on ${days[f.reminderWeeklyDay || 1]} at ${f.reminderTime}`;
+                }
+                else if (f.reminderInterval === 'monthly') titleNote = `Every ${f.reminderMonthlyDay || 1}th of the month at ${f.reminderTime}`;
+                else if (f.reminderInterval === 'custom') titleNote = `Every ${f.reminderCustomValue || 1} ${f.reminderCustomUnit} at ${f.reminderTime}`;
+            }
+
+            item.innerHTML = `
+                <div class="select-none">
+                    <p class="font-semibold text-sm select-none flex items-center gap-1.5">
+                        ${f.name}
+                        ${hasReminder ? `<i class="fa-solid fa-bell text-xs text-teal-400" title="${titleNote}"></i>` : ''}
+                    </p>
+                    <span class="text-[10px] bg-teal-950 text-teal-300 font-medium px-2 py-0.5 rounded-full border border-teal-800 select-none">${f.category}</span>
+                </div>
+                <p class="font-bold text-sm text-teal-400 select-none">${formatCurrency(f.amount)}</p>
+            `;
+            freqContainer.appendChild(item);
+        });
+    }
+
+    const currentSysMonthIdx = new Date().getMonth();
+    const currentMonthKey = `month_${currentSysMonthIdx}`;
+    const activeLiveNotes = (state.notes && state.notes[currentMonthKey]) ? state.notes[currentMonthKey] : [];
+
+    const desktopWrapper = document.getElementById('dashDesktopNotesScrollWrapper');
+    const desktopEmpty = document.getElementById('dashDesktopNotesEmptyState');
+    const mobileContainer = document.getElementById('mobileNotesModalFeedContainer');
+
+    const mobileHeader = document.getElementById('mobileNotesModalHeader');
+    if (mobileHeader) {
+        mobileHeader.innerHTML = `<i class="fa-solid fa-note-sticky text-xs"></i> ${calendarMonthsNames[currentSysMonthIdx]} Reminders`;
+    }
+
+    if (desktopWrapper) desktopWrapper.innerHTML = '';
+    if (mobileContainer) mobileContainer.innerHTML = '';
+
+    if (activeLiveNotes.length === 0) {
+        if (desktopEmpty) desktopEmpty.classList.remove('hidden');
+        if (mobileContainer) {
+            mobileContainer.innerHTML = `<div class="text-center py-6 text-gray-600 text-xs italic">No notes logged for this month.</div>`;
+        }
+    } else {
+        if (desktopEmpty) desktopEmpty.classList.add('hidden');
+        const marqueeTrack = document.createElement('div');
+        marqueeTrack.className = "marquee-container gap-2";
+
+        const fragmentCards = [];
+        activeLiveNotes.forEach(note => {
+            const rawText = decodeSanitizedNoteString(note.text);
+            const noteBadge = document.createElement('div');
+            noteBadge.className = "w-max max-w-xs shrink-0 bg-gray-900/90 border border-gray-800 rounded-xl px-3.5 py-1.5 text-xs text-gray-300 select-none shadow-sm cursor-help transition hover:border-gray-700";
+            noteBadge.innerText = rawText;
+            noteBadge.title = rawText;
+            fragmentCards.push(noteBadge);
+
+            if (mobileContainer) {
+                const noteBlock = document.createElement('div');
+                noteBlock.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 text-xs text-gray-200 break-words leading-relaxed shadow-md";
+                noteBlock.innerText = rawText;
+                mobileContainer.appendChild(noteBlock);
+            }
+        });
+
+        if (desktopWrapper) {
+            fragmentCards.forEach(card => marqueeTrack.appendChild(card));
+            fragmentCards.forEach(card => marqueeTrack.appendChild(card.cloneNode(true)));
+            desktopWrapper.appendChild(marqueeTrack);
+
+            setTimeout(() => {
+                const parentWidth = desktopWrapper.clientWidth;
+                let notesCombinedWidth = 0;
+                const activeBadges = marqueeTrack.querySelectorAll('div');
+
+                for (let i = 0; i < activeBadges.length / 2; i++) {
+                    notesCombinedWidth += activeBadges[i].offsetWidth + 8;
+                }
+
+                if (notesCombinedWidth <= parentWidth) {
+                    marqueeTrack.style.animation = 'none';
+                    marqueeTrack.style.width = '100%';
+                    marqueeTrack.classList.remove('marquee-container');
+                    marqueeTrack.className = "flex flex-wrap gap-2 pt-1";
+                    while (marqueeTrack.children.length > activeLiveNotes.length) {
+                        marqueeTrack.removeChild(marqueeTrack.lastChild);
+                    }
+                } else {
+                    marqueeTrack.style.animation = '';
+                    marqueeTrack.style.width = 'max-content';
+                }
+            }, 50);
+        }
+    }
+}
 
         function openFrequentModal(editId = null) {
             const modal = document.getElementById('frequentModal');
