@@ -3429,12 +3429,12 @@ async function checkAndTriggerReminders() {
                             row.id = `palette-row-${idx}`;
                             row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
                             row.innerHTML = `
-                            <div class="truncate flex-1 pointer-events-none">
-                                <p class="text-sm font-semibold text-amber-400 group-hover:text-amber-300 transition truncate">${cmd.key}</p>
-                                <span class="text-[10px] font-medium text-gray-500 tracking-wide">${cmd.title} — ${cmd.sub}</span>
-                            </div>
-                            <span class="text-[9px] font-bold text-amber-500/80 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded shadow-sm shrink-0 uppercase tracking-wider font-mono">Run</span>
-                        `;
+                    <div class="truncate flex-1 pointer-events-none">
+                        <p class="text-sm font-semibold text-amber-400 group-hover:text-amber-300 transition truncate">${cmd.key}</p>
+                        <span class="text-[10px] font-medium text-gray-500 tracking-wide">${cmd.title} — ${cmd.sub}</span>
+                    </div>
+                    <span class="text-[9px] font-bold text-amber-500/80 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded shadow-sm shrink-0 uppercase tracking-wider font-mono">Run</span>
+                `;
                             row.addEventListener('click', () => cmd.action());
                             row.addEventListener('mouseenter', () => this.highlight(idx));
                             this.feed.appendChild(row);
@@ -3467,6 +3467,58 @@ async function checkAndTriggerReminders() {
                 (state.frequent || []).forEach(f => {
                     pool.push({ type: 'frequent', id: f.id, title: f.name, sub: `Frequent Template • ${f.category}`, meta: formatCurrency(f.amount), tab: 'dashboard', key: `f_${f.id}` });
                 });
+
+                // --- NEW SEARCH POOL DATA MAPPINGS ---
+
+                // 1. Projects Matrix Mappings
+                (state.projects || []).forEach(proj => {
+                    pool.push({
+                        type: 'projectFolder',
+                        id: proj.id,
+                        title: proj.name,
+                        sub: `Project Folder • Contains ${proj.items ? proj.items.length : 0} items`,
+                        meta: 'Project',
+                        tab: 'wishlists',
+                        key: `proj_${proj.id}`
+                    });
+
+                    // 2. Wishlist Items Inside Projects
+                    (proj.items || []).forEach(item => {
+                        pool.push({
+                            type: 'wishlistItem',
+                            id: item.id,
+                            projectId: proj.id,
+                            title: item.name,
+                            sub: `Wishlist Item Spec • Inside "${proj.name}" ${item.completed ? '(Completed)' : ''}`,
+                            meta: formatCurrency(item.price),
+                            tab: 'wishlists',
+                            key: `witem_${item.id}`
+                        });
+                    });
+                });
+
+                // 3. Financial Monthly Notes Mappings
+                if (state.notes) {
+                    Object.keys(state.notes).forEach(monthKey => {
+                        const monthIndex = parseInt(monthKey.replace('month_', ''), 10);
+                        const monthName = calendarMonthsNames[monthIndex] || "Unknown Month";
+                        const noteArray = state.notes[monthKey] || [];
+
+                        noteArray.forEach(note => {
+                            const decodedText = decodeSanitizedNoteString(note.text);
+                            pool.push({
+                                type: 'monthlyNote',
+                                id: note.id,
+                                monthIndex: monthIndex,
+                                title: decodedText,
+                                sub: `Financial Memo • Logged under ${monthName}`,
+                                meta: 'Note',
+                                tab: 'notes',
+                                key: `note_${note.id}`
+                            });
+                        });
+                    });
+                }
 
                 if (!searchStr) {
                     const historyList = this.getHistory();
@@ -3517,12 +3569,12 @@ async function checkAndTriggerReminders() {
                     row.id = `palette-row-${idx}`;
                     row.className = "px-3 py-2 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition select-none group border border-transparent";
                     row.innerHTML = `
-                    <div class="truncate flex-1 pointer-events-none">
-                        <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
-                        <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
-                    </div>
-                    <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
-                `;
+            <div class="truncate flex-1 pointer-events-none">
+                <p class="text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition truncate">${result.title}</p>
+                <span class="text-[10px] font-medium text-gray-500 tracking-wide">${result.sub}</span>
+            </div>
+            <span class="text-xs font-bold text-gray-400 group-hover:text-gray-200 bg-gray-900 border border-gray-800 px-2 py-0.5 rounded shadow-sm font-mono shrink-0 pointer-events-none">${result.meta}</span>
+        `;
                     row.addEventListener('click', () => this.select(result));
                     row.addEventListener('mouseenter', () => this.highlight(idx));
                     this.feed.appendChild(row);
@@ -3577,6 +3629,7 @@ async function checkAndTriggerReminders() {
                             }
                         }
                         targetDOMElement = document.querySelector(`tr[data-id="${result.id}"]`);
+                        this.glow(targetDOMElement);
                     }
                     else if (['plan', 'expectedIncome', 'debtsPool'].includes(result.type)) {
                         let destTab = 'planification';
@@ -3591,8 +3644,37 @@ async function checkAndTriggerReminders() {
                     }
                     else if (result.type === 'frequent') {
                         targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
+                        this.glow(targetDOMElement);
                     }
-                    this.glow(targetDOMElement);
+                    // --- HANDLING REDIRECTION FOR NEW EXTENSIONS ---
+                    else if (result.type === 'projectFolder') {
+                        focusOnSpecificProjectBlueprint(result.id);
+                    }
+                    else if (result.type === 'wishlistItem') {
+                        focusOnSpecificProjectBlueprint(result.projectId);
+                        setTimeout(() => {
+                            // Look through elements in the detailed list feed for item matches
+                            const itemsRows = document.getElementById('wishlistItemsListFeed')?.children || [];
+                            for (let el of itemsRows) {
+                                if (el.innerHTML.includes(`toggleWishItemCompletedState('${result.id}')`)) {
+                                    this.glow(el);
+                                    break;
+                                }
+                            }
+                        }, 100);
+                    }
+                    else if (result.type === 'monthlyNote') {
+                        selectNotesMonth(result.monthIndex);
+                        setTimeout(() => {
+                            const notesCards = document.getElementById('monthlyNotesFeedContainer')?.children || [];
+                            for (let el of notesCards) {
+                                if (el.innerHTML.includes(`'${result.id}'`)) {
+                                    this.glow(el);
+                                    break;
+                                }
+                            }
+                        }, 100);
+                    }
                 }, 150);
             },
             glow(el) {
