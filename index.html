@@ -59,6 +59,19 @@
             z-index: 10;
         }
 
+        /* Secure mobile drop zone interactions without JS collision */
+        #mobileEditDropZone.drag-over {
+            background-color: #2563eb !important; /* Standardized to blue-600 */
+            filter: brightness(1.25) !important;
+            transform: scale(1.05) !important;
+        }
+
+        #mobileDeleteDropZone.drag-over {
+            background-color: #f43f5e !important; /* Standardized to rose-500 */
+            filter: brightness(1.25) !important;
+            transform: scale(1.05) !important;
+        }
+
         @keyframes searchGlowPulse {
             0% {
                 box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), inset 0 0 0 0px rgba(59, 130, 246, 0);
@@ -130,6 +143,8 @@
                 transform: scale(1) translateY(0);
             }
         }
+
+        
     </style>
 </head>
 
@@ -155,61 +170,54 @@
                 </button>
             </div>
             <div onclick="MoneycoSearch.open()"
-                class="w-full bg-gray-900 hover:bg-gray-800 border border-gray-800/80 hover:border-gray-700 px-3 py-2 rounded-xl text-xs text-gray-500 hover:text-gray-400 transition flex items-center justify-between cursor-pointer group select-none shadow-inner mt-4">
+                class="w-full bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 px-3 py-2.5 rounded-xl text-xs text-gray-400 hover:text-gray-300 transition flex items-center justify-between cursor-pointer group select-none shadow-md mt-4">
                 <span class="flex items-center gap-2">
-                    <i
-                        class="fa-solid fa-magnifying-glass text-[11px] text-gray-600 group-hover:text-blue-500 transition"></i>
+                    <i class="fa-solid fa-magnifying-glass text-xs text-gray-500 group-hover:text-blue-400 transition"></i>
                     Search records...
                 </span>
-                <kbd
-                    class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-600 font-bold group-hover:text-gray-400">Ctrl
-                    K</kbd>
+                <kbd class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-500 font-bold group-hover:text-gray-300">Ctrl K</kbd>
             </div>
-            <div id="navLinks" class="hidden md:flex flex-col gap-2">
+
+            <div id="navLinks" class="hidden md:flex flex-col gap-1.5 mt-4">
                 <button onclick="switchTab('dashboard')" data-tab="dashboard"
-                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium bg-blue-600 text-white">
-                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-left text-sm font-medium bg-blue-600 text-white shadow-sm">
+                    <i class="fa-solid fa-chart-pie w-4"></i> Dashboard
                 </button>
                 <button onclick="switchTab('all-movements')" data-tab="all-movements"
-                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
-                    <i class="fa-solid fa-list-ul w-5"></i> All Movements
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-left text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-list-ul w-4"></i> All Movements
                 </button>
                 <button onclick="switchTab('wishlists')" data-tab="wishlists"
-                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
-                    <i class="fa-solid fa-wand-magic-sparkles w-5"></i> Wishlists & Projects
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-left text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-wand-magic-sparkles w-4"></i> Wishlists & Projects
                 </button>
                 <button onclick="switchTab('categories')" data-tab="categories"
-                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
-                    <i class="fa-solid fa-tags w-5"></i> Categories
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-left text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-tags w-4"></i> Categories
                 </button>
                 <button onclick="switchTab('notes')" data-tab="notes"
-                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
-                    <i class="fa-solid fa-note-sticky w-5"></i> Monthly Notes
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-left text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-note-sticky w-4"></i> Monthly Notes
                 </button>
                 <button onclick="switchTab('settings')" data-tab="settings"
-                    class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition text-left font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
-                    <i class="fa-solid fa-cloud-arrow-up w-5"></i> Cloud Sync
+                    class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-left text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
+                    <i class="fa-solid fa-cloud-arrow-up w-4"></i> Cloud Sync
                 </button>
             </div>
             
-
-            <div id="sidebarCalculatorZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
-                ondrop="handleCalculatorDrop(event)"
-                class="w-full bg-gray-950/40 border border-gray-800/60 rounded-xl p-2.5 shadow-inner mt-4 transition duration-200 hover:border-gray-700/80 group">
-                <div
-                    class="flex items-center justify-between mb-1.5 select-none text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                    <span class="flex items-center gap-1.5 group-hover:text-amber-400 transition"><i
-                            class="fa-solid fa-calculator"></i> Text Math</span>
-                    <kbd
-                        class="bg-gray-900 px-1 py-0.5 rounded border border-gray-800 font-mono text-[9px] text-gray-600 group-hover:text-gray-400">Ctrl
-                        L</kbd>
+            <div id="sidebarCalculatorZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="handleCalculatorDrop(event)"
+                class="w-full bg-gray-900/40 border border-gray-800 rounded-xl p-3 shadow-md mt-4 transition duration-200 hover:border-gray-700 group">
+                <div class="flex items-center justify-between mb-2 select-none text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    <span class="flex items-center gap-1.5 group-hover:text-amber-400 transition">
+                        <i class="fa-solid fa-calculator"></i> Text Math
+                    </span>
+                    <kbd class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 font-mono text-[9px] text-gray-500 group-hover:text-gray-400">Ctrl L</kbd>
                 </div>
-                <div class="relative flex flex-col gap-1">
-                    <input type="text" id="calcInputBox" oninput="runInlineCalculatorMath()"
-                        onkeydown="handleCalculatorKeyDown(event)" placeholder="Type math formula..."
-                        class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2 py-1.5 text-xs text-gray-100 placeholder-gray-600 font-mono focus:outline-none focus:border-amber-500 transition shadow-inner">
+                <div class="relative flex flex-col gap-1.5">
+                    <input type="text" id="calcInputBox" oninput="runInlineCalculatorMath()" onkeydown="handleCalculatorKeyDown(event)" placeholder="Type math formula..."
+                        class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-gray-100 placeholder-gray-600 font-mono focus:outline-none focus:border-amber-500 transition shadow-inner">
                     <div id="calcLiveResultLabel"
-                        class="text-[11px] font-mono font-black text-right text-gray-600 tracking-wide select-all pr-1 min-h-[16px] transition-colors">
+                        class="text-xs font-mono font-black text-right text-gray-500 tracking-wide select-all pr-1 min-h-[16px] transition-colors">
                         = $0.00
                     </div>
                 </div>
