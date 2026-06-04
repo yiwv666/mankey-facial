@@ -247,6 +247,8 @@
                             </div>
                         </div>
 
+
+
                         <div
                             class="border-t md:border-t-0 pt-2 md:pt-0 border-gray-900 md:border-x md:border-gray-900 md:px-4">
                             <span class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Total
@@ -1450,11 +1452,13 @@
                 remainingAfterPlansEl.className = "text-[9px] text-gray-600 italic block mt-0.5";
             }
 
+            // 2. Merged Multi-Segment Core Stack Tracker (Spent + Planned vs Earned)
             const totalOutflowObligations = expenseSum + planPoolSum;
             let baselineRatioPercent = 0;
             if (incomeSum > 0) {
-                baselineRatioPercent = Math.round((totalOutflowObligations / incomeSum) * 100);
-            } else if (totalOutflowObligations > 0) {
+                // Updated to calculate utilization strict to actual spent amounts, ignoring future plans
+                baselineRatioPercent = Math.round((expenseSum / incomeSum) * 100);
+            } else if (expenseSum > 0) {
                 baselineRatioPercent = 100;
             }
 
@@ -1729,18 +1733,33 @@
                 marqueeTrack.className = "marquee-container gap-2";
 
                 const fragmentCards = [];
+                // Make sure array remains correctly sorted when refreshed dynamically via sync pulses
+                activeLiveNotes.sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+
+                activeLiveNotes.sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+
                 activeLiveNotes.forEach(note => {
                     const rawText = decodeSanitizedNoteString(note.text);
+
+                    // Desktop Marquee Notes Cards
                     const noteBadge = document.createElement('div');
-                    noteBadge.className = "w-max max-w-xs shrink-0 bg-gray-900/90 border border-gray-800 rounded-xl px-3.5 py-1.5 text-xs text-gray-300 select-none shadow-sm cursor-help transition hover:border-gray-700";
-                    noteBadge.innerText = rawText;
-                    noteBadge.title = rawText;
+                    noteBadge.className = `w-max max-w-xs shrink-0 border rounded-xl px-3.5 py-1.5 flex items-center gap-2.5 transition group hover:border-gray-700 shadow-md cursor-pointer ${note.completed ? 'bg-gray-950/40 border-gray-900/60 opacity-40' : 'bg-gray-900 border-gray-800'}`;
+                    noteBadge.onclick = (e) => toggleNoteCompletedState(currentSysMonthIdx, note.id, e);
+                    noteBadge.innerHTML = `
+        <i class="fa-solid ${note.completed ? 'fa-circle-check text-teal-500' : 'fa-circle-notch text-gray-700'} text-[10px] shrink-0 transition group-hover:text-teal-500/80"></i>
+        <p class="text-xs break-words truncate max-w-[200px] select-none ${note.completed ? 'line-through text-gray-500' : 'text-gray-200'}" title="${rawText}">${rawText}</p>
+    `;
                     fragmentCards.push(noteBadge);
 
+                    // Mobile Notes View Containers
                     if (mobileContainer) {
                         const noteBlock = document.createElement('div');
-                        noteBlock.className = "bg-gray-900 border border-gray-800 rounded-xl p-3 text-xs text-gray-200 break-words leading-relaxed shadow-md";
-                        noteBlock.innerText = rawText;
+                        noteBlock.className = `w-full border rounded-xl px-3.5 py-2 flex items-center gap-2.5 transition group hover:border-gray-700 shadow-md cursor-pointer ${note.completed ? 'bg-gray-950/40 border-gray-900/60 opacity-40' : 'bg-gray-900 border-gray-800'}`;
+                        noteBlock.onclick = (e) => toggleNoteCompletedState(currentSysMonthIdx, note.id, e);
+                        noteBlock.innerHTML = `
+            <i class="fa-solid ${note.completed ? 'fa-circle-check text-teal-500' : 'fa-circle-notch text-gray-700'} text-[10px] shrink-0 transition group-hover:text-teal-500/80"></i>
+            <p class="text-xs break-words leading-relaxed select-none ${note.completed ? 'line-through text-gray-500' : 'text-gray-200'}">${rawText}</p>
+        `;
                         mobileContainer.appendChild(noteBlock);
                     }
                 });
@@ -2916,7 +2935,10 @@ async function checkAndTriggerReminders() {
                 const key = `month_${i}`;
                 if (state.notes[key] !== undefined && !Array.isArray(state.notes[key])) {
                     const oldString = state.notes[key];
-                    state.notes[key] = oldString.trim() ? [{ id: crypto.randomUUID(), text: oldString }] : [];
+                    state.notes[key] = oldString.trim() ? [{ id: crypto.randomUUID(), text: oldString, completed: false }] : [];
+                } else if (Array.isArray(state.notes[key])) {
+                    // Ensure existing array elements have the completed field explicitly handled
+                    state.notes[key].forEach(n => { if (n.completed === undefined) n.completed = false; });
                 } else if (state.notes[key] === undefined) {
                     state.notes[key] = [];
                 }
@@ -2979,16 +3001,36 @@ async function checkAndTriggerReminders() {
 
             feedContainer.className = "flex flex-wrap gap-2 items-start max-h-[350px] overflow-y-auto pr-1 pt-1";
 
+            // Ensure array is explicitly sorted before updating layout view nodes
+            activeMonthNotes.sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+
             activeMonthNotes.forEach(note => {
                 const noteCard = document.createElement('div');
-                noteCard.className = "w-fit max-w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2 flex items-center justify-between gap-3 transition group hover:border-gray-700 shadow-md animate-fade-in";
+                // Set explicit conditional opacity themes and register layout onclick actions cleanly
+                noteCard.className = `w-fit max-w-full border rounded-xl px-3.5 py-1.5 flex items-center justify-between gap-3 transition group hover:border-gray-700 shadow-md animate-fade-in cursor-pointer ${note.completed ? 'bg-gray-950/40 border-gray-900/60 opacity-40' : 'bg-gray-900 border-gray-800'}`;
+                noteCard.onclick = (e) => toggleNoteCompletedState(selectedMonthIndex, note.id, e);
+
                 noteCard.innerHTML = `
-                    <p class="text-sm text-gray-200 break-words leading-relaxed select-text">${decodeSanitizedNoteString(note.text)}</p>
-                    <div class="flex items-center gap-0.5 opacity-20 group-hover:opacity-100 transition duration-150 shrink-0 border-l border-gray-800 pl-1.5">
-                        <button onclick="startEditNote('${note.id}', '${note.text.replace(/'/g, "\\'")}')" class="text-gray-400 hover:text-blue-400 p-1 transition" title="Edit Note"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                        <button onclick="deleteNote('${note.id}')" class="text-gray-400 hover:text-rose-400 p-1 transition" title="Delete Note"><i class="fa-solid fa-xmark text-xs"></i></button>
-                    </div>
-                `;
+    <div class="flex items-center gap-2.5 min-w-0">
+        <i class="fa-solid ${note.completed ? 'fa-circle-check text-teal-500' : 'fa-circle-notch text-gray-700'} text-[10px] shrink-0 transition group-hover:text-teal-500/80"></i>
+        <p class="text-xs break-words leading-relaxed select-text ${note.completed ? 'line-through text-gray-500' : 'text-gray-200'}">${decodeSanitizedNoteString(note.text)}</p>
+    </div>
+    <div class="flex items-center gap-0.5 opacity-20 group-hover:opacity-100 transition duration-150 shrink-0 border-l border-gray-800/60 pl-1.5" onclick="event.stopPropagation();">
+        <button onclick="startEditNote('${note.id}', '${note.text.replace(/'/g, "\\'")}')" class="text-gray-400 hover:text-blue-400 p-1 transition" title="Edit Note"><i class="fa-solid fa-pen text-[10px]"></i></button>
+        <button onclick="deleteNote('${note.id}')" class="text-gray-400 hover:text-rose-400 p-1 transition" title="Delete Note"><i class="fa-solid fa-xmark text-xs"></i></button>
+    </div>
+`; noteCard.onclick = (e) => toggleNoteCompletedState(selectedMonthIndex, note.id, e);
+
+                noteCard.innerHTML = `
+        <div class="flex items-center gap-2.5 min-w-0">
+            <i class="fa-solid ${note.completed ? 'fa-circle-check text-teal-500' : 'fa-circle-notch text-gray-700'} text-xs shrink-0 transition group-hover:text-teal-500/80"></i>
+            <p class="text-sm break-words leading-relaxed select-text ${note.completed ? 'line-through text-gray-500' : 'text-gray-200'}">${decodeSanitizedNoteString(note.text)}</p>
+        </div>
+        <div class="flex items-center gap-0.5 opacity-20 group-hover:opacity-100 transition duration-150 shrink-0 border-l border-gray-800/60 pl-1.5" onclick="event.stopPropagation();">
+            <button onclick="startEditNote('${note.id}', '${note.text.replace(/'/g, "\\'")}')" class="text-gray-400 hover:text-blue-400 p-1 transition" title="Edit Note"><i class="fa-solid fa-pen text-[10px]"></i></button>
+            <button onclick="deleteNote('${note.id}')" class="text-gray-400 hover:text-rose-400 p-1 transition" title="Delete Note"><i class="fa-solid fa-xmark text-xs"></i></button>
+        </div>
+    `;
                 feedContainer.appendChild(noteCard);
             });
         }
@@ -3036,6 +3078,7 @@ async function checkAndTriggerReminders() {
                     state.notes[targetKey].push({
                         id: crypto.randomUUID(),
                         text: cleanSanitizedText,
+                        completed: false,
                         updatedAt: Date.now()
                     });
                 }
@@ -3091,6 +3134,7 @@ async function checkAndTriggerReminders() {
             indicator.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-amber-400"></i> Syncing...`;
             saveState();
             buildMonthsSelectorInterface();
+            renderAll();
             indicator.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-400"></i> Saved to Cloud`;
         }
 
@@ -4102,6 +4146,25 @@ async function checkAndTriggerReminders() {
                 }
             }
         };
+
+        function toggleNoteCompletedState(monthIndex, noteId, event) {
+            // Prevent interaction trigger collisions when clicking the Edit or Delete buttons
+            if (event.target.closest('button') || event.target.closest('a')) return;
+
+            const targetKey = `month_${monthIndex}`;
+            const activeMonthNotes = state.notes[targetKey] || [];
+            const note = activeMonthNotes.find(n => n.id === noteId);
+
+            if (note) {
+                note.completed = !note.completed;
+                note.updatedAt = Date.now();
+
+                // Sort: Non-completed items stay at the front; completed items fall to the end
+                state.notes[targetKey].sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+
+                commitNoteSave();
+            }
+        }
 
     </script>
 </body>
