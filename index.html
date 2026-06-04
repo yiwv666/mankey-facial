@@ -3613,6 +3613,10 @@ async function checkAndTriggerReminders() {
                         { key: '/note', title: 'Create a new note', sub: 'Action • Adds a quick memorandum reminder', action: () => { this.close(); switchTab('notes'); setTimeout(() => document.getElementById('noteInputBox')?.focus(), 150); } },
                         { key: '/pay', title: 'Log a new movement entry', sub: 'Action • Launch transaction ledger modal forms', action: () => { this.close(); openMovementModal(); } },
                         { key: '/plan', title: 'Schedule an upcoming item', sub: 'Action • Launch workspace target creation modal', action: () => { this.close(); openPlanModal(); } },
+                        // New /exp shortcode implementation
+                        { key: '/exp', title: 'Add expected income entry', sub: 'Action • Launch workspace target expected cash flows modal', action: () => { this.close(); switchTab('dashboard'); switchWorkspaceTab('expectedIncome'); setTimeout(() => openPlanModal(), 50); } },
+                        // New /debt shortcode implementation
+                        { key: '/debt', title: 'Register an active debt obligation', sub: 'Action • Launch liability entry tracking wizard modal', action: () => { this.close(); switchTab('dashboard'); switchWorkspaceTab('debtsPool'); setTimeout(() => openPlanModal(), 50); } },
                         { key: '/template', title: 'Create a dynamic recurring cost template', sub: 'Action • Launch automated blueprint modal configurations', action: () => { this.close(); openFrequentModal(); } },
                         { key: '/project', title: 'Initialize a new wishlist folder milestone', sub: 'Action • Launch project canvas modal context', action: () => { this.close(); openProjectModal(); } },
                         { key: '/category', title: 'Register a new custom evaluation category', sub: 'Action • Shifts focus straight to categories fields', action: () => { this.close(); switchTab('categories'); setTimeout(() => document.getElementById('newCategoryName')?.focus(), 150); } }
@@ -3820,28 +3824,48 @@ async function checkAndTriggerReminders() {
                 switchTab(result.tab);
                 if (result.type === 'nav') return;
 
+                // Standardized scheduling timeout to allow smooth rendering of the destination tab
                 setTimeout(() => {
                     let targetDOMElement = null;
+
                     if (result.type === 'movement') {
                         if (result.tab === 'all-movements') {
                             const mItem = state.movements.find(m => m.id === result.id);
                             if (mItem && mItem.date) {
                                 const fIn = document.getElementById('filterMonth');
-                                if (fIn) { fIn.value = mItem.date.substring(0, 7); applyFilters(); }
+                                const fCat = document.getElementById('filterCategory');
+                                const fType = document.getElementById('filterType');
+
+                                // Reset filters to make absolutely sure the item appears in the DOM
+                                if (fIn) fIn.value = mItem.date.substring(0, 7);
+                                if (fCat) fCat.value = 'all';
+                                if (fType) fType.value = 'all';
+
+                                applyFilters();
                             }
                         }
-                        targetDOMElement = document.querySelector(`tr[data-id="${result.id}"]`);
-                        this.glow(targetDOMElement);
+
+                        // Targeted table row element lookup matching the template literal row assignment
+                        setTimeout(() => {
+                            targetDOMElement = document.querySelector(`#allMovementsTable tr[data-id="${result.id}"]`);
+                            if (targetDOMElement) {
+                                this.glow(targetDOMElement);
+                            } else {
+                                console.warn(`[Search Engine] Could not locate tr element with data-id matching ${result.id}`);
+                            }
+                        }, 60);
+                        return;
                     }
                     else if (['plan', 'expectedIncome', 'debtsPool'].includes(result.type)) {
                         let destTab = 'planification';
                         if (result.type === 'expectedIncome') destTab = 'expectedIncome';
                         if (result.type === 'debtsPool') destTab = 'debtsPool';
                         switchWorkspaceTab(destTab);
+
                         setTimeout(() => {
                             targetDOMElement = document.querySelector(`[data-id="${result.id}"]`);
                             this.glow(targetDOMElement);
-                        }, 50);
+                        }, 60);
                         return;
                     }
                     else if (result.type === 'frequent') {
