@@ -90,6 +90,46 @@
                 transform: translateX(-50%);
             }
         }
+
+        /* Smooth transition keyframes for checked financial memos */
+        .note-checking-out {
+            animation: noteFadeMoveOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: none;
+        }
+
+        .note-checking-in {
+            animation: noteFadeMoveIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes noteFadeMoveOut {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+        }
+
+        @keyframes noteFadeMoveIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.9) translateY(-15px);
+                background-color: rgba(20, 184, 166, 0.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -1137,6 +1177,7 @@
         };
 
         // --- HISTORY STATE TRACKING ARRAYS ---
+        // --- HISTORY STATE TRACKING ARRAYS ---
         const MoneycoHistory = {
             undoStack: [],
             redoStack: [],
@@ -1156,7 +1197,12 @@
                 if (this.undoStack.length === 0) return;
                 this.isOperating = true;
                 this.redoStack.push(JSON.stringify(state));
-                state = JSON.parse(this.undoStack.pop());
+
+                // FIX: Deep copy properties back onto the existing global object 
+                // pointer so all tab views read the timeline change correctly.
+                const targetState = JSON.parse(this.undoStack.pop());
+                Object.assign(state, targetState);
+
                 this.finalizeTimelineShift();
             },
 
@@ -1164,16 +1210,26 @@
                 if (this.redoStack.length === 0) return;
                 this.isOperating = true;
                 this.undoStack.push(JSON.stringify(state));
-                state = JSON.parse(this.redoStack.pop());
+
+                // FIX: Deep copy properties back onto the existing global object 
+                // pointer so all tab views read the timeline change correctly.
+                const targetState = JSON.parse(this.redoStack.pop());
+                Object.assign(state, targetState);
+
                 this.finalizeTimelineShift();
             },
 
             finalizeTimelineShift() {
                 state.lastUpdated = Date.now();
                 localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+
+                // Rebuild category lists and repaint metrics charts instantly
                 populateCategorySelects();
                 renderAll();
-                if (typeof applyFilters === 'function') applyFilters();
+
+                // FIX: Explicitly re-apply current filters to update the ledger grid view
+                applyFilters();
+
                 this.isOperating = false;
                 console.log(`%c[History Engine] Timeline updated. Undo remaining: ${this.undoStack.length} | Redo remaining: ${this.redoStack.length}`, "color: #a855f7; font-weight: bold;");
             }
@@ -3910,14 +3966,26 @@ async function checkAndTriggerReminders() {
         };
 
         window.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
             const isZKey = e.key.toLowerCase() === 'z';
+            const isHistoryCommand = (e.ctrlKey || e.metaKey) && isZKey;
 
-            if ((e.ctrlKey || e.metaKey) && isZKey) {
-                if (e.shiftKey) { e.preventDefault(); MoneycoHistory.redo(); }
-                else { e.preventDefault(); MoneycoHistory.undo(); }
+            // Only block input fields if the user is NOT attempting a Ctrl+Z / Cmd+Z history shortcut
+            if (!isHistoryCommand) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
             }
 
+            if (isHistoryCommand) {
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    MoneycoHistory.redo();
+                } else {
+                    e.preventDefault();
+                    MoneycoHistory.undo();
+                }
+                return;
+            }
+
+            // Baseline layout navigation shortcut fallbacks (Alt + 1, Alt + 2, etc.)
             if (e.altKey && !e.ctrlKey && !e.metaKey) {
                 if (e.key === '1') { e.preventDefault(); switchTab('dashboard'); }
                 else if (e.key === '2') { e.preventDefault(); switchTab('all-movements'); }
@@ -4180,13 +4248,31 @@ async function checkAndTriggerReminders() {
             const note = activeMonthNotes.find(n => n.id === noteId);
 
             if (note) {
-                note.completed = !note.completed;
-                note.updatedAt = Date.now();
+                // 1. Locate the specific note card target container element in the DOM tree
+                const targetCard = event.currentTarget;
 
-                // Sort: Non-completed items stay at the front; completed items fall to the end
-                state.notes[targetKey].sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+                // 2. Inject our fade-out visual anchor class to trigger the exit timeline animation
+                targetCard.classList.add('note-checking-out');
 
-                commitNoteSave();
+                // 3. Pause processing state commit engine actions until the animation sequence finishes
+                setTimeout(() => {
+                    note.completed = !note.completed;
+                    note.updatedAt = Date.now();
+
+                    // Sort: Non-completed items stay at the front; completed items fall to the end
+                    state.notes[targetKey].sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+
+                    // Commit modifications to memory and trigger global tab view redrawing
+                    commitNoteSave();
+
+                    // 4. Capture the updated element in the newly painted DOM tree and trigger the clean entry wave
+                    setTimeout(() => {
+                        // Query matching elements in either layout view and append the intro scale-up flash
+                        const refreshedCards = document.querySelectorAll(`[onclick*="${noteId}"]`);
+                        refreshedCards.forEach(card => card.classList.add('note-checking-in'));
+                    }, 30);
+
+                }, 350); // Matches the visual sweet spot right before the CSS keyframes turn completely invisible
             }
         }
 
