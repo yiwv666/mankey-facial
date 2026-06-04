@@ -192,6 +192,29 @@
                     class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 text-[10px] font-mono text-gray-600 font-bold group-hover:text-gray-400">Ctrl
                     K</kbd>
             </div>
+
+            <div id="sidebarCalculatorZone" ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
+                ondrop="handleCalculatorDrop(event)"
+                class="w-full bg-gray-950/40 border border-gray-800/60 rounded-xl p-2.5 shadow-inner mt-4 transition duration-200 hover:border-gray-700/80 group">
+                <div
+                    class="flex items-center justify-between mb-1.5 select-none text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    <span class="flex items-center gap-1.5 group-hover:text-amber-400 transition"><i
+                            class="fa-solid fa-calculator"></i> Text Math</span>
+                    <kbd
+                        class="bg-gray-900 px-1 py-0.5 rounded border border-gray-800 font-mono text-[9px] text-gray-600 group-hover:text-gray-400">Ctrl
+                        L</kbd>
+                </div>
+                <div class="relative flex flex-col gap-1">
+                    <input type="text" id="calcInputBox" oninput="runInlineCalculatorMath()"
+                        onkeydown="handleCalculatorKeyDown(event)" placeholder="Type math formula..."
+                        class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2 py-1.5 text-xs text-gray-100 placeholder-gray-600 font-mono focus:outline-none focus:border-amber-500 transition shadow-inner">
+                    <div id="calcLiveResultLabel"
+                        class="text-[11px] font-mono font-black text-right text-gray-600 tracking-wide select-all pr-1 min-h-[16px] transition-colors">
+                        = $0.00
+                    </div>
+                </div>
+            </div>
+
         </nav>
 
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -3966,6 +3989,16 @@ async function checkAndTriggerReminders() {
         };
 
         window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
+                e.preventDefault();
+                const calcInput = document.getElementById('calcInputBox');
+                if (calcInput) {
+                    calcInput.focus();
+                    calcInput.select();
+                }
+                return;
+            }
+            
             const isZKey = e.key.toLowerCase() === 'z';
             const isHistoryCommand = (e.ctrlKey || e.metaKey) && isZKey;
 
@@ -4274,6 +4307,96 @@ async function checkAndTriggerReminders() {
 
                 }, 350); // Matches the visual sweet spot right before the CSS keyframes turn completely invisible
             }
+        }
+
+        // ========================================================
+        // SYSTEM INLINE TEXT CALCULATOR MODULE
+        // ========================================================
+
+        function runInlineCalculatorMath() {
+            const inputEl = document.getElementById('calcInputBox');
+            const labelEl = document.getElementById('calcLiveResultLabel');
+            if (!inputEl || !labelEl) return;
+
+            // Sanitize string to allow only basic math characters (Numbers, dot, +, -, *, /, parenthesis)
+            const expression = inputEl.value.replace(/[^0-9+\-*/().\s]/g, '');
+
+            if (!expression.trim()) {
+                labelEl.innerText = "= $0.00";
+                labelEl.className = "text-[11px] font-mono font-black text-right text-gray-600 tracking-wide";
+                return;
+            }
+
+            try {
+                // Safe evaluation mathematical constructor function mapping pattern
+                const computedResult = Function(`"use strict"; return (${expression})`)();
+
+                if (typeof computedResult === 'number' && !isNaN(computedResult) && isFinite(computedResult)) {
+                    labelEl.innerText = `= ${formatCurrency(computedResult)}`;
+                    labelEl.className = "text-[11px] font-mono font-black text-right text-amber-400 tracking-wide animate-pulse";
+                    labelEl.setAttribute('data-raw', computedResult.toFixed(2));
+                } else {
+                    throw new Error();
+                }
+            } catch (err) {
+                labelEl.innerText = "Error";
+                labelEl.className = "text-[11px] font-mono font-bold text-right text-rose-500/70 tracking-wide";
+                labelEl.removeAttribute('data-raw');
+            }
+        }
+
+        function handleCalculatorKeyDown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const labelEl = document.getElementById('calcLiveResultLabel');
+                const rawValue = labelEl?.getAttribute('data-raw');
+
+                if (rawValue) {
+                    // Write string data over directly into user's operating clipboard matrix
+                    navigator.clipboard.writeText(rawValue).then(() => {
+                        const inputEl = document.getElementById('calcInputBox');
+                        if (inputEl) inputEl.value = rawValue;
+
+                        labelEl.innerText = "COPIED TO CLIPBOARD!";
+                        labelEl.className = "text-[10px] font-bold text-right text-emerald-400 tracking-wider uppercase scale-95 transition-transform";
+
+                        setTimeout(() => runInlineCalculatorMath(), 1200);
+                    });
+                }
+            }
+        }
+
+        function handleCalculatorDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const targetZone = document.getElementById('sidebarCalculatorZone');
+            if (targetZone) targetZone.classList.remove('drag-over');
+            handleDragEndCleanup();
+
+            let origin = event.dataTransfer.getData('item-origin') || draggedItemOrigin;
+            let id = event.dataTransfer.getData('text/plain') || draggedItemId;
+
+            if (!id || !origin) return;
+
+            let targetItem = null;
+            if (origin === 'movement') targetItem = state.movements.find(m => m.id === id);
+            else if (['planification', 'expectedIncome', 'debtsPool'].includes(origin)) targetItem = state[origin].find(p => p.id === id);
+
+            if (targetItem && targetItem.amount) {
+                const inputEl = document.getElementById('calcInputBox');
+                if (inputEl) {
+                    const currentVal = inputEl.value.trim();
+                    const operatorPrefix = (currentVal && !/[+\-*/]$/.test(currentVal)) ? " + " : "";
+
+                    inputEl.value = `${currentVal}${operatorPrefix}${parseFloat(targetItem.amount)}`;
+                    runInlineCalculatorMath();
+                    inputEl.focus();
+                }
+            }
+
+            draggedItemId = null;
+            draggedItemOrigin = null;
         }
 
     </script>
