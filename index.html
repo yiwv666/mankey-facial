@@ -804,26 +804,22 @@
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
 
                         <div id="projectMasterPanel" class="md:col-span-12 transition-all duration-500 ease-in-out">
-                            <div id="projectDeckGrid"
-                                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-                            <div id="projectDeckEmptyState"
-                                class="hidden text-center py-16 text-gray-600 text-sm italic">No blueprints or wishlists
-                                initialized. Create a folder matrix above to get started!</div>
+                            <div id="projectDeckGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                            <div id="projectDeckEmptyState" class="hidden text-center py-16 text-gray-600 text-sm italic">
+                                No blueprints or wishlists initialized. Create a folder matrix above to get started!
+                            </div>
                         </div>
 
                         <div id="projectDetailPanel"
                             class="hidden md:col-span-8 bg-gray-900/20 border border-gray-800 rounded-2xl p-5 flex flex-col space-y-4 animate-fade-in">
-                            <div
-                                class="flex items-center justify-between border-b border-gray-800 pb-3 flex-wrap gap-2">
+                            <div class="flex items-center justify-between border-b border-gray-800 pb-3 flex-wrap gap-2">
                                 <div class="flex items-center gap-2">
-                                    <button onclick="closeProjectFocusMode()"
-                                        class="text-gray-400 hover:text-white p-1 mr-1"
-                                        title="Back to Full Deck View"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <button onclick="closeProjectFocusMode()" class="text-gray-400 hover:text-white p-1 mr-1" title="Back to Full Deck View">
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                    </button>
                                     <div>
-                                        <h3 id="focusProjectTitle" class="text-lg font-bold text-white leading-tight">
-                                            Project Spec Sheets</h3>
-                                        <p id="focusProjectTotals" class="text-xs text-gray-400 mt-0.5">Allocated items:
-                                            0 | Total Target Footprint: $0.00</p>
+                                        <h3 id="focusProjectTitle" class="text-lg font-bold text-white leading-tight">Project Spec Sheets</h3>
+                                        <p id="focusProjectTotals" class="text-xs text-gray-400 mt-0.5">Allocated items: 0 | Total Target Footprint: $0.00</p>
                                     </div>
                                 </div>
                                 <button onclick="openWishItemModal()"
@@ -836,6 +832,8 @@
                         </div>
 
                     </div>
+                </div>
+            </div>
                 </div>
             </div>
 
