@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moneyco - El gestor de plata de Gsuco</title>
+    <title>Moneyco</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -539,53 +539,7 @@
             <div id="tab-categories" class="tab-content hidden space-y-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                    <div class="lg:col-span-4 bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl h-fit">
-                        <h2 class="text-lg font-bold mb-3">Custom Categories</h2>
-                        <form id="categoryForm" onsubmit="addCategory(event)" class="flex gap-2 mb-4">
-                            <input type="text" id="newCategoryName" maxlength="30" placeholder="e.g., Subscriptions"
-                                required
-                                class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-                            <button type="submit"
-                                class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition shrink-0">Add</button>
-                        </form>
-                        <div id="categoryManageList" class="space-y-1.5 max-h-[400px] overflow-y-auto pr-1"></div>
-                    </div>
-
-                    <div class="lg:col-span-8 space-y-6">
-
-                        <div
-                            class="bg-gradient-to-br from-emerald-950/40 to-gray-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-6 opacity-10 text-emerald-400 pointer-events-none">
-                                <i class="fa-solid fa-piggy-bank text-7xl"></i>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">Total
-                                        Asset Reserve</span>
-                                    <h2 id="savingsAllTimeTotal" class="text-4xl font-black text-emerald-400 mt-1">$0.00
-                                    </h2>
-                                </div>
-                                <div class="flex flex-col items-end gap-1">
-                                    <input type="number" id="savingsGoalInput" placeholder="Set Savings Goal"
-                                        onchange="updateSavingsGoal(this.value)"
-                                        class="bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-emerald-500 w-36 text-center">
-                                    <span id="savingsGoalTargetLabel"
-                                        class="text-[10px] text-gray-400 font-semibold tracking-wide hidden pr-1"></span>
-                                </div>
-                            </div>
-                            <div id="savingsProgressWrapper" class="mt-4 hidden space-y-1.5">
-                                <div class="flex justify-between text-xs font-semibold">
-                                    <span id="savingsProgressPercent" class="text-emerald-400">0% achieved</span>
-                                    <span id="savingsProgressMetrics" class="text-gray-500"></span>
-                                </div>
-                                <div
-                                    class="w-full bg-gray-900 border border-gray-800 rounded-full h-2.5 overflow-hidden">
-                                    <div id="savingsProgressBar"
-                                        class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
-                                        style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="lg:col-span-12 space-y-6">
 
                         <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
@@ -604,17 +558,15 @@
                                 </div>
                             </div>
                             <div class="overflow-x-auto -mx-5 px-5">
-                                <table class="w-full text-left border-collapse min-w-[650px]">
+                                <table class="w-full text-left border-collapse min-w-[750px]">
                                     <thead>
-                                        <tr
-                                            class="text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-800">
+                                        <tr class="text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-800">
                                             <th class="py-3 px-2">Category</th>
                                             <th class="py-3 px-2 text-right text-emerald-400">Month Income</th>
-                                            <th class="py-3 px-2 text-right text-emerald-500 bg-emerald-950/10">All-Time
-                                                Income</th>
+                                            <th class="py-3 px-2 text-right text-emerald-500 bg-emerald-950/10">All-Time Income</th>
                                             <th class="py-3 px-2 text-right text-rose-400">Month Expenses</th>
-                                            <th class="py-3 px-2 text-right text-rose-500 bg-rose-950/10">All-Time
-                                                Expenses</th>
+                                            <th class="py-3 px-2 text-right text-rose-500 bg-rose-950/10">All-Time Expenses</th>
+                                            <th class="py-3 px-2 text-center text-gray-400 w-24">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody id="categoryStatsTable"></tbody>
@@ -630,14 +582,12 @@
                                     </h2>
                                 </div>
                                 <span id="plannedDebtTotalBadge"
-                                    class="text-xs bg-rose-500/10 text-rose-400 font-bold px-2.5 py-1 rounded-full border border-rose-500/20">$0.00
-                                    Total</span>
+                                    class="text-xs bg-rose-500/10 text-rose-400 font-bold px-2.5 py-1 rounded-full border border-rose-500/20">$0.00 Total</span>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
-                                        <tr
-                                            class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                                        <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
                                             <th class="py-2 px-2">Planned Item Name</th>
                                             <th class="py-2 px-2 text-right">Allocated Amount</th>
                                         </tr>
@@ -764,8 +714,34 @@
                 </div>
             </div>
             <div id="tab-wishlists" class="tab-content hidden space-y-6">
+                    <div class="bg-gradient-to-br from-emerald-950/40 to-gray-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-6 opacity-10 text-emerald-400 pointer-events-none">
+                            <i class="fa-solid fa-piggy-bank text-7xl"></i>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">Total Asset Reserve</span>
+                                <h2 id="savingsAllTimeTotal" class="text-4xl font-black text-emerald-400 mt-1">$0.00</h2>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <input type="number" id="savingsGoalInput" placeholder="Set Savings Goal"
+                                    onchange="updateSavingsGoal(this.value)"
+                                    class="bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-emerald-500 w-36 text-center">
+                                <span id="savingsGoalTargetLabel" class="text-[10px] text-gray-400 font-semibold tracking-wide hidden pr-1"></span>
+                            </div>
+                        </div>
+                        <div id="savingsProgressWrapper" class="mt-4 hidden space-y-1.5">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span id="savingsProgressPercent" class="text-emerald-400">0% achieved</span>
+                                <span id="savingsProgressMetrics" class="text-gray-500"></span>
+                            </div>
+                            <div class="w-full bg-gray-900 border border-gray-800 rounded-full h-2.5 overflow-hidden">
+                                <div id="savingsProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
                 <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 md:p-6 shadow-xl min-h-[550px]">
-
+                    
                     <div class="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-4 mb-4">
                         <div>
                             <h2 class="text-xl font-bold tracking-wide">Wishlists & Projects</h2>
@@ -1271,6 +1247,11 @@
 
                 // FIX: Explicitly re-apply current filters to update the ledger grid view
                 applyFilters();
+                
+                // NEW FIX: Ensure the updated full-width categories analytics view updates on time-travel shift
+                if (typeof renderCategoryStats === 'function') {
+                    renderCategoryStats();
+                }
 
                 this.isOperating = false;
                 console.log(`%c[History Engine] Timeline updated. Undo remaining: ${this.undoStack.length} | Redo remaining: ${this.redoStack.length}`, "color: #a855f7; font-weight: bold;");
@@ -1384,12 +1365,14 @@
 
             if (tabId === 'all-movements') applyFilters();
             if (tabId === 'categories') {
-                renderCategoryDashboard();
                 renderCategoryStats();
             }
             if (tabId === 'dashboard') renderAll();
             if (tabId === 'notes') buildMonthsSelectorInterface();
-            if (tabId === 'wishlists') closeProjectFocusMode();
+            if (tabId === 'wishlists') {
+                closeProjectFocusMode();
+                renderCategoryStats();
+            }
 
             if (window.innerWidth < 768) {
                 document.getElementById('navLinks').classList.add('hidden');
@@ -1418,7 +1401,6 @@
 
         function renderAll() {
             renderDashboard();
-            renderCategoryDashboard();
             if (typeof renderWishlistsTabDeck === 'function') renderWishlistsTabDeck();
             if (activeFocusedProjectId && typeof renderFocusedProjectDetailsList === 'function') renderFocusedProjectDetailsList();
         }
@@ -2027,6 +2009,7 @@
 
             toggleReminderFields();
             modal.showModal();
+            setTimeout(() => document.getElementById('frName')?.focus(), 50);
         }
 
         function closeFrequentModal() { document.getElementById('frequentModal').close(); }
@@ -2248,22 +2231,7 @@
             document.body.removeChild(downloadAnchor);
         }
 
-        function renderCategoryDashboard() {
-            const list = document.getElementById('categoryManageList');
-            const displayCategories = state.categories.filter(cat => cat !== 'Debts' && cat !== 'Savings');
-
-            list.innerHTML = displayCategories.map(cat => `
-                <div class="flex items-center justify-between bg-gray-900/80 px-3 py-2 border border-gray-800 rounded-xl text-sm select-none"
-                     oncontextmenu="handleContextOpen(event, 'category', '${cat.replace(/'/g, "\\'")}')">
-                    <span class="font-medium select-text">${cat}</span>
-                    <div class="flex items-center gap-1">
-                        <button onclick="editCategoryName('${cat.replace(/'/g, "\\'")}')" class="text-gray-500 hover:text-blue-400 transition p-1" title="Edit Category"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="deleteCategory('${cat.replace(/'/g, "\\'")}')" class="text-gray-500 hover:text-rose-400 transition p-1" title="Delete Category"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                    </div>
-                </div>
-            `).join('');
-            populateCategorySelects();
-        }
+        
 
         function addCategory(e) {
             e.preventDefault();
@@ -2280,7 +2248,6 @@
                 input.value = '';
                 state.lastUpdated = Date.now();
                 saveState();
-                renderCategoryDashboard();
                 renderCategoryStats();
             }
         }
@@ -2292,7 +2259,8 @@
             }
             state.categories = state.categories.filter(c => c !== catName);
             saveState();
-            renderCategoryDashboard();
+            
+            populateCategorySelects();
             renderCategoryStats();
         }
 
@@ -2305,12 +2273,20 @@
             document.getElementById('oldCategoryNameHidden').value = oldName;
             document.getElementById('editCategoryNameInput').value = oldName;
             modal.showModal();
+            setTimeout(() => {
+                const input = document.getElementById('editCategoryNameInput');
+                if (input) {
+                    input.focus();
+                    input.select(); // Selects text for easy quick rewriting
+                }
+            }, 50);
         }
 
         function closeEditCategoryModal() {
             document.getElementById('editCategoryModal').close();
         }
 
+        // REPLACE the saveEditCategoryForm() function implementation inside your script:
         function saveEditCategoryForm(e) {
             e.preventDefault();
             const oldName = document.getElementById('oldCategoryNameHidden').value;
@@ -2341,7 +2317,13 @@
             state.lastUpdated = Date.now();
             saveState();
             renderAll();
+            
             if (typeof applyFilters === 'function') applyFilters();
+            
+            // NEW FIX: Re-populate selectors and refresh the full-width analytics grid view
+            populateCategorySelects();
+            renderCategoryStats();
+            
             closeEditCategoryModal();
         }
 
@@ -2447,15 +2429,35 @@
                 targetStats.sort((a, b) => b.allTimeOut - a.allTimeOut);
             }
 
+            // REPLACE the loop block at the bottom of renderCategoryStats():
             targetStats.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-gray-900 text-sm hover:bg-gray-900/50 transition duration-150";
+                
+                // Determine if this row is a protected core system parameter
+                const isProtected = item.name === 'Debts' || item.name === 'Savings';
+                
+                // Inline conditional HTML string generation for the Actions cell context
+                const actionButtonsHTML = isProtected 
+                    ? `<span class="text-[10px] text-gray-600 italic font-medium">System</span>`
+                    : `<div class="flex items-center justify-center gap-1.5">
+                        <button onclick="editCategoryName('${item.name.replace(/'/g, "\\'")}')" 
+                                class="text-gray-500 hover:text-blue-400 transition p-1 cursor-pointer" title="Edit Category">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <button onclick="deleteCategory('${item.name.replace(/'/g, "\\'")}')" 
+                                class="text-gray-500 hover:text-rose-400 transition p-1 cursor-pointer" title="Delete Category">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                       </div>`;
+
                 tr.innerHTML = `
                     <td class="py-3 px-2 font-semibold text-gray-200">${item.name}</td>
                     <td class="py-3 px-2 text-right font-medium text-emerald-400">${formatCurrency(item.monthIn)}</td>
                     <td class="py-3 px-2 text-right font-medium text-emerald-500 bg-emerald-950/20">${formatCurrency(item.allTimeIn)}</td>
                     <td class="py-3 px-2 text-right font-medium text-rose-400">${formatCurrency(item.monthOut)}</td>
                     <td class="py-3 px-2 text-right font-medium text-rose-400 bg-rose-950/20">${formatCurrency(item.allTimeOut)}</td>
+                    <td class="py-2 px-2 text-center">${actionButtonsHTML}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -2639,6 +2641,7 @@
                 visualInput.value = `${dd}/${mm}/${yyyy}`;
             }
             modal.showModal();
+            setTimeout(() => document.getElementById('mvName')?.focus(), 50);
         }
 
         function closeMovementModal() { document.getElementById('movementModal').close(); }
@@ -2712,6 +2715,7 @@
                 hiddenInput.value = "";
             }
             modal.showModal();
+            setTimeout(() => document.getElementById('plName')?.focus(), 50);
         }
 
         function closePlanModal() { document.getElementById('planModal').close(); }
@@ -3664,6 +3668,7 @@ async function checkAndTriggerReminders() {
                 selectProjectFormThemeCircle('blue');
             }
             modal.showModal();
+            setTimeout(() => document.getElementById('projName')?.focus(), 50);
         }
 
         function selectProjectFormThemeCircle(colorKey) {
@@ -3737,6 +3742,7 @@ async function checkAndTriggerReminders() {
                 document.getElementById('editWishItemId').value = '';
             }
             modal.showModal();
+            setTimeout(() => document.getElementById('wishItemName')?.focus(), 50);
         }
 
         function closeWishItemModal() { document.getElementById('wishlistItemModal').close(); }
@@ -4302,6 +4308,7 @@ async function checkAndTriggerReminders() {
                 form.reset();
                 toggleSplitStrategyFields();
                 modal.showModal();
+                setTimeout(() => document.getElementById('splitStrategy')?.focus(), 50);
             }
         }
 
@@ -4616,6 +4623,12 @@ async function checkAndTriggerReminders() {
 
             draggedItemId = null;
             draggedItemOrigin = null;
+        }
+
+        function updateSavingsGoal(val) {
+            state.savingsGoal = parseFloat(val) || 0;
+            saveState();
+            renderCategoryStats();
         }
 
     </script>
