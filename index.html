@@ -470,9 +470,20 @@
 
             <div id="tab-all-movements" class="tab-content hidden space-y-6">
                 <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl">
-                    <h2 class="text-xl font-bold mb-4">Complete Ledger</h2>
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h2 class="text-xl font-bold">All Movements</h2>
+                        <button onclick="exportFilteredLedgerToCSV()"
+                            class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-semibold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                            <i class="fa-solid fa-file-csv text-emerald-400"></i> Export to CSV
+                        </button>
+                    </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-6">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Search Keyword</label>
+                            <input type="text" id="filterKeyword" oninput="applyFilters()" placeholder="Type to search..."
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500">
+                        </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Filter Month</label>
                             <input type="month" id="filterMonth" onchange="applyFilters()"
@@ -495,8 +506,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Sort By
-                                Amount</label>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Sort By Amount</label>
                             <select id="filterSort" onchange="applyFilters()"
                                 class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                                 <option value="date-desc">Newest First</option>
@@ -2083,12 +2093,21 @@
 
 
         function applyFilters() {
+            const targetKeyword = document.getElementById('filterKeyword')?.value.trim().toLowerCase() || '';
             const targetMonth = document.getElementById('filterMonth').value;
             const targetCategory = document.getElementById('filterCategory').value;
             const targetType = document.getElementById('filterType').value;
             const targetSort = document.getElementById('filterSort').value;
 
             let records = [...state.movements];
+
+            // Real-time Text String Filtering Logic
+            if (targetKeyword) {
+                records = records.filter(m => 
+                    (m.name && m.name.toLowerCase().includes(targetKeyword)) || 
+                    (m.category && m.category.toLowerCase().includes(targetKeyword))
+                );
+            }
 
             if (targetMonth) {
                 records = records.filter(m => m.date.startsWith(targetMonth));
@@ -2146,6 +2165,87 @@
                     if (allMovementsTableBody) allMovementsTableBody.appendChild(tr);
                 });
             }
+        }
+
+        function exportFilteredLedgerToCSV() {
+            const targetKeyword = document.getElementById('filterKeyword')?.value.trim().toLowerCase() || '';
+            const targetMonth = document.getElementById('filterMonth').value;
+            const targetCategory = document.getElementById('filterCategory').value;
+            const targetType = document.getElementById('filterType').value;
+            const targetSort = document.getElementById('filterSort').value;
+
+            let records = [...state.movements];
+
+            if (targetKeyword) {
+                records = records.filter(m => 
+                    (m.name && m.name.toLowerCase().includes(targetKeyword)) || 
+                    (m.category && m.category.toLowerCase().includes(targetKeyword))
+                );
+            }
+
+            // 2. Re-apply operational filters in memory to match the view
+            if (targetMonth) records = records.filter(m => m.date.startsWith(targetMonth));
+            if (targetCategory !== 'all') records = records.filter(m => m.category === targetCategory);
+            if (targetType !== 'all') records = records.filter(m => m.type === targetType);
+
+            if (targetSort === 'date-desc') {
+                records.sort((a, b) => {
+                    const dateDiff = new Date(b.date) - new Date(a.date);
+                    return dateDiff !== 0 ? dateDiff : state.movements.indexOf(b) - state.movements.indexOf(a);
+                });
+            } else if (targetSort === 'date-asc') {
+                records.sort((a, b) => {
+                    const dateDiff = new Date(a.date) - new Date(b.date);
+                    return dateDiff !== 0 ? dateDiff : state.movements.indexOf(a) - state.movements.indexOf(b);
+                });
+            } else if (targetSort === 'amount-desc') {
+                records.sort((a, b) => b.amount - a.amount);
+            } else if (targetSort === 'amount-asc') {
+                records.sort((a, b) => a.amount - b.amount);
+            }
+
+            if (records.length === 0) {
+                alert("There are no movements matching your current filter choices to export.");
+                return;
+            }
+
+            // 3. Build CSV String Matrix
+            const csvRows = [
+                ['Name', 'Category', 'Type', 'Date', 'Amount'] // CSV Headers
+            ];
+
+            records.forEach(m => {
+                // Formatting date to matching layout mask: DD/MM/YYYY
+                let formattedDate = m.date || '';
+                if (m.date && m.date.includes('-')) {
+                    const parts = m.date.split('-');
+                    if (parts.length === 3) formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
+
+                // Double quote values and escape internal double quotes to protect data strings
+                const cleanName = `"${m.name.replace(/"/g, '""')}"`;
+                const cleanCategory = `"${m.category.replace(/"/g, '""')}"`;
+                const cleanType = `"${m.type.toUpperCase()}"`;
+                const cleanAmount = m.amount;
+
+                csvRows.push([cleanName, cleanCategory, cleanType, formattedDate, cleanAmount]);
+            });
+
+            const csvString = csvRows.map(row => row.join(',')).join('\n');
+
+            // 4. Trigger Blob stream file initialization download link
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const downloadAnchor = document.createElement('a');
+            
+            const filenameSuffix = targetMonth ? `_${targetMonth}` : '_all_time';
+            downloadAnchor.href = url;
+            downloadAnchor.setAttribute('download', `moneyco_ledger${filenameSuffix}.csv`);
+            downloadAnchor.style.visibility = 'hidden';
+            
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            document.body.removeChild(downloadAnchor);
         }
 
         function renderCategoryDashboard() {
