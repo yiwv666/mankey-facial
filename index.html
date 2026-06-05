@@ -253,57 +253,56 @@
                                 <option value="months" selected>Months</option>
                                 <option value="years">Years</option>
                             </select>
+
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 py-2">
 
                         <div class="space-y-2">
-                            <div class="flex items-baseline justify-between">
-                                <div>
-                                    <span class="text-xs uppercase font-bold tracking-wider text-gray-400">Income vs
-                                        Spent & Planned</span>
-                                    <h3 id="statIncomeOutcomeRatio" class="text-2xl font-black text-gray-100 mt-1">0%
-                                        ratio</h3>
+                            <div class="flex items-baseline justify-between flex-wrap gap-1">
+                                <div class="flex-1">
+                                    <span class="text-xs uppercase font-bold tracking-wider text-gray-400">Income vs Spent & Planned</span>
+                                    <h3 id="statIncomeOutcomeRatio" class="text-2xl font-black text-gray-100 mt-1">$0.00 remaining</h3>
                                 </div>
-                                <span id="statIncomeOutcomeHealth"
-                                    class="text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">No
-                                    Data</span>
+                                <span id="statIncomeOutcomeHealth" class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">No Data</span>
                             </div>
 
                             <div class="w-full bg-gray-900 h-3 rounded-full overflow-hidden flex ring-1 ring-black/50">
-                                <div id="statBarSpentSegment" class="h-full bg-rose-500 transition-all duration-300"
-                                    style="width: 0%" title="Spent"></div>
-                                <div id="statBarPlannedSegment" class="h-full bg-indigo-500 transition-all duration-300"
-                                    style="width: 0%" title="Planned"></div>
+                                <div id="statBarSpentSegment" class="h-full bg-rose-500 transition-all duration-300" style="width: 0%" title="Spent"></div>
+                                <div id="statBarPlannedSegment" class="h-full bg-indigo-500 transition-all duration-300" style="width: 0%" title="Planned"></div>
                             </div>
 
-                            <div
-                                class="flex justify-between items-center text-xs font-mono font-medium text-gray-500 pt-0.5">
+                            <div class="flex justify-between items-center text-xs font-mono font-medium text-gray-500 pt-0.5">
                                 <span id="statIncomeOutcomeRawNumbers">$0.00 spent / $0.00 earned</span>
-                                <span id="statIncomeOutcomePlannedMargin" class="text-gray-400">$0.00 planned</span>
+                                <span id="statIncomeOutcomePlannedMargin" class="text-gray-400 font-bold">$0.00 after plans</span>
                             </div>
                         </div>
 
                         <div class="space-y-2">
-                            <div class="flex items-baseline justify-between">
-                                <div>
-                                    <span class="text-xs uppercase font-bold tracking-wider text-gray-400">Planned vs
-                                        Expected Income</span>
-                                    <h3 id="statForecastRatio" class="text-2xl font-black text-amber-400 mt-1">0.0%</h3>
+                            <div class="flex items-baseline justify-between flex-wrap gap-1">
+                                <div class="flex-1">
+                                    <select id="dashSecondMetricSelector" onchange="state.activeSecondMetricVariant = this.value; saveState(); renderDashboard();"
+                                        class="bg-transparent text-xs uppercase font-bold tracking-wider text-gray-400 focus:outline-none cursor-pointer border border-transparent hover:border-gray-800 rounded px-1 -ml-1 py-0.5 transition max-w-full">
+                                        <option value="income_vs_spent" class="bg-gray-950 text-gray-300">Income vs Spent</option>
+                                        <option value="inc_exp_vs_out_plan" class="bg-gray-950 text-gray-300">Income & Expected vs Outcomes & Planned</option>
+                                        <option value="income_vs_spent_planned" class="bg-gray-950 text-gray-300">Income vs Spent & Planned</option>
+                                        <option value="income_vs_expected" class="bg-gray-950 text-gray-300">Income vs Expected Income</option>
+                                        <option value="planned_vs_expected" class="bg-gray-950 text-gray-300">Planned vs Expected Income</option>
+                                    </select>
+                                    <h3 id="statForecastNetValue" class="text-2xl font-black text-gray-100 mt-1">0% ratio</h3>
                                 </div>
-                                <span id="statForecastNetValue" class="text-xs font-mono font-bold text-gray-400">$0.00
-                                    left</span>
+                                <span id="statForecastRatio" class="text-xs font-mono font-bold text-gray-400">$0.00 left</span>
                             </div>
 
-                            <div
-                                class="w-full bg-gray-900 h-3 rounded-full overflow-hidden border border-gray-900 shadow-inner">
-                                <div id="statForecastBar" class="h-full bg-amber-500 transition-all duration-300"
-                                    style="width: 0%"></div>
+                            <div id="statForecastBarContainer" class="w-full bg-gray-900 h-3 rounded-full overflow-hidden flex ring-1 ring-black/50">
+                                <div id="statForecastSegA" class="h-full transition-all duration-300" style="width: 0%"></div>
+                                <div id="statForecastSegB" class="h-full transition-all duration-300" style="width: 0%"></div>
                             </div>
 
-                            <div class="text-xs font-mono font-medium text-gray-500 pt-0.5">
-                                <span id="statForecastRawNumbers">$0.00 planned / $0.00 expected</span>
+                            <div class="flex justify-between items-center text-xs font-mono font-medium text-gray-500 pt-0.5">
+                                <span id="statForecastRawNumbers">$0.00 / $0.00</span>
+                                <span id="statForecastOperationTotal" class="text-gray-400 font-bold">$0.00 total</span>
                             </div>
                         </div>
                     </div>
@@ -316,13 +315,6 @@
                                 <span id="statDailySpent" class="text-sm font-bold text-gray-300">$0.00</span>
                                 <span id="statDailySpentDaysCount"
                                     class="text-[9px] text-gray-600 font-mono block sm:inline sm:ml-1">(0 days)</span>
-                            </div>
-                            <div class="text-right md:text-left md:border-l md:border-gray-900 md:pl-4 flex-1">
-                                <span
-                                    class="text-[10px] text-gray-500 uppercase font-bold tracking-wider block">Remaining</span>
-                                <span id="statRemainingActual" class="text-sm font-bold text-gray-200">$0.00</span>
-                                <span id="statRemainingAfterPlans"
-                                    class="text-[9px] text-gray-500 font-medium block mt-0.5">$0.00 after plans</span>
                             </div>
                         </div>
 
@@ -1201,6 +1193,7 @@
             frequent: [],
             notes: {},
             savingGoal: 0,
+            activeSecondMetricVariant: 'planned_vs_expected',
             categories: ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"],
             lastUpdated: 0,
             tombstones: {
@@ -1285,6 +1278,9 @@
                     console.error("Error parsing localized storage state", e);
                 }
             }
+            if (state.savingsGoal === undefined) state.savingsGoal = 0;
+            if (!state.activeSecondMetricVariant) state.activeSecondMetricVariant = 'planned_vs_expected'; // <- ADD THIS LINE
+            enforceWishlistsDatabaseStructure();
 
             if (!state.categories || state.categories.length === 0) {
                 state.categories = ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments", "Debts", "Savings"];
@@ -1521,31 +1517,9 @@
             document.getElementById('statDailySpentDaysCount').innerText = `(${targetDaysDelta}d)`;
 
             const netActualRemaining = incomeSum - expenseSum;
-            const remainingActualEl = document.getElementById('statRemainingActual');
-            remainingActualEl.innerText = formatCurrency(netActualRemaining);
-
-            if (netActualRemaining >= 0) {
-                remainingActualEl.className = "text-sm font-bold text-gray-200";
-            } else {
-                remainingActualEl.className = "text-sm font-bold text-rose-400";
-            }
-
+    
             const netRemainingAfterPlans = netActualRemaining - planPoolSum;
             const remainingAfterPlansEl = document.getElementById('statRemainingAfterPlans');
-
-            if (planPoolSum > 0) {
-                remainingAfterPlansEl.classList.remove('hidden');
-                remainingAfterPlansEl.innerText = `${formatCurrency(netRemainingAfterPlans)} after plans`;
-
-                if (netRemainingAfterPlans >= 0) {
-                    remainingAfterPlansEl.className = "text-[9px] text-gray-500 font-medium block mt-0.5";
-                } else {
-                    remainingAfterPlansEl.className = "text-[9px] text-rose-500/80 font-bold block mt-0.5 animate-pulse";
-                }
-            } else {
-                remainingAfterPlansEl.innerText = "No upcoming plans scheduled";
-                remainingAfterPlansEl.className = "text-[9px] text-gray-600 italic block mt-0.5";
-            }
 
             // 2. Merged Multi-Segment Core Stack Tracker (Spent + Planned vs Earned)
             const totalOutflowObligations = expenseSum + planPoolSum;
@@ -1565,16 +1539,25 @@
             const marginLabelEl = document.getElementById('statIncomeOutcomePlannedMargin');
 
             numbersLabelEl.innerText = `${formatCurrency(expenseSum)} spent / ${formatCurrency(incomeSum)} earned`;
-            marginLabelEl.innerText = `+ ${formatCurrency(planPoolSum)} planned`;
+            marginLabelEl.innerText = `${formatCurrency(netRemainingAfterPlans)} after plans`;
 
             if (incomeSum === 0 && totalOutflowObligations === 0) {
-                ratioLabelEl.innerText = "0% ratio";
+                ratioLabelEl.innerText = "$0.00 remaining";
+                ratioLabelEl.className = "text-2xl font-black text-gray-400 mt-1";
                 healthBadgeEl.className = "text-[9px] px-1.5 py-0.5 rounded border border-gray-800 font-bold bg-gray-900 text-gray-500 uppercase tracking-wider";
                 healthBadgeEl.innerText = "No Data";
                 spentBarSegment.style.width = "0%";
                 plannedBarSegment.style.width = "0%";
             } else {
-                ratioLabelEl.innerText = `${baselineRatioPercent}% utilized`;
+                // Set the prominent headline text
+                ratioLabelEl.innerText = `${formatCurrency(netActualRemaining)} remaining`;
+                
+                // Keep the color theme dynamic based on remaining balance status
+                if (netActualRemaining >= 0) {
+                    ratioLabelEl.className = "text-2xl font-black text-white mt-1";
+                } else {
+                    ratioLabelEl.className = "text-2xl font-black text-rose-400 mt-1";
+                }
 
                 const baseFactor = incomeSum > 0 ? incomeSum : totalOutflowObligations;
                 let spentWidthWeight = (expenseSum / baseFactor) * 100;
@@ -1589,6 +1572,13 @@
                 spentBarSegment.style.width = `${spentWidthWeight}%`;
                 plannedBarSegment.style.width = `${plannedWidthWeight}%`;
 
+                // Set status label styling for remaining after plans
+                if (netRemainingAfterPlans >= 0) {
+                    marginLabelEl.className = "text-gray-400 font-bold";
+                } else {
+                    marginLabelEl.className = "text-rose-500 font-bold animate-pulse";
+                }
+
                 if (baselineRatioPercent <= 70) {
                     healthBadgeEl.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider";
                     healthBadgeEl.innerText = "Good Saving";
@@ -1601,34 +1591,139 @@
                 }
             }
 
+            // Set dropdown value to match preserved configuration
+            const metricSelectorEl = document.getElementById('dashSecondMetricSelector');
+            if (metricSelectorEl) metricSelectorEl.value = state.activeSecondMetricVariant;
+
             let expectedPoolIncomeSum = (state.expectedIncome || []).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
-            let coverageRatioPercentage = 0;
+            
+            let labelRatio = "0% utilized";
+            let labelNetValue = "$0.00 remaining";
+            let labelRawNumbers = "$0.00 / $0.00";
+            let labelOpTotal = "$0.00 net";
+            
+            let segAWidth = 0;
+            let segBWidth = 0;
+            let segAColor = "bg-rose-500";
+            let segBColor = "bg-indigo-500";
+            let isNegativeHealth = false;
 
-            if (expectedPoolIncomeSum > 0) {
-                coverageRatioPercentage = ((planPoolSum / expectedPoolIncomeSum) * 100).toFixed(1);
-            } else if (planPoolSum > 0) {
-                coverageRatioPercentage = "100+";
+            const secondVariant = state.activeSecondMetricVariant || 'planned_vs_expected';
+
+            if (secondVariant === 'income_vs_spent') {
+                let ratio = incomeSum > 0 ? Math.round((expenseSum / incomeSum) * 100) : (expenseSum > 0 ? 100 : 0);
+                let netSpread = incomeSum - expenseSum;
+                
+                labelRatio = `${ratio}% utilized`;
+                labelNetValue = `${formatCurrency(netSpread)} remaining`;
+                labelRawNumbers = `${formatCurrency(expenseSum)} spent / ${formatCurrency(incomeSum)} earned`;
+                labelOpTotal = `${formatCurrency(incomeSum + expenseSum)} processed`;
+                
+                let baseFactor = incomeSum > 0 ? incomeSum : expenseSum;
+                segAWidth = baseFactor > 0 ? (expenseSum / baseFactor) * 100 : 0;
+                segAColor = "bg-rose-500";
+                isNegativeHealth = ratio > 100;
+            } 
+            else if (secondVariant === 'inc_exp_vs_out_plan') {
+                let totalIn = incomeSum + expectedPoolIncomeSum;
+                let totalOut = expenseSum + planPoolSum;
+                let ratio = totalIn > 0 ? Math.round((totalOut / totalIn) * 100) : (totalOut > 0 ? 100 : 0);
+                let netSpread = totalIn - totalOut;
+
+                labelRatio = `${ratio}% metrics ratio`;
+                labelNetValue = `${formatCurrency(netSpread)} remaining`;
+                labelRawNumbers = `${formatCurrency(expenseSum)} spent + ${formatCurrency(planPoolSum)} planned`;
+                labelOpTotal = `${formatCurrency(totalIn)} total pool`;
+
+                let baseFactor = totalIn > 0 ? totalIn : totalOut;
+                if (baseFactor > 0) {
+                    segAWidth = (expenseSum / baseFactor) * 100;
+                    segBWidth = (planPoolSum / baseFactor) * 100;
+                }
+                segAColor = "bg-rose-500";
+                segBColor = "bg-indigo-500";
+                isNegativeHealth = ratio > 100;
+            } 
+            else if (secondVariant === 'income_vs_spent_planned') {
+                let totalOut = expenseSum + planPoolSum;
+                let ratio = incomeSum > 0 ? Math.round((totalOut / incomeSum) * 100) : (totalOut > 0 ? 100 : 0);
+                let netSpread = incomeSum - totalOut;
+
+                labelRatio = `${ratio}% committed`;
+                labelNetValue = `${formatCurrency(netSpread)} margin`;
+                labelRawNumbers = `${formatCurrency(expenseSum)} spent + ${formatCurrency(planPoolSum)} planned`;
+                labelOpTotal = `/ ${formatCurrency(incomeSum)} earned`;
+
+                let baseFactor = incomeSum > 0 ? incomeSum : totalOut;
+                if (baseFactor > 0) {
+                    segAWidth = (expenseSum / baseFactor) * 100;
+                    segBWidth = (planPoolSum / baseFactor) * 100;
+                }
+                segAColor = "bg-rose-500";
+                segBColor = "bg-indigo-500";
+                isNegativeHealth = ratio > 100;
+            } 
+            else if (secondVariant === 'income_vs_expected') {
+                let totalIncomeOperation = incomeSum + expectedPoolIncomeSum;
+                
+                // New logic: Expected Income / (Income + Expected Income)
+                let ratio = totalIncomeOperation > 0 ? Math.round((expectedPoolIncomeSum / totalIncomeOperation) * 100) : 0;
+                let remainingPending = expectedPoolIncomeSum;
+
+                labelRatio = `${ratio}% expected share`;
+                labelNetValue = `${formatCurrency(remainingPending)} pending`;
+                labelRawNumbers = `${formatCurrency(incomeSum)} received / ${formatCurrency(expectedPoolIncomeSum)} expected`;
+                labelOpTotal = `${formatCurrency(totalIncomeOperation)} combined total`;
+
+                // Multi-segment progress allocation based on the new combined pool
+                if (totalIncomeOperation > 0) {
+                    segAWidth = (incomeSum / totalIncomeOperation) * 100;         // Received portion
+                    segBWidth = (expectedPoolIncomeSum / totalIncomeOperation) * 100; // Remaining expected portion
+                }
+                
+                segAColor = "bg-emerald-500"; // Green for money already in hand
+                segBColor = "bg-gray-500"; 
+                isNegativeHealth = incomeSum < 0; // Standard health reset
+            }
+            else { // 'planned_vs_expected'
+                let ratio = expectedPoolIncomeSum > 0 ? Math.round((planPoolSum / expectedPoolIncomeSum) * 100) : (planPoolSum > 0 ? 100 : 0);
+                let remainingFreeValue = expectedPoolIncomeSum - planPoolSum;
+
+                labelRatio = `${ratio}% allocation`;
+                labelNetValue = `${formatCurrency(remainingFreeValue)} left`;
+                labelRawNumbers = `${formatCurrency(planPoolSum)} planned / ${formatCurrency(expectedPoolIncomeSum)} expected`;
+                labelOpTotal = `${formatCurrency(remainingFreeValue)} unallocated`;
+
+                let baseFactor = expectedPoolIncomeSum > 0 ? expectedPoolIncomeSum : planPoolSum;
+                segAWidth = baseFactor > 0 ? (planPoolSum / baseFactor) * 100 : 0;
+                segAColor = "bg-amber-500";
+                isNegativeHealth = ratio > 100;
             }
 
-            const netForecastSpreadAmount = expectedPoolIncomeSum - planPoolSum;
-            document.getElementById('statForecastRatio').innerText = `${coverageRatioPercentage}% allocation`;
-            document.getElementById('statForecastRawNumbers').innerText = `${formatCurrency(planPoolSum)} planned / ${formatCurrency(expectedPoolIncomeSum)} expected`;
+            // Standardize overflow weight checks
+            if (segAWidth + segBWidth > 100) {
+                const scale = 100 / (segAWidth + segBWidth);
+                segAWidth *= scale;
+                segBWidth *= scale;
+            }
 
+            document.getElementById('statForecastRatio').innerText = labelRatio;
+            document.getElementById('statForecastRawNumbers').innerText = labelRawNumbers;
+            document.getElementById('statForecastOperationTotal').innerText = labelOpTotal;
+
+            // Updated targets: Color handling shifted onto the prominent h3 layout node
             const spreadLabelEl = document.getElementById('statForecastNetValue');
-            spreadLabelEl.innerText = `${netForecastSpreadAmount >= 0 ? '+' : ''}${formatCurrency(netForecastSpreadAmount)} left`;
-            if (netForecastSpreadAmount >= 0) {
-                spreadLabelEl.className = "text-xs font-mono font-bold text-emerald-400";
-            } else {
-                spreadLabelEl.className = "text-xs font-mono font-bold text-rose-400";
-            }
+            spreadLabelEl.innerText = labelNetValue;
+            spreadLabelEl.className = !isNegativeHealth ? "text-2xl font-black text-white mt-1" : "text-2xl font-black text-rose-400 mt-1";
 
-            const forecastProgressBarEl = document.getElementById('statForecastBar');
-            forecastProgressBarEl.style.width = `${Math.min(100, parseFloat(coverageRatioPercentage) || 0)}%`;
-            if (parseFloat(coverageRatioPercentage) > 100) {
-                forecastProgressBarEl.className = "h-full bg-rose-500 transition-all duration-300";
-            } else {
-                forecastProgressBarEl.className = "h-full bg-amber-500 transition-all duration-300";
-            }
+            const elementSegA = document.getElementById('statForecastSegA');
+            const elementSegB = document.getElementById('statForecastSegB');
+
+            elementSegA.className = `h-full transition-all duration-300 ${segAColor}`;
+            elementSegA.style.width = `${segAWidth}%`;
+
+            elementSegB.className = `h-full transition-all duration-300 ${segBColor}`;
+            elementSegB.style.width = `${segBWidth}%`;
 
             const tableBody = document.getElementById('recentMovementsTable');
             tableBody.innerHTML = '';
