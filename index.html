@@ -4337,7 +4337,7 @@ async function checkAndTriggerReminders() {
 
             state.planification.push({
                 id: crypto.randomUUID(),
-                name: `${debtItem.name} (Copy)`,
+                name: `${debtItem.name} (Debt)`,
                 amount: parseFloat(debtItem.amount),
                 category: debtItem.category || "Debts",
                 estimatedDate: debtItem.estimatedDate || new Date().toISOString().split('T')[0],
