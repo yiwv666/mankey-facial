@@ -204,7 +204,7 @@
                 </button>
                 <button onclick="switchTab('settings')" data-tab="settings"
                     class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition text-left text-sm font-medium text-gray-400 hover:bg-gray-900 hover:text-white">
-                    <i class="fa-solid fa-cloud-arrow-up w-4"></i> Cloud Sync
+                    <i class="fa-solid fa-gear w-4"></i> Settings
                 </button>
             </div>
 
@@ -402,7 +402,7 @@
                                 <tbody id="recentMovementsTable"></tbody>
                             </table>
                             <div id="noRecentMovements" class="hidden text-center py-12 text-gray-500 text-sm">No items
-                                in the selected range.</div>
+                                in the past 18 days.</div>
                         </div>
                     </div>
 
@@ -565,27 +565,9 @@
                     <div class="lg:col-span-12 space-y-6">
 
                         <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
-                            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
-                                <div
-                                    class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 border-b border-gray-900 pb-4">
-                                    <div>
-                                        <h2 class="text-lg font-bold">Category Analytics</h2>
-                                        <p class="text-xs text-gray-500">Track and manage your distribution</p>
-                                    </div>
-
-                                    <form id="categoryForm" onsubmit="addCategory(event)"
-                                        class="flex gap-2 max-w-sm w-full md:w-auto">
-                                        <input type="text" id="newCategoryName" maxlength="30"
-                                            placeholder="New category name..." required
-                                            class="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-3 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500 min-w-[160px]">
-                                        <button type="submit"
-                                            class="bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition shrink-0 cursor-pointer text-white shadow">
-                                            <i class="fa-solid fa-plus mr-1"></i> Add
-                                        </button>
-                                    </form>
-                                </div>
-
-                                <div class="flex items-center gap-2 w-full justify-between sm:justify-end mb-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                                <h2 class="text-lg font-bold">Category Distribution Analytics</h2>
+                                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                                     <select id="statsSort" onchange="renderCategoryStats()"
                                         class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500 text-gray-300 max-w-[150px] sm:max-w-none">
                                         <option value="none">Default Order</option>
@@ -597,70 +579,105 @@
                                     <input type="month" id="statsMonth" onchange="renderCategoryStats()"
                                         class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-1 text-sm focus:outline-none focus:border-blue-500">
                                 </div>
-                                <div class="overflow-x-auto -mx-5 px-5">
-                                    <table class="w-full text-left border-collapse min-w-[750px]">
-                                        <thead>
-                                            <tr
-                                                class="text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-800">
-                                                <th class="py-3 px-2">Category</th>
-                                                <th class="py-3 px-2 text-right text-emerald-400">Month Income</th>
-                                                <th class="py-3 px-2 text-right text-emerald-500 bg-emerald-950/10">
-                                                    All-Time
-                                                    Income</th>
-                                                <th class="py-3 px-2 text-right text-rose-400">Month Expenses</th>
-                                                <th class="py-3 px-2 text-right text-rose-500 bg-rose-950/10">All-Time
-                                                    Expenses</th>
-                                                <th class="py-3 px-2 text-center text-gray-400 w-24">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="categoryStatsTable"></tbody>
-                                    </table>
-                                </div>
                             </div>
-
-                            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h2 class="text-lg font-bold text-rose-400 flex items-center gap-2">
-                                            <i class="fa-solid fa-hand-holding-dollar text-sm"></i> Planned Debt
-                                            Commitments
-                                        </h2>
-                                    </div>
-                                    <span id="plannedDebtTotalBadge"
-                                        class="text-xs bg-rose-500/10 text-rose-400 font-bold px-2.5 py-1 rounded-full border border-rose-500/20">$0.00
-                                        Total</span>
-                                </div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr
-                                                class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
-                                                <th class="py-2 px-2">Planned Item Name</th>
-                                                <th class="py-2 px-2 text-right">Allocated Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="plannedDebtsTableBody"></tbody>
-                                    </table>
-                                    <div id="plannedDebtsEmptyState"
-                                        class="hidden text-center py-6 text-gray-500 text-xs">
-                                        No debt planning configurations added to your active list.</div>
-                                </div>
+                            <div class="overflow-x-auto -mx-5 px-5">
+                                <table class="w-full text-left border-collapse min-w-[750px]">
+                                    <thead>
+                                        <tr
+                                            class="text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-800">
+                                            <th class="py-3 px-2">Category</th>
+                                            <th class="py-3 px-2 text-right text-emerald-400">Month Income</th>
+                                            <th class="py-3 px-2 text-right text-emerald-500 bg-emerald-950/10">All-Time
+                                                Income</th>
+                                            <th class="py-3 px-2 text-right text-rose-400">Month Expenses</th>
+                                            <th class="py-3 px-2 text-right text-rose-500 bg-rose-950/10">All-Time
+                                                Expenses</th>
+                                            <th class="py-3 px-2 text-center text-gray-400 w-24">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="categoryStatsTable"></tbody>
+                                </table>
                             </div>
-
                         </div>
+
+                        <div class="bg-gray-950 border border-gray-800 rounded-2xl p-5 shadow-xl">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h2 class="text-lg font-bold text-rose-400 flex items-center gap-2">
+                                        <i class="fa-solid fa-hand-holding-dollar text-sm"></i> Planned Debt Commitments
+                                    </h2>
+                                </div>
+                                <span id="plannedDebtTotalBadge"
+                                    class="text-xs bg-rose-500/10 text-rose-400 font-bold px-2.5 py-1 rounded-full border border-rose-500/20">$0.00
+                                    Total</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr
+                                            class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                                            <th class="py-2 px-2">Planned Item Name</th>
+                                            <th class="py-2 px-2 text-right">Allocated Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="plannedDebtsTableBody"></tbody>
+                                </table>
+                                <div id="plannedDebtsEmptyState" class="hidden text-center py-6 text-gray-500 text-xs">
+                                    No debt planning configurations added to your active list.</div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-                </div>
+            </div>
 
-                <div id="tab-settings" class="tab-content hidden space-y-6">
-                    <div class="max-w-2xl bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl space-y-6">
-                        <div>
-                            <h2 class="text-xl font-bold tracking-wide">Google Drive Automated Cloud Sync</h2>
-                            <p class="text-sm text-gray-400 mt-1">Bind your application database securely to your
-                                personal
-                                Google Drive account. Changes persist in real-time instantly.</p>
+            <div id="tab-settings" class="tab-content hidden space-y-6">
+                <div class="max-w-2xl bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-xl space-y-6">
+                    <div>
+                        <h2 class="text-xl font-bold tracking-wide">Application Settings</h2>
+                        <p class="text-sm text-gray-400 mt-1">Configure your local backup matrices or customize your
+                            Google Drive infrastructure deployment.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
+                            <i class="fa-solid fa-folder-tree"></i> Cloud Sync Storage Strategy
+                        </h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Choose where your database file resides. To share this ledger real-time with other users,
+                            select <strong>Shared Team Folder Mode</strong>, create or connect a folder, and use Google
+                            Drive's native interface to share that folder with your teammates' emails.
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            <button onclick="updateCloudStorageStrategyMode('private')" id="btnStrategyPrivateMode"
+                                class="border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-pointer flex flex-col gap-1">
+                                <span
+                                    class="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase tracking-wide">
+                                    <i class="fa-solid fa-user-shield text-blue-400"></i> Private AppData Mode
+                                </span>
+                                <span class="text-[11px] text-gray-500 font-medium">Hidden isolation space. Safe,
+                                    cross-device single user syncing.</span>
+                            </button>
+
+                            <button onclick="updateCloudStorageStrategyMode('shared')" id="btnStrategySharedMode"
+                                class="border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-pointer flex flex-col gap-1">
+                                <span
+                                    class="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase tracking-wide">
+                                    <i class="fa-solid fa-users text-emerald-400"></i> Shared Team Folder Mode
+                                </span>
+                                <span class="text-[11px] text-gray-500 font-medium">Standard visible folder. Permits
+                                    multi-user shared access vectors.</span>
+                            </button>
                         </div>
+                    </div>
 
+                    <hr class="border-gray-900">
+
+                    <div class="space-y-3">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
+                            <i class="fa-solid fa-cloud"></i> Drive Authorization Node
+                        </h3>
                         <div
                             class="p-4 bg-gray-900/60 border border-gray-800 rounded-xl flex items-center justify-between flex-wrap gap-4">
                             <div class="flex items-center gap-3">
@@ -673,290 +690,319 @@
                             </div>
                             <div class="flex gap-2">
                                 <button id="btnConnectDrive" onclick="handleAuthClick()"
-                                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition">Connect
+                                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer">Connect
                                     Account</button>
                                 <button id="btnDisconnectDrive" onclick="handleSignoutClick()"
-                                    class="hidden bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition">Disconnect</button>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3 pt-2 text-sm text-gray-400">
-                            <h4 class="font-bold text-gray-200">How it works:</h4>
-                            <ul class="list-disc list-inside space-y-1 text-xs">
-                                <li>Creates a hidden, isolated config file inside your private Google Drive appData
-                                    folder.
-                                </li>
-                                <li>Updates instantly whenever you add, change, drag, or drop entries.</li>
-                                <li>Allows cross-device syncing securely without exposing your broader filesystem.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-notes" class="tab-content hidden space-y-6">
-                    <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 md:p-6 shadow-xl">
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <div>
-                                <h2 class="text-xl font-bold tracking-wide">Financial Memorandums</h2>
-                                <p class="text-sm text-gray-400 mt-1">Add quick context logs, reminders, or financial
-                                    checklists for each month.</p>
-                            </div>
-                            <span id="saveStatusIndicator"
-                                class="text-xs text-gray-500 flex items-center gap-1.5 bg-gray-900 px-3 py-1.5 rounded-xl border border-gray-800">
-                                <i class="fa-solid fa-cloud"></i> Ready
-                            </span>
-                        </div>
-
-                        <div class="mt-6 border-b border-gray-800 pb-4">
-                            <div class="block md:hidden">
-                                <label
-                                    class="block text-xs uppercase font-bold tracking-wider text-gray-500 mb-1.5">Select
-                                    Active Month</label>
-                                <select id="monthsMobileDropdown" onchange="selectNotesMonth(parseInt(this.value))"
-                                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500"></select>
-                            </div>
-
-                            <div class="hidden md:block">
-                                <span
-                                    class="text-[10px] uppercase font-bold tracking-wider text-gray-500 block mb-2">Calendar
-                                    Timeline</span>
-                                <div id="monthsSelectorContainer" class="grid grid-cols-6 lg:grid-cols-12 gap-2"></div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="bg-gray-900/30 border border-gray-800 rounded-xl p-4 md:p-5 flex flex-col space-y-5 mt-6">
-                            <div class="flex flex-col space-y-2">
-
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2">
-                                        <h3 id="activeNoteMonthHeader" class="text-lg font-bold text-blue-400">January
-                                        </h3>
-                                        <div id="noteEditModeBadge"></div>
-                                    </div>
-                                    <span id="noteCharCounter" class="text-[11px] font-mono text-gray-500">0/200</span>
-                                </div>
-                                <div class="relative">
-                                    <input type="text" id="noteInputBox" onkeydown="handleNoteKeyDown(event)"
-                                        oninput="handleNoteInputCounter(this)"
-                                        placeholder="Type a note and press Enter to save..."
-                                        class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition duration-150 shadow-inner">
-                                    <button onclick="triggerNoteSubmitFromButton()"
-                                        class="absolute right-3 top-2.5 text-gray-500 hover:text-blue-400 p-1 transition"><i
-                                            class="fa-solid fa-arrow-turn-down rotate-90 text-sm"></i></button>
-                                </div>
-                            </div>
-
-                            <div id="monthlyNotesFeedContainer"
-                                class="flex flex-wrap gap-2 items-start max-h-[350px] overflow-y-auto pr-1 pt-1"></div>
-                        </div>
-                    </div>
-                </div>
-                <div id="mobileDragOverlaysContainer"
-                    class="hidden fixed bottom-4 left-4 right-4 z-50 md:hidden flex justify-between gap-4 pointer-events-none transition-all duration-300 transform translate-y-24">
-                    <div id="mobileEditDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)"
-                        ondrop="handleMobileActionDrop(event, 'edit')" data-action="edit"
-                        class="pointer-events-auto flex-1 bg-blue-600/95 border-2 border-dashed border-blue-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
-                        <i class="fa-solid fa-pen-to-square text-lg animate-bounce"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Edit</span>
-                    </div>
-
-                    <div id="mobileDeleteDropZone" ondragover="allowDrop(event)"
-                        ondragleave="dragLeaveMobileZone(event)" ondrop="handleMobileActionDrop(event, 'delete')"
-                        data-action="delete"
-                        class="pointer-events-auto flex-1 bg-rose-600/95 border-2 border-dashed border-rose-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
-                        <i class="fa-solid fa-trash text-lg animate-bounce"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Delete</span>
-                    </div>
-                </div>
-                
-                <div id="tab-wishlists" class="tab-content hidden space-y-6">
-                    <div
-                        class="bg-gradient-to-br from-emerald-950/40 to-gray-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-6 opacity-10 text-emerald-400 pointer-events-none">
-                            <i class="fa-solid fa-piggy-bank text-7xl"></i>
-                        </div>
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div>
-                                <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">Total Asset
-                                    Reserve</span>
-                                <h2 id="savingsAllTimeTotal" class="text-4xl font-black text-emerald-400 mt-1">$0.00
-                                </h2>
-                            </div>
-                            <div class="flex flex-col items-end gap-1">
-                                <input type="number" id="savingsGoalInput" placeholder="Set Savings Goal"
-                                    onchange="updateSavingsGoal(this.value)"
-                                    class="bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-emerald-500 w-36 text-center">
-                                <span id="savingsGoalTargetLabel"
-                                    class="text-[10px] text-gray-400 font-semibold tracking-wide hidden pr-1"></span>
-                            </div>
-                        </div>
-                        <div id="savingsProgressWrapper" class="mt-4 hidden space-y-1.5">
-                            <div class="flex justify-between text-xs font-semibold">
-                                <span id="savingsProgressPercent" class="text-emerald-400">0% achieved</span>
-                                <span id="savingsProgressMetrics" class="text-gray-500"></span>
-                            </div>
-                            <div class="w-full bg-gray-900 border border-gray-800 rounded-full h-2.5 overflow-hidden">
-                                <div id="savingsProgressBar"
-                                    class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
-                                    style="width: 0%"></div>
+                                    class="hidden bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer">Disconnect</button>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 md:p-6 shadow-xl min-h-[550px]">
 
-                        <div
-                            class="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-4 mb-4">
-                            <div>
-                                <h2 class="text-xl font-bold tracking-wide">Wishlists & Projects</h2>
-                                <p class="text-sm text-gray-400 mt-1">Draft sandbox item specs, allocate goals, or track
-                                    project material costs before logging expenses.</p>
-                            </div>
-                            <button onclick="openProjectModal()"
-                                class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 shadow-lg">
-                                <i class="fa-solid fa-folder-plus text-xs"></i> Create Project
+                    <hr class="border-gray-900">
+
+                    <div class="space-y-3">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice-dollar"></i> Local Database Backups
+                        </h3>
+                        <p class="text-xs text-gray-400">Export your data to a raw JSON backup file, or restore data
+                            from an existing configuration backup clone.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            <button onclick="exportLocalStateToJSONFile()"
+                                class="bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-200 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                                <i class="fa-solid fa-download text-blue-400"></i> Export Backup File
                             </button>
+
+                            <label
+                                class="bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-200 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-sm text-center">
+                                <i class="fa-solid fa-upload text-amber-400"></i> Import Backup File
+                                <input type="file" id="jsonImportInput" accept=".json"
+                                    onchange="importLocalStateFromJSONFile(event)" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+
+                    <hr class="border-gray-900">
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3
+                                class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Session Time-Travel Registry
+                            </h3>
+                            <div class="flex gap-1.5">
+                                <button onclick="MoneycoHistory.undo()" id="settingsHistoryUndoBtn"
+                                    class="bg-gray-900 hover:bg-gray-800 disabled:opacity-40 border border-gray-800 px-2.5 py-1 rounded-xl text-[10px] font-bold text-gray-300 transition cursor-pointer">
+                                    <i class="fa-solid fa-arrow-left"></i> Undo
+                                </button>
+                                <button onclick="MoneycoHistory.redo()" id="settingsHistoryRedoBtn"
+                                    class="bg-gray-900 hover:bg-gray-800 disabled:opacity-40 border border-gray-800 px-2.5 py-1 rounded-xl text-[10px] font-bold text-gray-300 transition cursor-pointer">
+                                    Redo <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            Track modifications captured during your current session. You can step backward or forward
+                            up to 16 historical changes.
+                        </p>
 
-                            <div id="projectMasterPanel" class="md:col-span-12 transition-all duration-500 ease-in-out">
-                                <div id="projectDeckGrid"
-                                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-                                <div id="projectDeckEmptyState"
-                                    class="hidden text-center py-16 text-gray-600 text-sm italic">
-                                    No blueprints or wishlists initialized. Create a folder matrix above to get started!
-                                </div>
-                            </div>
-
-                            <div id="projectDetailPanel"
-                                class="hidden md:col-span-8 bg-gray-900/20 border border-gray-800 rounded-2xl p-5 flex flex-col space-y-4 animate-fade-in">
-                                <div
-                                    class="flex items-center justify-between border-b border-gray-800 pb-3 flex-wrap gap-2">
-                                    <div class="flex items-center gap-2">
-                                        <button onclick="closeProjectFocusMode()"
-                                            class="text-gray-400 hover:text-white p-1 mr-1"
-                                            title="Back to Full Deck View">
-                                            <i class="fa-solid fa-arrow-left"></i>
-                                        </button>
-                                        <div>
-                                            <h3 id="focusProjectTitle"
-                                                class="text-lg font-bold text-white leading-tight">Project Spec Sheets
-                                            </h3>
-                                            <p id="focusProjectTotals" class="text-xs text-gray-400 mt-0.5">Allocated
-                                                items: 0 | Total Target Footprint: $0.00</p>
-                                        </div>
-                                    </div>
-                                    <button onclick="openWishItemModal()"
-                                        class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-semibold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
-                                        <i class="fa-solid fa-cart-plus text-blue-400"></i> Add Item
-                                    </button>
-                                </div>
-
-                                <div id="wishlistItemsListFeed" class="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                                </div>
-                            </div>
-
+                        <div id="settingsHistoryTimelineFeed" class="space-y-2 max-h-[220px] overflow-y-auto pr-1">
                         </div>
                     </div>
                 </div>
-           
-    </div>
+            </div>
+            <div id="tab-notes" class="tab-content hidden space-y-6">
+                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 md:p-6 shadow-xl">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                            <h2 class="text-xl font-bold tracking-wide">Financial Memorandums</h2>
+                            <p class="text-sm text-gray-400 mt-1">Add quick context logs, reminders, or financial
+                                checklists for each month.</p>
+                        </div>
+                        <span id="saveStatusIndicator"
+                            class="text-xs text-gray-500 flex items-center gap-1.5 bg-gray-900 px-3 py-1.5 rounded-xl border border-gray-800">
+                            <i class="fa-solid fa-cloud"></i> Ready
+                        </span>
+                    </div>
 
-    <dialog id="projectCreationModal"
-        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
-        <div class="flex items-center justify-between mb-4">
-            <h3 id="projectModalTitle" class="text-lg font-bold">Initialize Folder Blueprint</h3>
-            <button onclick="closeProjectModal()" class="text-gray-400 hover:text-white"><i
-                    class="fa-solid fa-xmark text-lg"></i></button>
-        </div>
-        <form id="projectCreationForm" onsubmit="saveProjectForm(event)" class="space-y-4">
-            <input type="hidden" id="editProjectId">
-            <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Project Name</label>
-                <input type="text" id="projName" maxlength="30" required
-                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Identify Color Marker
-                    Badge</label>
-                <div id="projectColorPaletteSelectionGrid" class="grid grid-cols-8 gap-2.5"></div>
-                <input type="hidden" id="projSelectedColor" value="blue" required>
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="closeProjectModal()"
-                    class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
-                <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
-                    Project</button>
-            </div>
-        </form>
-    </dialog>
+                    <div class="mt-6 border-b border-gray-800 pb-4">
+                        <div class="block md:hidden">
+                            <label class="block text-xs uppercase font-bold tracking-wider text-gray-500 mb-1.5">Select
+                                Active Month</label>
+                            <select id="monthsMobileDropdown" onchange="selectNotesMonth(parseInt(this.value))"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500"></select>
+                        </div>
 
-    <dialog id="wishlistItemModal"
-        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70">
-        <div class="flex items-center justify-between mb-4">
-            <h3 id="wishItemModalTitle" class="text-sm font-bold">Append Specification Record</h3>
-            <button onclick="closeWishItemModal()" class="text-gray-400 hover:text-white"><i
-                    class="fa-solid fa-xmark text-lg"></i></button>
-        </div>
-        <form id="wishlistItemForm" onsubmit="saveWishItemForm(event)" class="space-y-4">
-            <input type="hidden" id="editWishItemId">
-            <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Item Title Name</label>
-                <input type="text" id="wishItemName" maxlength="30" required
-                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Unit
-                    Cost</label>
-                <input type="number" step="0.01" id="wishItemPrice" required
-                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Target Purchase URL
-                    (Optional)</label>
-                <input type="url" id="wishItemUrl" placeholder="https://example.com/item"
-                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button type="button" onclick="closeWishItemModal()"
-                    class="px-3 py-1.5 border border-gray-800 rounded-xl text-xs hover:bg-gray-900 transition">Cancel</button>
-                <button type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">Save
-                    Spec</button>
-            </div>
-        </form>
-    </dialog>
+                        <div class="hidden md:block">
+                            <span
+                                class="text-[10px] uppercase font-bold tracking-wider text-gray-500 block mb-2">Calendar
+                                Timeline</span>
+                            <div id="monthsSelectorContainer" class="grid grid-cols-6 lg:grid-cols-12 gap-2"></div>
+                        </div>
+                    </div>
 
-    <dialog id="commandPaletteModal"
-        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl text-gray-100 w-11/12 md:w-[500px] h-fit max-h-[450px] backdrop:bg-black/80 backdrop:backdrop-blur-sm z-50 overflow-hidden focus:outline-none">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center gap-3 px-4 py-3.5 border-b border-gray-900 bg-gray-950 shrink-0">
-                <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm"></i>
-                <input type="text" id="paletteSearchBox"
-                    placeholder="Search movements, budgets, plans, folders, notes..."
-                    class="w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none"
-                    autocomplete="off">
-                <button onclick="MoneycoSearch.close()"
-                    class="text-gray-500 hover:text-white px-1 text-xs font-mono bg-gray-900 border border-gray-800 rounded">ESC</button>
-            </div>
-            <div id="paletteResultsFeed" class="flex-1 overflow-y-auto bg-gray-950/40 p-2 space-y-0.5 max-h-[320px]">
-            </div>
-            <div
-                class="px-4 py-2 bg-gray-950 border-t border-gray-900 text-[10px] text-gray-600 flex items-center justify-between shrink-0 font-medium select-none">
-                <div class="flex items-center gap-4">
-                    <span><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i>
-                        Navigate</span>
-                    <span><i class="fa-solid fa-arrow-turn-down rotate-90"></i> Select</span>
+                    <div
+                        class="bg-gray-900/30 border border-gray-800 rounded-xl p-4 md:p-5 flex flex-col space-y-5 mt-6">
+                        <div class="flex flex-col space-y-2">
+
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <h3 id="activeNoteMonthHeader" class="text-lg font-bold text-blue-400">January</h3>
+                                    <div id="noteEditModeBadge"></div>
+                                </div>
+                                <span id="noteCharCounter" class="text-[11px] font-mono text-gray-500">0/200</span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" id="noteInputBox" onkeydown="handleNoteKeyDown(event)"
+                                    oninput="handleNoteInputCounter(this)"
+                                    placeholder="Type a note and press Enter to save..."
+                                    class="w-full bg-gray-900 border border-gray-800 rounded-xl pl-4 pr-12 py-3 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition duration-150 shadow-inner">
+                                <button onclick="triggerNoteSubmitFromButton()"
+                                    class="absolute right-3 top-2.5 text-gray-500 hover:text-blue-400 p-1 transition"><i
+                                        class="fa-solid fa-arrow-turn-down rotate-90 text-sm"></i></button>
+                            </div>
+                        </div>
+
+                        <div id="monthlyNotesFeedContainer"
+                            class="flex flex-wrap gap-2 items-start max-h-[350px] overflow-y-auto pr-1 pt-1"></div>
+                    </div>
                 </div>
-                <span class="text-amber-500/60 font-semibold flex items-center gap-1"><kbd
-                        class="font-mono bg-gray-900 px-1 border border-gray-800 rounded text-[9px]">/</kbd>
-                    Commands Mode</span>
             </div>
-        </div>
-    </dialog>
-    </main>
+            <div id="mobileDragOverlaysContainer"
+                class="hidden fixed bottom-4 left-4 right-4 z-50 md:hidden flex justify-between gap-4 pointer-events-none transition-all duration-300 transform translate-y-24">
+                <div id="mobileEditDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)"
+                    ondrop="handleMobileActionDrop(event, 'edit')" data-action="edit"
+                    class="pointer-events-auto flex-1 bg-blue-600/95 border-2 border-dashed border-blue-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
+                    <i class="fa-solid fa-pen-to-square text-lg animate-bounce"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Edit</span>
+                </div>
+
+                <div id="mobileDeleteDropZone" ondragover="allowDrop(event)" ondragleave="dragLeaveMobileZone(event)"
+                    ondrop="handleMobileActionDrop(event, 'delete')" data-action="delete"
+                    class="pointer-events-auto flex-1 bg-rose-600/95 border-2 border-dashed border-rose-400 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-white shadow-2xl transition duration-150 active:scale-95">
+                    <i class="fa-solid fa-trash text-lg animate-bounce"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-wider">Drop to Delete</span>
+                </div>
+            </div>
+            <div id="tab-wishlists" class="tab-content hidden space-y-6">
+                <div
+                    class="bg-gradient-to-br from-emerald-950/40 to-gray-950 border border-emerald-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 text-emerald-400 pointer-events-none">
+                        <i class="fa-solid fa-piggy-bank text-7xl"></i>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">Total Asset
+                                Reserve</span>
+                            <h2 id="savingsAllTimeTotal" class="text-4xl font-black text-emerald-400 mt-1">$0.00</h2>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            <input type="number" id="savingsGoalInput" placeholder="Set Savings Goal"
+                                onchange="updateSavingsGoal(this.value)"
+                                class="bg-gray-900/80 border border-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-100 focus:outline-none focus:border-emerald-500 w-36 text-center">
+                            <span id="savingsGoalTargetLabel"
+                                class="text-[10px] text-gray-400 font-semibold tracking-wide hidden pr-1"></span>
+                        </div>
+                    </div>
+                    <div id="savingsProgressWrapper" class="mt-4 hidden space-y-1.5">
+                        <div class="flex justify-between text-xs font-semibold">
+                            <span id="savingsProgressPercent" class="text-emerald-400">0% achieved</span>
+                            <span id="savingsProgressMetrics" class="text-gray-500"></span>
+                        </div>
+                        <div class="w-full bg-gray-900 border border-gray-800 rounded-full h-2.5 overflow-hidden">
+                            <div id="savingsProgressBar"
+                                class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-500"
+                                style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 md:p-6 shadow-xl min-h-[550px]">
+
+                    <div class="flex items-center justify-between flex-wrap gap-4 border-b border-gray-800 pb-4 mb-4">
+                        <div>
+                            <h2 class="text-xl font-bold tracking-wide">Wishlists & Projects</h2>
+                            <p class="text-sm text-gray-400 mt-1">Draft sandbox item specs, allocate goals, or track
+                                project material costs before logging expenses.</p>
+                        </div>
+                        <button onclick="openProjectModal()"
+                            class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 shadow-lg">
+                            <i class="fa-solid fa-folder-plus text-xs"></i> Create Project
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+
+                        <div id="projectMasterPanel" class="md:col-span-12 transition-all duration-500 ease-in-out">
+                            <div id="projectDeckGrid"
+                                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                            <div id="projectDeckEmptyState"
+                                class="hidden text-center py-16 text-gray-600 text-sm italic">No blueprints or wishlists
+                                initialized. Create a folder matrix above to get started!</div>
+                        </div>
+
+                        <div id="projectDetailPanel"
+                            class="hidden md:col-span-8 bg-gray-900/20 border border-gray-800 rounded-2xl p-5 flex flex-col space-y-4 animate-fade-in">
+                            <div
+                                class="flex items-center justify-between border-b border-gray-800 pb-3 flex-wrap gap-2">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="closeProjectFocusMode()"
+                                        class="text-gray-400 hover:text-white p-1 mr-1"
+                                        title="Back to Full Deck View"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <div>
+                                        <h3 id="focusProjectTitle" class="text-lg font-bold text-white leading-tight">
+                                            Project Spec Sheets</h3>
+                                        <p id="focusProjectTotals" class="text-xs text-gray-400 mt-0.5">Allocated items:
+                                            0 | Total Target Footprint: $0.00</p>
+                                    </div>
+                                </div>
+                                <button onclick="openWishItemModal()"
+                                    class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-semibold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-cart-plus text-blue-400"></i> Add Item
+                                </button>
+                            </div>
+
+                            <div id="wishlistItemsListFeed" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <dialog id="projectCreationModal"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="projectModalTitle" class="text-lg font-bold">Initialize Folder Blueprint</h3>
+                    <button onclick="closeProjectModal()" class="text-gray-400 hover:text-white"><i
+                            class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form id="projectCreationForm" onsubmit="saveProjectForm(event)" class="space-y-4">
+                    <input type="hidden" id="editProjectId">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Project Name</label>
+                        <input type="text" id="projName" maxlength="30" required
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Identify Color Marker
+                            Badge</label>
+                        <div id="projectColorPaletteSelectionGrid" class="grid grid-cols-8 gap-2.5"></div>
+                        <input type="hidden" id="projSelectedColor" value="blue" required>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closeProjectModal()"
+                            class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
+                            Project</button>
+                    </div>
+                </form>
+            </dialog>
+
+            <dialog id="wishlistItemModal"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="wishItemModalTitle" class="text-sm font-bold">Append Specification Record</h3>
+                    <button onclick="closeWishItemModal()" class="text-gray-400 hover:text-white"><i
+                            class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form id="wishlistItemForm" onsubmit="saveWishItemForm(event)" class="space-y-4">
+                    <input type="hidden" id="editWishItemId">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Item Title Name</label>
+                        <input type="text" id="wishItemName" maxlength="30" required
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Unit
+                            Cost</label>
+                        <input type="number" step="0.01" id="wishItemPrice" required
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Target Purchase URL
+                            (Optional)</label>
+                        <input type="url" id="wishItemUrl" placeholder="https://example.com/item"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closeWishItemModal()"
+                            class="px-3 py-1.5 border border-gray-800 rounded-xl text-xs hover:bg-gray-900 transition">Cancel</button>
+                        <button type="submit"
+                            class="bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl text-xs font-semibold transition">Save
+                            Spec</button>
+                    </div>
+                </form>
+            </dialog>
+
+            <dialog id="commandPaletteModal"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl shadow-2xl text-gray-100 w-11/12 md:w-[500px] h-fit max-h-[450px] backdrop:bg-black/80 backdrop:backdrop-blur-sm z-50 overflow-hidden focus:outline-none">
+                <div class="flex flex-col h-full">
+                    <div class="flex items-center gap-3 px-4 py-3.5 border-b border-gray-900 bg-gray-950 shrink-0">
+                        <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm"></i>
+                        <input type="text" id="paletteSearchBox"
+                            placeholder="Search movements, budgets, plans, folders, notes..."
+                            class="w-full bg-transparent text-sm text-gray-100 placeholder-gray-600 focus:outline-none"
+                            autocomplete="off">
+                        <button onclick="MoneycoSearch.close()"
+                            class="text-gray-500 hover:text-white px-1 text-xs font-mono bg-gray-900 border border-gray-800 rounded">ESC</button>
+                    </div>
+                    <div id="paletteResultsFeed"
+                        class="flex-1 overflow-y-auto bg-gray-950/40 p-2 space-y-0.5 max-h-[320px]"></div>
+                    <div
+                        class="px-4 py-2 bg-gray-950 border-t border-gray-900 text-[10px] text-gray-600 flex items-center justify-between shrink-0 font-medium select-none">
+                        <div class="flex items-center gap-4">
+                            <span><i class="fa-solid fa-arrow-up-long"></i><i class="fa-solid fa-arrow-down-long"></i>
+                                Navigate</span>
+                            <span><i class="fa-solid fa-arrow-turn-down rotate-90"></i> Select</span>
+                        </div>
+                        <span class="text-amber-500/60 font-semibold flex items-center gap-1"><kbd
+                                class="font-mono bg-gray-900 px-1 border border-gray-800 rounded text-[9px]">/</kbd>
+                            Commands Mode</span>
+                    </div>
+                </div>
+            </dialog>
+        </main>
     </div>
 
     <div id="customContextMenu"
@@ -1253,6 +1299,8 @@
             activeSecondMetricVariant: 'planned_vs_expected',
             categories: ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments"],
             lastUpdated: 0,
+            cloudStorageStrategy: 'private', // Can alternate between 'private' or 'shared'
+            sharedFolderId: null,
             tombstones: {
                 movements: {},
                 planification: {},
@@ -1316,12 +1364,16 @@
                 populateCategorySelects();
                 renderAll();
 
-                // FIX: Explicitly re-apply current filters to update the ledger grid view
+                // Explicitly re-apply current filters to update the ledger grid view
                 applyFilters();
 
-                // NEW FIX: Ensure the updated full-width categories analytics view updates on time-travel shift
                 if (typeof renderCategoryStats === 'function') {
                     renderCategoryStats();
+                }
+
+                // NEW ADDITION: Hook into the settings view engine update matrix
+                if (typeof renderSettingsHistoryTimeline === 'function') {
+                    renderSettingsHistoryTimeline();
                 }
 
                 this.isOperating = false;
@@ -1341,8 +1393,10 @@
                 }
             }
             if (state.savingsGoal === undefined) state.savingsGoal = 0;
-            if (!state.activeSecondMetricVariant) state.activeSecondMetricVariant = 'planned_vs_expected'; // <- ADD THIS LINE
+            if (!state.activeSecondMetricVariant) state.activeSecondMetricVariant = 'planned_vs_expected';
             enforceWishlistsDatabaseStructure();
+            if (!state.cloudStorageStrategy) state.cloudStorageStrategy = 'private';
+            if (state.sharedFolderId === undefined) state.sharedFolderId = null;
 
             if (!state.categories || state.categories.length === 0) {
                 state.categories = ["Housing", "Groceries", "Salary", "Leisure", "Utilities", "Investments", "Debts", "Savings"];
@@ -1396,6 +1450,12 @@
             MoneycoHistory.push();
             state.lastUpdated = Date.now();
             localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+
+            // NEW ADDITION: Ensure saving updates the settings history panel matrix immediately
+            if (typeof renderSettingsHistoryTimeline === 'function') {
+                renderSettingsHistoryTimeline();
+            }
+
             await syncToGoogleDrive();
         }
 
@@ -1435,6 +1495,9 @@
             });
 
             if (tabId === 'all-movements') applyFilters();
+            if (tabId === 'settings') {
+                renderSettingsHistoryTimeline();
+            }
             if (tabId === 'categories') {
                 renderCategoryStats();
             }
@@ -2307,8 +2370,6 @@
         function addCategory(e) {
             e.preventDefault();
             const input = document.getElementById('newCategoryName');
-            if (!input) return;
-
             const catName = input.value.trim().substring(0, 30);
 
             if (catName.toLowerCase() === 'debts' || catName.toLowerCase() === 'savings') {
@@ -2321,9 +2382,6 @@
                 input.value = '';
                 state.lastUpdated = Date.now();
                 saveState();
-
-                // Refresh selector arrays and tables instantly without page reloading
-                populateCategorySelects();
                 renderCategoryStats();
             }
         }
@@ -2867,7 +2925,7 @@
         }
 
         const CLIENT_ID = '245924780137-ukhfl5mskk0uvpj12pj57eu9i4abik75.apps.googleusercontent.com';
-        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
         let tokenClient;
         let gapiInited = false;
         let gisInited = false;
@@ -2934,18 +2992,24 @@
             }
         }
 
+        // ========================================================
+        // RECONCILED BACKGROUND LIVE SYNC ENGINE PULSE
+        // ========================================================
+
         async function startLiveSyncEngine() {
             if (liveSyncIntervalPointer) clearInterval(liveSyncIntervalPointer);
 
             liveSyncIntervalPointer = setInterval(async () => {
                 if (!googleUserToken || !driveFileId || isCurrentlySyncingFlag) return;
+
+                // Prevent background data injection collisions while the user is actively typing a financial memo
                 if (document.activeElement && document.activeElement.id === 'noteInputBox') return;
 
                 try {
                     isCurrentlySyncingFlag = true;
-                    const badge = document.getElementById('liveSyncBadge');
-                    if (badge) badge.classList.add('border-emerald-400', 'bg-emerald-500/30');
+                    const statusBadge = document.getElementById('liveSyncBadge');
 
+                    // Fetch the metadata sheet directly from the cloud folder configuration targets
                     const fileMeta = await gapi.client.drive.files.get({
                         fileId: driveFileId,
                         fields: 'modifiedTime'
@@ -2954,24 +3018,34 @@
                     const cloudModifiedTime = new Date(fileMeta.result.modifiedTime).getTime();
                     const localLastUpdatedTime = state.lastUpdated || 0;
 
+                    // CRITICAL DELTA CHECK: If the cloud file timestamp is newer, pull down and merge parameters
                     if (cloudModifiedTime > localLastUpdatedTime) {
-                        console.log("%c[Live Sync Checking] Remote modification detected. Fetching cloud delta updates...", "color: #10b981; font-weight: bold;");
-                        await syncToGoogleDrive();
+                        console.log("%c[Live Sync Delta] Remote database changes detected. Initializing timeline reconciliation pass...", "color: #10b981; font-weight: bold;");
+
+                        if (statusBadge) statusBadge.classList.add('border-amber-400', 'bg-amber-500/30');
+
+                        await pullFromCloud();
+
+                        // Re-render history UI tracker instantly if the settings tab view matrix is open
+                        if (typeof renderSettingsHistoryTimeline === 'function') {
+                            renderSettingsHistoryTimeline();
+                        }
                     }
 
+                    // Fallback clear active indicator visual state
                     setTimeout(() => {
-                        if (badge) badge.classList.remove('border-emerald-400', 'bg-emerald-500/30');
+                        if (statusBadge) statusBadge.classList.remove('border-amber-400', 'bg-amber-500/30');
                         isCurrentlySyncingFlag = false;
                     }, 600);
 
                 } catch (err) {
                     isCurrentlySyncingFlag = false;
-                    console.warn("[Live Sync Heartbeat] Intercepted background exception status:", err.status || err);
+                    console.warn("[Live Sync Heartbeat] Intercepted background execution exception status:", err.status || err);
                     if (err.status === 401) {
                         tokenClient.requestAccessToken({ prompt: 'none' });
                     }
                 }
-            }, 6000);
+            }, 6000); // Polls every 6 seconds to optimize bandwidth lifecycle thresholds
         }
 
         function handleAuthClick() {
@@ -2996,23 +3070,99 @@
             }
         }
 
+        // ========================================================
+        // ADVANCED PROTOCOL ROUTING CLOUD INITIAL SCAN
+        // ========================================================
+
         async function runCloudInitialScan() {
             try {
-                const response = await gapi.client.drive.files.list({
-                    spaces: 'appDataFolder',
-                    fields: 'files(id, name)',
-                    pageSize: 1
-                });
-                const files = response.result.files;
-                if (files && files.length > 0) {
-                    driveFileId = files[0].id;
-                    await pullFromCloud();
-                    startLiveSyncEngine();
+                if (state.cloudStorageStrategy === 'private') {
+                    // EXECUTE STANDARD HIDDEN APPDATA ENCLAVE PIPELINE PROTOCOLS
+                    const response = await gapi.client.drive.files.list({
+                        spaces: 'appDataFolder',
+                        q: "name = 'moneyco_config.json'",
+                        fields: 'files(id, name)',
+                        pageSize: 1
+                    });
+                    const files = response.result.files;
+                    if (files && files.length > 0) {
+                        driveFileId = files[0].id;
+                        await pullFromCloud();
+                    } else {
+                        await createCloudContainerPrivate();
+                    }
                 } else {
-                    await createCloudContainer();
-                    startLiveSyncEngine();
+                    // EXECUTE SHARED TEAM DIRECTORY PIPELINE PROTOCOLS
+                    if (!state.sharedFolderId) {
+                        // Step A: Scan for an existing visible folder named 'Moneyco Team Ledger'
+                        const folderSearch = await gapi.client.drive.files.list({
+                            q: "name = 'Moneyco Team Ledger' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+                            fields: 'files(id, name)',
+                            pageSize: 1
+                        });
+                        const folderList = folderSearch.result.files;
+
+                        if (folderList && folderList.length > 0) {
+                            state.sharedFolderId = folderList[0].id;
+                        } else {
+                            // Step B: Create a visible shared directory matrix if not found
+                            const folderMetadata = {
+                                name: 'Moneyco Team Ledger',
+                                mimeType: 'application/vnd.google-apps.folder'
+                            };
+                            const folderCreateResponse = await gapi.client.drive.files.create({
+                                resource: folderMetadata,
+                                fields: 'id'
+                            });
+                            state.sharedFolderId = folderCreateResponse.result.id;
+                        }
+                        // Save cached shared location pointer securely
+                        localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+                    }
+
+                    // Step C: Look for the synchronized database instance within that Shared Directory
+                    const fileSearch = await gapi.client.drive.files.list({
+                        q: `name = 'moneyco_shared_db.json' and '${state.sharedFolderId}' in parents and trashed = false`,
+                        fields: 'files(id, name)',
+                        pageSize: 1
+                    });
+                    const targetFiles = fileSearch.result.files;
+
+                    if (targetFiles && targetFiles.length > 0) {
+                        driveFileId = targetFiles[0].id;
+                        await pullFromCloud();
+                    } else {
+                        await createCloudContainerShared();
+                    }
                 }
-            } catch (err) { console.error('Error scanning initialization targets:', err); }
+
+                // Fire up background checking sequence pulse cycles
+                startLiveSyncEngine();
+                updateCloudStorageStrategyModeUI();
+            } catch (err) {
+                console.error('[Cloud Init Exception] Matrix mapping pipeline aborted:', err);
+            }
+        }
+
+        async function createCloudContainerPrivate() {
+            try {
+                const metadata = { name: 'moneyco_config.json', parents: ['appDataFolder'] };
+                const response = await gapi.client.drive.files.create({ resource: metadata, fields: 'id' });
+                driveFileId = response.result.id;
+                await uploadFinalMergedStateToCloud(state);
+            } catch (e) { console.error("Error writing private appData envelope:", e); }
+        }
+
+        async function createCloudContainerShared() {
+            try {
+                const metadata = {
+                    name: 'moneyco_shared_db.json',
+                    parents: [state.sharedFolderId]
+                };
+                const response = await gapi.client.drive.files.create({ resource: metadata, fields: 'id' });
+                driveFileId = response.result.id;
+                await uploadFinalMergedStateToCloud(state);
+            } catch (e) { console.error("Error writing team shared container node:", e); }
         }
 
         async function createCloudContainer() {
@@ -3066,31 +3216,52 @@
             }
         }
 
+        // ========================================================
+        // SYMMETRICAL BI-DIRECTIONAL DATABASE SYNC WRITER
+        // ========================================================
+
         async function syncToGoogleDrive() {
             if (!googleUserToken || !driveFileId) return;
             try {
+                const syncBadge = document.getElementById('liveSyncBadge');
+                if (syncBadge) syncBadge.classList.add('border-emerald-400', 'bg-emerald-500/30');
+
+                // 1. Download the current absolute snapshot state configuration directly from Google Drive cloud files
                 const cloudResponse = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
                 let cloudState = cloudResponse.result;
 
+                // 2. Validate data schema framework profiles before feeding into the time matrix database merge engine
                 if (cloudState && typeof cloudState === 'object') {
+                    console.log("%c[Sync Core] Reconciling active memory parameters with cloud database delta tables...", "color: #3b82f6; font-weight: bold;");
+
+                    // Reconcile and deep merge all changes using localized timestamps
                     state = reconcileDatabasesByTimestamp(state, cloudState);
                 }
 
+                // 3. Increment baseline synchronization log metrics timeline trackers
                 state.lastUpdated = Date.now();
+
+                // 4. Write back the finalized master record onto Drive configurations
                 await uploadFinalMergedStateToCloud(state);
+
+                // 5. Commit state profile structures securely straight to localized LocalStorage
                 localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
 
-                const verificationResponse = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
-                const verifiedState = verificationResponse.result;
+                // 6. Run a visual validation pass on UI trackers to capture updates on data models instantly
+                populateCategorySelects();
+                renderAll();
+                if (typeof applyFilters === 'function') applyFilters();
+                if (typeof renderCategoryStats === 'function') renderCategoryStats();
+                if (typeof renderSettingsHistoryTimeline === 'function') renderSettingsHistoryTimeline();
 
-                if (JSON.stringify(state.movements.map(m => m.id).sort()) === JSON.stringify(verifiedState.movements.map(m => m.id).sort())) {
-                    console.log("%c[Sync Verification] Symmetrical validation check complete.", "color: #10b981; font-weight: bold;");
-                } else {
-                    await uploadFinalMergedStateToCloud(state);
-                }
+                console.log("%c[Sync Verification] Symmetrical state ledger sync complete. Delta records aligned.", "color: #10b981; font-weight: bold;");
+
+                setTimeout(() => {
+                    if (syncBadge) syncBadge.classList.remove('border-emerald-400', 'bg-emerald-500/30');
+                }, 800);
 
             } catch (err) {
-                console.error('[Sync] Google Drive connection interrupted:', err);
+                console.error('[Sync Exception Handler] Google Drive connection profile parsing interrupted:', err);
                 if (err.status === 401) {
                     tokenClient.requestAccessToken({ prompt: 'none' });
                 }
@@ -4361,7 +4532,7 @@ async function checkAndTriggerReminders() {
 
             state.planification.push({
                 id: crypto.randomUUID(),
-                name: `${debtItem.name} (Debt)`,
+                name: `${debtItem.name} (Copy)`,
                 amount: parseFloat(debtItem.amount),
                 category: debtItem.category || "Debts",
                 estimatedDate: debtItem.estimatedDate || new Date().toISOString().split('T')[0],
@@ -4705,6 +4876,205 @@ async function checkAndTriggerReminders() {
             state.savingsGoal = parseFloat(val) || 0;
             saveState();
             renderCategoryStats();
+        }
+
+        // ==========================================
+        // LOCAL FILE BACKUP STORAGE IMPORTS & EXPORTS
+        // ==========================================
+
+        function exportLocalStateToJSONFile() {
+            try {
+                const backupDataString = JSON.stringify(state, null, 2);
+                const dataBlob = new Blob([backupDataString], { type: 'application/json;charset=utf-8;' });
+                const blobDownloadURL = URL.createObjectURL(dataBlob);
+
+                const timestampISO = new Date().toISOString().split('T')[0];
+                const invisibleAnchor = document.createElement('a');
+
+                invisibleAnchor.href = blobDownloadURL;
+                invisibleAnchor.setAttribute('download', `moneyco_backup_${timestampISO}.json`);
+                invisibleAnchor.style.visibility = 'hidden';
+
+                document.body.appendChild(invisibleAnchor);
+                invisibleAnchor.click();
+                document.body.removeChild(invisibleAnchor);
+
+                console.log("%c[Backup Engine] Local backup copy written successfully.", "color: #3b82f6; font-weight: bold;");
+            } catch (err) {
+                alert("An unexpected formatting error occurred during data file compilation.");
+                console.error(err);
+            }
+        }
+
+        function importLocalStateFromJSONFile(event) {
+            const selectedFile = event.target.files[0];
+            if (!selectedFile) return;
+
+            const fileReader = new FileReader();
+            fileReader.onload = async function (e) {
+                try {
+                    const decodedStatePayload = JSON.parse(e.target.result);
+
+                    // Validate schema structural indicators to verify it's a genuine app file
+                    if (!decodedStatePayload.movements || !decodedStatePayload.categories) {
+                        throw new Error("Invalid database schema profile structure detected.");
+                    }
+
+                    if (!confirm("Are you sure you want to restore this file data profile? Your active data session will be entirely overwritten.")) {
+                        event.target.value = ''; // Clean input
+                        return;
+                    }
+
+                    // Sync structural pointer adjustments and refresh configurations data models
+                    state = decodedStatePayload;
+                    state.lastUpdated = Date.now();
+
+                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+
+                    // Reinitialize view nodes and push update down to linked GDrive instances
+                    populateCategorySelects();
+                    renderAll();
+                    if (typeof applyFilters === 'function') applyFilters();
+                    if (typeof renderCategoryStats === 'function') renderCategoryStats();
+                    await syncToGoogleDrive();
+
+                    alert("Database snapshot restored and synced successfully!");
+                } catch (err) {
+                    alert("Fatal: Failed to read file data parameters. Make sure you are uploading a valid .json snapshot file generated from this application.");
+                    console.error(err);
+                } finally {
+                    event.target.value = ''; // Reset input element sequence tracking
+                }
+            };
+            fileReader.readAsText(selectedFile);
+        }
+
+        // ==========================================
+        // SETTINGS TIMELINE HISTORY VISUALIZATION
+        // ==========================================
+
+        function renderSettingsHistoryTimeline() {
+            const feedContainer = document.getElementById('settingsHistoryTimelineFeed');
+            const undoBtn = document.getElementById('settingsHistoryUndoBtn');
+            const redoBtn = document.getElementById('settingsHistoryRedoBtn');
+
+            if (!feedContainer) return;
+
+            // Toggle button operational disability filters safely
+            if (undoBtn) undoBtn.disabled = MoneycoHistory.undoStack.length === 0;
+            if (redoBtn) redoBtn.disabled = MoneycoHistory.redoStack.length === 0;
+
+            feedContainer.innerHTML = '';
+
+            const totalStepsAvailable = MoneycoHistory.undoStack.length + MoneycoHistory.redoStack.length;
+
+            if (totalStepsAvailable === 0) {
+                feedContainer.innerHTML = `
+            <div class="text-center py-6 border border-dashed border-gray-900 rounded-xl text-gray-600 text-xs italic select-none">
+                No state mutations recorded in this session environment yet.
+            </div>`;
+                return;
+            }
+
+            // Process Undo Records Map Stack (Past States Actions)
+            MoneycoHistory.undoStack.forEach((snapString, idx) => {
+                const itemRow = document.createElement('div');
+                itemRow.className = "bg-gray-900/40 border border-gray-900/60 p-2.5 rounded-xl flex items-center justify-between text-xs transition hover:border-gray-800 shadow-inner";
+                itemRow.innerHTML = `
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></div>
+                <p class="font-medium text-gray-300 truncate">Checkpoint Step Base Profile #${idx + 1}</p>
+            </div>
+            <span class="text-[9px] font-mono text-blue-400 uppercase font-black tracking-wider bg-blue-950/40 px-2 py-0.5 rounded border border-blue-900/40 select-none">Prior State</span>
+        `;
+                feedContainer.appendChild(itemRow);
+            });
+
+            // Render Current Present State Anchor Node Indicator
+            const presentRow = document.createElement('div');
+            presentRow.className = "bg-blue-600/10 border border-blue-500/30 p-2.5 rounded-xl flex items-center justify-between text-xs font-semibold shadow-md ring-1 ring-blue-500/5 select-none";
+            presentRow.innerHTML = `
+        <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-location-crosshairs text-blue-400 text-xs animate-pulse"></i>
+            <p class="text-white">Active Database Session Matrix (Present)</p>
+        </div>
+        <span class="text-[9px] font-black uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded shadow-sm select-none">Live</span>
+    `;
+            feedContainer.appendChild(presentRow);
+
+            // Process Redo Records Map Stack (Future Altered State Buffers)
+            // We reverse it to ensure top-down progression matching standard history trace timelines
+            [...MoneycoHistory.redoStack].reverse().forEach((snapString, idx) => {
+                const itemRow = document.createElement('div');
+                itemRow.className = "bg-gray-950/20 border border-gray-900 p-2.5 rounded-xl flex items-center justify-between text-xs opacity-50 hover:opacity-80 transition";
+                itemRow.innerHTML = `
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-2 h-2 rounded-full bg-purple-500 shrink-0"></div>
+                <p class="font-medium text-gray-500 truncate">Altered Future Buffer Route Reference #${idx + 1}</p>
+            </div>
+            <span class="text-[9px] font-mono text-purple-400 uppercase font-bold tracking-wide bg-purple-950/20 px-2 py-0.5 rounded border border-purple-900/30 select-none">Redo Forward Slot</span>
+        `;
+                feedContainer.appendChild(itemRow);
+            });
+
+            // Smooth scroll straight down into alignment context with the Active Live state line item automatically
+            setTimeout(() => {
+                presentRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }, 40);
+        }
+
+        // ========================================================
+        // INTERACTIVE STORAGE STATE METHOD EXPORT WRAPPERS
+        // ========================================================
+
+        function updateCloudStorageStrategyMode(targetMode) {
+            if (state.cloudStorageStrategy === targetMode) return;
+
+            if (gapi.client.getToken() !== null) {
+                if (!confirm("Swapping sync strategies while authenticated requires re-binding your connection container parameters. Re-establish sync baseline?")) return;
+            }
+
+            state.cloudStorageStrategy = targetMode;
+
+            // Clear out targets to trigger a fresh directory architecture crawl on execution loop resets
+            if (targetMode === 'private') {
+                state.sharedFolderId = null;
+            }
+            driveFileId = null;
+
+            localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+            updateCloudStorageStrategyModeUI();
+
+            // Trigger configuration recalibration tracking vectors if active auth tokens are alive
+            if (gapi.client.getToken() !== null) {
+                runCloudInitialScan();
+            }
+        }
+
+        function updateCloudStorageStrategyModeUI() {
+            const pBtn = document.getElementById('btnStrategyPrivateMode');
+            const sBtn = document.getElementById('btnStrategySharedMode');
+            if (!pBtn || !sBtn) return;
+
+            const activeTheme = "border-blue-500 bg-blue-600/10 shadow-md ring-2 ring-blue-500/10";
+            const inactiveTheme = "border-gray-800 bg-gray-950 hover:bg-gray-900";
+
+            if (state.cloudStorageStrategy === 'shared') {
+                sBtn.className = `border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-default ${activeTheme}`;
+                pBtn.className = `border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-pointer ${inactiveTheme}`;
+            } else {
+                pBtn.className = `border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-default ${activeTheme}`;
+                sBtn.className = `border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-pointer ${inactiveTheme}`;
+            }
+        }
+
+        // Make sure the UI button styling corresponds exactly with state maps when the tab opens
+        // Append this tracking execution line inside your tab checking workflow block:
+        // FIND inside your switchTab(tabId) function:
+        if (tabId === 'settings') {
+            renderSettingsHistoryTimeline();
+            // ADD THIS CALL HERE:
+            updateCloudStorageStrategyModeUI();
         }
 
     </script>
