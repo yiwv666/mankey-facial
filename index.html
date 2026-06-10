@@ -660,15 +660,39 @@
                                     cross-device single user syncing.</span>
                             </button>
 
-                            <button onclick="updateCloudStorageStrategyMode('shared')" id="btnStrategySharedMode"
-                                class="border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-pointer flex flex-col gap-1">
-                                <span
-                                    class="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase tracking-wide">
-                                    <i class="fa-solid fa-users text-emerald-400"></i> Shared Team Folder Mode
-                                </span>
-                                <span class="text-[11px] text-gray-500 font-medium">Standard visible folder. Permits
-                                    multi-user shared access vectors.</span>
-                            </button>
+                            <div id="btnStrategySharedMode"
+                                class="border p-3.5 rounded-xl text-left transition duration-150 flex flex-col gap-3 bg-gray-950 border-gray-800">
+                                <div onclick="updateCloudStorageStrategyMode('shared')"
+                                    class="cursor-pointer flex flex-col gap-1 select-none">
+                                    <span
+                                        class="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase tracking-wide">
+                                        <i class="fa-solid fa-users text-emerald-400"></i> Shared Team Folder Mode
+                                    </span>
+                                    <span class="text-[11px] text-gray-500 font-medium">Standard visible folder. Permits
+                                        multi-user shared access vectors.</span>
+                                </div>
+
+                                <div id="wrapperSharedFolderInput"
+                                    class="hidden flex flex-col gap-2 border-t border-gray-900 pt-3 animate-fade-in">
+                                    <label
+                                        class="block text-[10px] uppercase font-bold tracking-wider text-gray-400">Connect
+                                        to a Host Folder ID</label>
+                                    <p class="text-[10px] text-gray-500 leading-normal">Leave blank to let Moneyco
+                                        automatically manage your team directory, or paste a shared folder's URL/ID from
+                                        your host teammate to join theirs.</p>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="cloudSharedFolderIdInput"
+                                            placeholder="Paste Folder ID or full URL..."
+                                            class="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-gray-100 placeholder-gray-600 focus:outline-none focus:border-emerald-500 font-mono transition">
+                                        <button onclick="connectToCustomSharedHostFolder()"
+                                            class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition uppercase tracking-wide shrink-0 cursor-pointer shadow-md">
+                                            Connect
+                                        </button>
+                                    </div>
+                                    <div id="lblConnectedFolderStatus"
+                                        class="text-[10px] font-mono text-emerald-400 hidden font-semibold"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -3077,7 +3101,7 @@
         async function runCloudInitialScan() {
             try {
                 if (state.cloudStorageStrategy === 'private') {
-                    // EXECUTE STANDARD HIDDEN APPDATA ENCLAVE PIPELINE PROTOCOLS
+                    // PRIVATE MODE CODE REMAINS UNCHANGED
                     const response = await gapi.client.drive.files.list({
                         spaces: 'appDataFolder',
                         q: "name = 'moneyco_config.json'",
@@ -3085,16 +3109,20 @@
                         pageSize: 1
                     });
                     const files = response.result.files;
-                    if (files && files.length > 0) {
-                        driveFileId = files[0].id;
-                        await pullFromCloud();
-                    } else {
-                        await createCloudContainerPrivate();
-                    }
+                    if (files && files.length > 0) { driveFileId = files[0].id; await pullFromCloud(); }
+                    else { await createCloudContainerPrivate(); }
                 } else {
-                    // EXECUTE SHARED TEAM DIRECTORY PIPELINE PROTOCOLS
-                    if (!state.sharedFolderId) {
-                        // Step A: Scan for an existing visible folder named 'Moneyco Team Ledger'
+                    // REWRITTEN SHARED TEAM DIRECTORY PIPELINE PROTOCOLS
+                    const folderInputEl = document.getElementById('cloudSharedFolderIdInput');
+
+                    if (state.sharedFolderId) {
+                        // We have a confirmed folder pointer (either auto-generated or custom-pasted)
+                        console.log(`%c[Cloud Core] Hooking into active Shared Folder target: ${state.sharedFolderId}`, "color: #10b981;");
+                        if (folderInputEl) folderInputEl.value = state.sharedFolderId;
+                    } else {
+                        // No pointer exists yet. Scan for auto-generation fallbacks
+                        console.log("%c[Cloud Core] No explicitly set target folder found. Crawling for standard workspace...", "color: #eab308;");
+
                         const folderSearch = await gapi.client.drive.files.list({
                             q: "name = 'Moneyco Team Ledger' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
                             fields: 'files(id, name)',
@@ -3105,7 +3133,6 @@
                         if (folderList && folderList.length > 0) {
                             state.sharedFolderId = folderList[0].id;
                         } else {
-                            // Step B: Create a visible shared directory matrix if not found
                             const folderMetadata = {
                                 name: 'Moneyco Team Ledger',
                                 mimeType: 'application/vnd.google-apps.folder'
@@ -3116,11 +3143,11 @@
                             });
                             state.sharedFolderId = folderCreateResponse.result.id;
                         }
-                        // Save cached shared location pointer securely
                         localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+                        if (folderInputEl) folderInputEl.value = state.sharedFolderId;
                     }
 
-                    // Step C: Look for the synchronized database instance within that Shared Directory
+                    // Look for the synchronized database instance within that specific target directory
                     const fileSearch = await gapi.client.drive.files.list({
                         q: `name = 'moneyco_shared_db.json' and '${state.sharedFolderId}' in parents and trashed = false`,
                         fields: 'files(id, name)',
@@ -3132,15 +3159,16 @@
                         driveFileId = targetFiles[0].id;
                         await pullFromCloud();
                     } else {
+                        // Create a fresh config file if this is a newly generated custom/local workspace folder
                         await createCloudContainerShared();
                     }
                 }
 
-                // Fire up background checking sequence pulse cycles
                 startLiveSyncEngine();
                 updateCloudStorageStrategyModeUI();
             } catch (err) {
                 console.error('[Cloud Init Exception] Matrix mapping pipeline aborted:', err);
+                alert("Authentication complete but sync initialization failed. If you joined a custom host folder, ensure they have shared access with your Google account permissions.");
             }
         }
 
@@ -5075,6 +5103,90 @@ async function checkAndTriggerReminders() {
             renderSettingsHistoryTimeline();
             // ADD THIS CALL HERE:
             updateCloudStorageStrategyModeUI();
+        }
+
+        // ========================================================
+        // RECONCILED HOST CONNECTION ENGINE UTILITIES
+        // ========================================================
+
+        function connectToCustomSharedHostFolder() {
+            const inputEl = document.getElementById('cloudSharedFolderIdInput');
+            if (!inputEl) return;
+
+            let rawValue = inputEl.value.trim();
+            if (!rawValue) {
+                // Resetting input to null triggers auto-generation workflow fallbacks on next sync pulse
+                if (confirm("Clearing this field resets your connection to your default personal 'Moneyco Team Ledger' directory. Proceed?")) {
+                    state.sharedFolderId = null;
+                    driveFileId = null;
+                    localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+                    if (gapi.client.getToken() !== null) runCloudInitialScan();
+                }
+                return;
+            }
+
+            // REGEX PARSING: Extract ID if user pastes a full browser share link address pattern
+            const urlMatch = rawValue.match(/folders\/([a-zA-Z0-9-_]{25,50})/);
+            if (urlMatch && urlMatch[1]) {
+                rawValue = urlMatch[1];
+            }
+
+            if (rawValue === state.sharedFolderId) {
+                alert("The application is already running structural updates against this specific folder destination.");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to align targets to this remote Shared Ledger folder instance? Your current runtime memory layout will sync/merge with the database found there.")) return;
+
+            // Break old mapping structures to re-bind against the new host parameters
+            state.sharedFolderId = rawValue;
+            driveFileId = null;
+            inputEl.value = rawValue;
+
+            localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
+
+            if (gapi.client.getToken() === null) {
+                alert("Connection cached! Please authenticate with your Google Account below to begin active pipeline synchronization protocols.");
+            } else {
+                runCloudInitialScan();
+            }
+        }
+
+        function updateCloudStorageStrategyModeUI() {
+            const pBtn = document.getElementById('btnStrategyPrivateMode');
+            const sBtn = document.getElementById('btnStrategySharedMode');
+            const inputWrapper = document.getElementById('wrapperSharedFolderInput');
+            const statusLabel = document.getElementById('lblConnectedFolderStatus');
+            const folderInputEl = document.getElementById('cloudSharedFolderIdInput');
+
+            if (!pBtn || !sBtn) return;
+
+            const activeTheme = "border-blue-500 bg-blue-600/10 shadow-md ring-2 ring-blue-500/10";
+            const inactiveTheme = "border-gray-800 bg-gray-950 hover:bg-gray-900";
+
+            if (state.cloudStorageStrategy === 'shared') {
+                sBtn.className = `border p-3.5 rounded-xl text-left transition duration-150 flex flex-col gap-3 ${activeTheme}`;
+                pBtn.className = `border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-pointer ${inactiveTheme}`;
+                if (inputWrapper) inputWrapper.classList.remove('hidden');
+
+                if (folderInputEl && state.sharedFolderId) {
+                    folderInputEl.value = state.sharedFolderId;
+                }
+
+                if (statusLabel) {
+                    if (state.sharedFolderId) {
+                        statusLabel.innerText = "✓ Linked to Active target location pointer";
+                        statusLabel.classList.remove('hidden');
+                    } else {
+                        statusLabel.classList.add('hidden');
+                    }
+                }
+            } else {
+                pBtn.className = `border p-3.5 rounded-xl text-left transition duration-150 select-none cursor-default ${activeTheme}`;
+                sBtn.className = `border p-3.5 rounded-xl text-left transition duration-150 flex flex-col gap-3 ${inactiveTheme}`;
+                if (inputWrapper) inputWrapper.classList.add('hidden');
+                if (statusLabel) statusLabel.classList.add('hidden');
+            }
         }
 
     </script>
