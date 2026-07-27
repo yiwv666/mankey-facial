@@ -67,6 +67,19 @@
             transform: scale(1.05) !important;
         }
 
+        .toggle-switch-input:checked+.toggle-switch-label {
+            background-color: var(--color-rose-600) !important;
+        }
+
+        .toggle-switch-input:checked+.toggle-switch-label .toggle-dot {
+            transform: translateX(100%);
+        }
+
+        .project-desc-box {
+            scrollbar-width: thin;
+            resize: none;
+        }
+
         #mobileDeleteDropZone.drag-over {
             background-color: #f43f5e !important;
             /* Standardized to rose-500 */
@@ -845,6 +858,61 @@
 
                         <div id="monthlyNotesFeedContainer"
                             class="flex flex-wrap gap-2 items-start max-h-[350px] overflow-y-auto pr-1 pt-1"></div>
+                        <!-- Monthly Automated Workspaces -->
+                        <div class="mt-8 border-t border-gray-800 pt-6">
+                            <div class="mb-4">
+                                <h3 class="text-base font-bold text-gray-100 tracking-wide">Automated Monthly Workspaces
+                                </h3>
+                                <p class="text-xs text-gray-500">Draft items here. When the calendar reaches this month,
+                                    pending items will automatically inject into your active Dashboard pools and
+                                    deactivate.</p>
+                            </div>
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                <!-- Plans Table Wrapper -->
+                                <div class="bg-gray-900/40 border border-gray-800 rounded-xl p-3 shadow-inner"
+                                    ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
+                                    ondrop="handleMonthlyDrop(event, 'plans')">
+                                    <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
+                                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400">Plans
+                                        </h4>
+                                        <button onclick="openMonthlyWorkspaceModal('plans')"
+                                            class="text-indigo-400 hover:bg-indigo-500/20 p-1 rounded transition text-xs"><i
+                                                class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                    <div id="mwPlansList"
+                                        class="space-y-2 overflow-y-auto pr-1 min-h-[50px]"></div>
+                                </div>
+
+                                <!-- Income Table Wrapper -->
+                                <div class="bg-gray-900/40 border border-gray-800 rounded-xl p-3 shadow-inner"
+                                    ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
+                                    ondrop="handleMonthlyDrop(event, 'expectedIncome')">
+                                    <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
+                                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Income
+                                        </h4>
+                                        <button onclick="openMonthlyWorkspaceModal('expectedIncome')"
+                                            class="text-emerald-400 hover:bg-emerald-500/20 p-1 rounded transition text-xs"><i
+                                                class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                    <div id="mwIncomeList"
+                                        class="space-y-2 overflow-y-auto pr-1 min-h-[50px]"></div>
+                                </div>
+
+                                <!-- Debts Table Wrapper -->
+                                <div class="bg-gray-900/40 border border-gray-800 rounded-xl p-3 shadow-inner"
+                                    ondragover="allowDrop(event)" ondragleave="dragLeave(event)"
+                                    ondrop="handleMonthlyDrop(event, 'debts')">
+                                    <div class="flex justify-between items-center mb-3 border-b border-gray-800 pb-2">
+                                        <h4 class="text-xs font-bold uppercase tracking-wider text-rose-400">Debts</h4>
+                                        <button onclick="openMonthlyWorkspaceModal('debts')"
+                                            class="text-rose-400 hover:bg-rose-500/20 p-1 rounded transition text-xs"><i
+                                                class="fa-solid fa-plus"></i></button>
+                                    </div>
+                                    <div id="mwDebtsList"
+                                        class="space-y-2 overflow-y-auto pr-1 min-h-[50px]"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -941,7 +1009,7 @@
                                 </button>
                             </div>
 
-                            <div id="wishlistItemsListFeed" class="space-y-2 max-h-[400px] overflow-y-auto pr-1"></div>
+                            <div id="wishlistItemsListFeed" class="space-y-2 pr-1"></div>
                         </div>
 
                     </div>
@@ -954,6 +1022,7 @@
                     <h3 id="projectModalTitle" class="text-lg font-bold">Initialize Folder Blueprint</h3>
                     <button onclick="closeProjectModal()" class="text-gray-400 hover:text-white"><i
                             class="fa-solid fa-xmark text-lg"></i></button>
+
                 </div>
                 <form id="projectCreationForm" onsubmit="saveProjectForm(event)" class="space-y-4">
                     <input type="hidden" id="editProjectId">
@@ -962,6 +1031,16 @@
                         <input type="text" id="projName" maxlength="30" required
                             class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
                     </div>
+
+                    <!-- ADD THIS MISSING BLOCK -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Project
+                            Description</label>
+                        <textarea id="projDesc" rows="2" maxlength="500" placeholder="Optional context or goals..."
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 project-desc-box"></textarea>
+                    </div>
+                    <!-- END OF ADDED BLOCK -->
+
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Identify Color Marker
                             Badge</label>
@@ -1041,31 +1120,76 @@
                     </div>
                 </div>
             </dialog>
+            <dialog id="monthlyWorkspaceModal"
+                class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-sm w-full backdrop:bg-black/70 z-50">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="mwModalTitle" class="text-lg font-bold">Add Automated Item</h3>
+                    <button onclick="closeMonthlyWorkspaceModal()" class="text-gray-400 hover:text-white"><i
+                            class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form id="monthlyWorkspaceForm" onsubmit="saveMonthlyWorkspaceForm(event)" class="space-y-4">
+                    <input type="hidden" id="mwEditId">
+                    <input type="hidden" id="mwTargetType">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Item Title /
+                            Name</label>
+                        <input type="text" id="mwName" required
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Amount</label>
+                            <input type="number" step="0.01" id="mwAmount" required
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category</label>
+                            <select id="mwCategory"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500"></select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closeMonthlyWorkspaceModal()"
+                            class="px-4 py-2 border border-gray-800 rounded-xl text-sm hover:bg-gray-900 transition">Cancel</button>
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Save
+                            Item</button>
+                    </div>
+                </form>
+            </dialog>
         </main>
     </div>
 
     <div id="customContextMenu"
-        class="hidden absolute bg-gray-950 border border-gray-800 shadow-2xl rounded-xl py-1 text-sm min-w-[140px] z-50">
+        class="hidden absolute bg-gray-950 border border-gray-800 shadow-2xl rounded-xl py-1 text-sm min-w-[170px] z-50">
         <button onclick="triggerContextEdit()"
-            class="w-full text-left px-4 py-2.5 text-gray-300 hover:bg-blue-600 hover:text-white flex items-center gap-2 transition">
+            class="w-full text-left px-4 py-2 text-gray-300 hover:bg-blue-600 hover:text-white flex items-center gap-2 transition">
             <i class="fa-solid fa-pen-to-square text-xs"></i> Edit Item
         </button>
+        <button id="ctxDuplicateBtn" onclick="triggerContextDuplicate()"
+            class="w-full text-left px-4 py-2 text-gray-300 hover:bg-teal-600 hover:text-white flex items-center gap-2 transition">
+            <i class="fa-solid fa-clone text-xs"></i> Duplicate
+        </button>
+        <button id="ctxDispatchLedgerBtn" onclick="triggerContextSendToMovements()"
+            class="w-full text-left px-4 py-2 text-gray-300 hover:bg-emerald-600 hover:text-white flex items-center gap-2 transition">
+            <i class="fa-solid fa-receipt text-xs"></i> Send to Movements
+        </button>
         <button id="ctxDebtSplitBtn" onclick="triggerContextDebtSplit()"
-            class="hidden w-full text-left px-4 py-2.5 text-gray-300 hover:bg-indigo-600 hover:text-white flex items-center gap-2 transition">
+            class="hidden w-full text-left px-4 py-2 text-gray-300 hover:bg-indigo-600 hover:text-white flex items-center gap-2 transition">
             <i class="fa-solid fa-scissors text-xs"></i> Split in...
         </button>
         <button id="ctxDebtToPlansBtn" onclick="triggerContextDebtToPlans()"
-            class="hidden w-full text-left px-4 py-2.5 text-gray-300 hover:bg-indigo-600 hover:text-white flex items-center gap-2 transition">
+            class="hidden w-full text-left px-4 py-2 text-gray-300 hover:bg-indigo-600 hover:text-white flex items-center gap-2 transition">
             <i class="fa-solid fa-copy text-xs"></i> Send to Plans
         </button>
         <button onclick="triggerContextDelete()"
-            class="w-full text-left px-4 py-2.5 text-rose-400 hover:bg-rose-600 hover:text-white flex items-center gap-2 transition">
+            class="w-full text-left px-4 py-2 text-rose-400 hover:bg-rose-600 hover:text-white flex items-center gap-2 transition">
             <i class="fa-solid fa-trash text-xs"></i> Delete Item
         </button>
     </div>
 
     <dialog id="movementModal"
-        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+    class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70 overflow-visible">
         <div class="flex items-center justify-between mb-4">
             <h3 id="movementModalTitle" class="text-lg font-bold">Add Movement</h3>
             <button onclick="closeMovementModal()" class="text-gray-400 hover:text-white"><i
@@ -1080,18 +1204,20 @@
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Type</label>
-                    <select id="mvType"
-                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-                        <option value="income">Income</option>
-                        <option value="outcome">Outcome</option>
-                    </select>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Type</label>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="mvTypeToggle" class="hidden toggle-switch-input"
+                            onchange="updateToggleLabel(this)">
+                        <label id="lblTypeToggle" for="mvTypeToggle"
+                            class="toggle-switch-label w-full bg-emerald-600 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-center text-white cursor-pointer select-none transition-colors duration-200 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-arrow-up"></i> Income
+                        </label>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Category</label>
                     <select id="mvCategory"
-                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
-                    </select>
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500"></select>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
@@ -1102,11 +1228,16 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Date</label>
-                    <input type="text" id="mvDateVisual" placeholder="DD/MM/YYYY" maxlength="10"
-                        oninput="MoneycoDateMask.applyMovementMask(this)"
-                        onblur="if(this.value.length < 10) { const t=new Date(); this.value=\`\${String(t.getDate()).padStart(2,'0')}/\${String(t.getMonth()+1).padStart(2,'0')}/\${t.getFullYear()}\`; document.getElementById('mvDate').value=\`\${t.getFullYear()}-\${String(t.getMonth()+1).padStart(2,'0')}-\prefix\${String(t.getDate()).padStart(2,'0')}\`; }"
-                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 font-mono">
-                    <input type="hidden" id="mvDate" required>
+                    <div class="relative">
+                        <button type="button" onclick="MoneycoDatePicker.toggle('mv')" id="mvDateTrigger"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-left text-gray-100 focus:outline-none hover:border-blue-500 transition flex justify-between items-center shadow-inner">
+                            <span id="mvDateDisplay">Select Date...</span>
+                            <i class="fa-solid fa-calendar-day text-gray-500"></i>
+                        </button>
+                        <input type="hidden" id="mvDate" required>
+
+
+                    </div>
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
@@ -1241,7 +1372,7 @@
     </dialog>
 
     <dialog id="planModal"
-        class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70">
+    class="fixed inset-0 m-auto bg-gray-950 border border-gray-800 rounded-2xl p-6 shadow-2xl text-gray-100 max-w-md w-full backdrop:bg-black/70 overflow-visible">
         <div class="flex items-center justify-between mb-4">
             <h3 id="planModalTitle" class="text-lg font-bold">Add Planned Item</h3>
             <button onclick="closePlanModal()" class="text-gray-400 hover:text-white"><i
@@ -1268,13 +1399,17 @@
                 </div>
             </div>
             <div>
-                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Estimated Date
-                    (Optional)</label>
-                <input type="text" id="plEstimatedDateVisual" placeholder="DD/MM/YYYY" maxlength="10"
-                    oninput="MoneycoDateMask.apply(this)"
-                    onblur="if(this.value.length < 10) { this.value = ''; document.getElementById('plEstimatedDate').value = ''; }"
-                    class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500 font-mono">
-                <input type="hidden" id="plEstimatedDate">
+                <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Date</label>
+                <div class="relative">
+                    <button type="button" onclick="MoneycoDatePicker.toggle('pl')" id="plDateTrigger"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm text-left text-gray-100 focus:outline-none hover:border-blue-500 transition flex justify-between items-center shadow-inner">
+                        <span id="plDateDisplay">Select Date...</span>
+                        <i class="fa-solid fa-calendar-day text-gray-500"></i>
+                    </button>
+                    <input type="hidden" id="plDate" required>
+
+
+                </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
                 <button type="button" onclick="closePlanModal()"
@@ -1321,6 +1456,37 @@
             </div>
         </form>
     </dialog>
+
+    <!-- Unified Shared Date Picker -->
+    <div id="sharedDatePopover" class="hidden absolute top-full mt-2 left-0 w-72 bg-gray-950 border border-gray-800 rounded-3xl p-5 shadow-2xl z-[100]">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-1 cursor-pointer hover:opacity-80 transition">
+                <span id="sharedCalMonthYear" class="text-sm font-bold text-gray-100"></span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-gray-500"></i>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="sharedCalPrev"
+                    class="text-gray-400 hover:text-white p-1 rounded-full transition hover:bg-gray-800">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+                <div class="w-px h-3 bg-gray-700"></div>
+                <button type="button" id="sharedCalNext"
+                    class="text-gray-400 hover:text-white p-1 rounded-full transition hover:bg-gray-800">
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-center mb-3">
+            <span class="text-[10px] font-medium text-gray-500">Su</span>
+            <span class="text-[10px] font-medium text-gray-500">Mo</span>
+            <span class="text-[10px] font-medium text-gray-500">Tu</span>
+            <span class="text-[10px] font-medium text-gray-500">We</span>
+            <span class="text-[10px] font-medium text-gray-500">Th</span>
+            <span class="text-[10px] font-medium text-gray-500">Fr</span>
+            <span class="text-[10px] font-medium text-gray-500">Sa</span>
+        </div>
+        <div id="sharedCalGrid" class="grid grid-cols-7 gap-y-2 gap-x-1 text-center place-items-center"></div>
+    </div>
 
 
     <script>
@@ -1455,6 +1621,10 @@
             } else {
                 if (!state.tombstones.expectedIncome) state.tombstones.expectedIncome = {};
                 if (!state.tombstones.debtsPool) state.tombstones.debtsPool = {};
+                // ADD THESE MISSING KEYS:
+                if (!state.tombstones.projects) state.tombstones.projects = {};
+                if (!state.tombstones.wishitems) state.tombstones.wishitems = {};
+                if (!state.tombstones.notes) state.tombstones.notes = {};
             }
 
             if (state.savingsGoal === undefined) state.savingsGoal = 0;
@@ -1483,6 +1653,13 @@
                 state.lastUpdated = Date.now();
                 localStorage.setItem('MONEYCO_STATE', JSON.stringify(state));
             }
+
+            if (!state.monthlyAutomations) {
+                state.monthlyAutomations = {};
+                for (let i = 0; i < 12; i++) {
+                    state.monthlyAutomations[`month_${i}`] = { plans: [], expectedIncome: [], debts: [] };
+                }
+            }
         }
 
         async function saveState() {
@@ -1500,6 +1677,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             loadState();
+            processMonthlyAutomations();
             initDatePickers();
             populateCategorySelects();
             renderAll();
@@ -1559,12 +1737,15 @@
         }
 
         function populateCategorySelects() {
-            const dropdowns = ['mvCategory', 'plCategory', 'filterCategory', 'frCategory'];
+            const dropdowns = ['mvCategory', 'plCategory', 'filterCategory', 'frCategory', 'mwCategory'];
+            // Slice and sort categories alphabetically
+            const alphaCategories = [...state.categories].sort((a, b) => a.localeCompare(b));
+
             dropdowns.forEach(id => {
                 const select = document.getElementById(id);
                 if (!select) return;
                 const initialHTML = id === 'filterCategory' ? '<option value="all">All Categories</option>' : '';
-                select.innerHTML = initialHTML + state.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+                select.innerHTML = initialHTML + alphaCategories.map(c => `<option value="${c}">${c}</option>`).join('');
             });
         }
 
@@ -2221,6 +2402,19 @@
 
         function triggerContextEdit() {
             if (!contextTarget) return;
+            if (contextTarget.type.startsWith('monthly_')) {
+                const listType = contextTarget.type.replace('monthly_', '');
+                const targetKey = `month_${selectedMonthIndex}`;
+                const item = state.monthlyAutomations[targetKey][listType].find(i => i.id === contextTarget.id);
+                if (item) {
+                    openMonthlyWorkspaceModal(listType);
+                    document.getElementById('mwEditId').value = item.id;
+                    document.getElementById('mwName').value = item.name;
+                    document.getElementById('mwAmount').value = item.amount;
+                    document.getElementById('mwCategory').value = item.category;
+                }
+                return;
+            }
             if (contextTarget.type === 'movement') openMovementModal(contextTarget.id);
             else if (['planification', 'expectedIncome', 'debtsPool'].includes(contextTarget.type)) openPlanModal(contextTarget.id);
             else if (contextTarget.type === 'frequent') openFrequentModal(contextTarget.id);
@@ -2230,6 +2424,15 @@
         function triggerContextDelete() {
             if (!contextTarget) return;
             const now = Date.now();
+
+            if (contextTarget.type.startsWith('monthly_')) {
+                const listType = contextTarget.type.replace('monthly_', '');
+                const targetKey = `month_${selectedMonthIndex}`;
+                state.monthlyAutomations[targetKey][listType] = state.monthlyAutomations[targetKey][listType].filter(i => i.id !== contextTarget.id);
+                saveState();
+                renderMonthlyWorkspacesUI();
+                return;
+            }
             if (!state.tombstones) state.tombstones = { movements: {}, planification: {}, expectedIncome: {}, debtsPool: {}, frequent: {}, projects: {}, wishitems: {}, notes: {} };
 
             if (contextTarget.type === 'movement') {
@@ -2626,7 +2829,10 @@
                        </div>`;
 
                 tr.innerHTML = `
-                    <td class="py-3 px-2 font-semibold text-gray-200">${item.name}</td>
+                    <td class="py-3 px-2 font-semibold text-gray-200 hover:text-blue-400 transition cursor-pointer" 
+    onclick="routeCategoryToLedgerView('${item.name.replace(/'/g, "\\'")}')">
+    ${item.name}
+</td>
                     <td class="py-3 px-2 text-right font-medium text-emerald-400">${formatCurrency(item.monthIn)}</td>
                     <td class="py-3 px-2 text-right font-medium text-emerald-500 bg-emerald-950/20">${formatCurrency(item.allTimeIn)}</td>
                     <td class="py-3 px-2 text-right font-medium text-rose-400">${formatCurrency(item.monthOut)}</td>
@@ -2635,6 +2841,15 @@
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function routeCategoryToLedgerView(catName) {
+            switchTab('all-movements');
+            const fCat = document.getElementById('filterCategory');
+            if (fCat) {
+                fCat.value = catName;
+                applyFilters();
+            }
         }
 
         let draggedItemId = null;
@@ -2781,8 +2996,9 @@
             const form = document.getElementById('movementForm');
             form.reset();
 
-            const visualInput = document.getElementById('mvDateVisual');
             const hiddenInput = document.getElementById('mvDate');
+            const chk = document.getElementById('mvTypeToggle');
+            const typeInput = document.getElementById('mvType');
 
             if (editId) {
                 document.getElementById('movementModalTitle').innerText = "Edit Movement";
@@ -2790,21 +3006,22 @@
                 if (item) {
                     document.getElementById('editMovementId').value = item.id;
                     document.getElementById('mvName').value = item.name;
-                    document.getElementById('mvType').value = item.type;
+                    if (typeInput) typeInput.value = item.type;
+                    chk.checked = (item.type === 'outcome');
                     document.getElementById('mvCategory').value = item.category;
                     document.getElementById('mvAmount').value = item.amount;
                     hiddenInput.value = item.date;
 
                     if (item.date && item.date.includes('-')) {
                         const [y, m, d] = item.date.split('-');
-                        visualInput.value = `${d}/${m}/${y}`;
-                    } else {
-                        visualInput.value = "";
+                        document.getElementById('mvDateDisplay').innerText = `${d} / ${m} / ${y}`;
                     }
                 }
             } else {
                 document.getElementById('movementModalTitle').innerText = "Add Movement";
                 document.getElementById('editMovementId').value = "";
+                chk.checked = false;
+                if (typeInput) typeInput.value = 'income';
 
                 const today = new Date();
                 const yyyy = today.getFullYear();
@@ -2812,8 +3029,10 @@
                 const dd = String(today.getDate()).padStart(2, '0');
 
                 hiddenInput.value = `${yyyy}-${mm}-${dd}`;
-                visualInput.value = `${dd}/${mm}/${yyyy}`;
+                document.getElementById('mvDateDisplay').innerText = `${dd} / ${mm} / ${yyyy}`;
             }
+
+            updateToggleLabel(chk);
             modal.showModal();
             setTimeout(() => document.getElementById('mvName')?.focus(), 50);
         }
@@ -2822,11 +3041,18 @@
 
         function saveMovementForm(e) {
             e.preventDefault();
+
+            // Fallback if inputs are left partially blank
+            if (!document.getElementById('mvDate').value) {
+                const t = new Date();
+                document.getElementById('mvDate').value = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+            }
+
             const id = document.getElementById('editMovementId').value;
             const data = {
                 id: id || crypto.randomUUID(),
                 name: document.getElementById('mvName').value.trim(),
-                type: document.getElementById('mvType').value,
+                type: document.getElementById('mvTypeToggle').checked ? 'outcome' : 'income',
                 category: document.getElementById('mvCategory').value,
                 amount: parseFloat(document.getElementById('mvAmount').value),
                 date: document.getElementById('mvDate').value,
@@ -2850,8 +3076,8 @@
             const form = document.getElementById('planForm');
             form.reset();
 
-            const visualInput = document.getElementById('plEstimatedDateVisual');
-            const hiddenInput = document.getElementById('plEstimatedDate');
+            const displaySpan = document.getElementById('plDateDisplay');
+            const hiddenInput = document.getElementById('plDate');
 
             let activeArray = state[currentWorkspaceTab] || [];
 
@@ -2871,10 +3097,10 @@
 
                     if (item.estimatedDate && item.estimatedDate.includes('-')) {
                         const [y, m, d] = item.estimatedDate.split('-');
-                        visualInput.value = `${d}/${m}/${y}`;
+                        displaySpan.innerText = `${d} / ${m} / ${y}`;
                         hiddenInput.value = item.estimatedDate;
                     } else {
-                        visualInput.value = "";
+                        displaySpan.innerText = "Select Date...";
                         hiddenInput.value = "";
                     }
                 }
@@ -2885,7 +3111,7 @@
 
                 document.getElementById('planModalTitle').innerText = `Add ${displayTabName}`;
                 document.getElementById('editPlanId').value = "";
-                visualInput.value = "";
+                displaySpan.innerText = "Select Date...";
                 hiddenInput.value = "";
             }
             modal.showModal();
@@ -2902,7 +3128,7 @@
                 name: document.getElementById('plName').value.trim(),
                 category: document.getElementById('plCategory').value,
                 amount: parseFloat(document.getElementById('plAmount').value),
-                estimatedDate: document.getElementById('plEstimatedDate').value || null,
+                estimatedDate: document.getElementById('plDate').value || null,
                 updatedAt: Date.now()
             };
 
@@ -3831,31 +4057,38 @@ async function checkAndTriggerReminders() {
                     folderCard.className = `p-3.5 border rounded-xl cursor-pointer transition flex items-center justify-between select-none shadow-sm ${theme.bg} ${isFocused ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-800 opacity-60 hover:opacity-100'}`;
                     folderCard.onclick = () => focusOnSpecificProjectBlueprint(proj.id);
                     folderCard.innerHTML = `
-                        <div class="flex items-center gap-2.5 truncate">
-                            <div class="w-3 h-3 rounded-full shrink-0 ${theme.badge}"></div>
-                            <span class="font-bold text-xs text-gray-200 truncate select-none">${proj.name}</span>
-                        </div>
-                        <span class="text-[10px] font-semibold text-gray-400 select-none bg-gray-900/60 px-2 py-0.5 rounded border border-gray-800">${formatCurrency(totalCost)}</span>
-                    `;
+        <div class="flex items-center gap-2.5 truncate">
+            <div class="w-3 h-3 rounded-full shrink-0 ${theme.badge}"></div>
+            <span class="font-bold text-xs text-gray-200 truncate select-none">${proj.name}</span>
+        </div>
+        <span class="text-[10px] font-semibold text-gray-400 select-none bg-gray-900/60 px-2 py-0.5 rounded border border-gray-800">${formatCurrency(totalCost)}</span>
+    `;
                 } else {
-                    folderCard.className = `border rounded-2xl p-5 flex flex-col justify-between transition group hover:scale-[101%] hover:shadow-2xl shadow-md min-h-[140px] cursor-pointer ${theme.border} ${theme.bg}`;
-                    folderCard.onclick = () => focusOnSpecificProjectBlueprint(proj.id);
+                    folderCard.className = `border rounded-2xl p-5 flex flex-col justify-between transition group hover:shadow-2xl shadow-md min-h-[140px] cursor-grab active:cursor-grabbing select-none ${theme.border} ${theme.bg}`;
+                    folderCard.setAttribute('data-project-id', proj.id);
+
+                    // Attach Custom Drag Engine Here
+                    CustomListReorder.attach(folderCard, 'project');
+                    folderCard.onclick = null;
+
+                    // Intact HTML Blueprint
                     folderCard.innerHTML = `
-                        <div class="space-y-1">
-                            <div class="flex items-start justify-between gap-3">
-                                <h4 class="font-black text-base text-gray-100 group-hover:text-blue-400 transition tracking-wide leading-tight">${proj.name}</h4>
-                                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition duration-150" onclick="event.stopPropagation();">
-                                    <button onclick="openProjectModal('${proj.id}')" class="text-gray-500 hover:text-blue-400 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
-                                    <button onclick="deleteEntireProjectFolder('${proj.id}')" class="text-gray-500 hover:text-rose-400 p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                                </div>
-                            </div>
-                            <p class="text-xs text-gray-400 font-medium">${itemCollection.length} logged assets specs</p>
-                        </div>
-                        <div class="flex items-baseline justify-between mt-4 border-t border-gray-800/40 pt-2.5">
-                            <span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">Remaining Need</span>
-                            <span class="text-lg font-black tracking-tight text-gray-200">${formatCurrency(totalCost)}</span>
-                        </div>
-                    `;
+        <div class="space-y-1">
+            <div class="flex items-start justify-between gap-3">
+                <h4 onclick="focusOnSpecificProjectBlueprint('${proj.id}')" class="font-black text-base text-gray-100 group-hover:text-blue-400 transition tracking-wide leading-tight cursor-pointer">${proj.name}</h4>
+                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition duration-150" onclick="event.stopPropagation();">
+                    <button onclick="openProjectModal('${proj.id}')" class="text-gray-500 hover:text-blue-400 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <button onclick="deleteEntireProjectFolder('${proj.id}')" class="text-gray-500 hover:text-rose-400 p-1"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                </div>
+            </div>
+            <p onclick="focusOnSpecificProjectBlueprint('${proj.id}')" class="text-xs text-gray-400 font-medium cursor-pointer">${itemCollection.length} logged assets specs</p>
+            <p onclick="focusOnSpecificProjectBlueprint('${proj.id}')" class="text-[11px] text-gray-500 italic truncate max-w-full mt-1 cursor-pointer">${proj.description || 'No description logged.'}</p>
+        </div>
+        <div onclick="focusOnSpecificProjectBlueprint('${proj.id}')" class="flex items-baseline justify-between mt-4 border-t border-gray-800/40 pt-2.5 cursor-pointer">
+            <span class="text-[10px] uppercase tracking-wider font-bold text-gray-500">Remaining Need</span>
+            <span class="text-lg font-black tracking-tight text-gray-200">${formatCurrency(totalCost)}</span>
+        </div>
+    `;
                 }
                 deckGrid.appendChild(folderCard);
             });
@@ -3909,25 +4142,28 @@ async function checkAndTriggerReminders() {
 
             items.forEach(item => {
                 const row = document.createElement('div');
-                row.className = `border rounded-xl px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition ${item.completed ? 'bg-gray-900/10 border-gray-900/80 opacity-40' : 'bg-gray-900/40 border-gray-800 hover:border-gray-700'}`;
+                row.className = `border rounded-xl px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm transition cursor-grab active:cursor-grabbing select-none ${item.completed ? 'bg-gray-900/10 border-gray-900/80 opacity-40' : 'bg-gray-900/40 border-gray-800 hover:border-gray-700'}`;
+                row.setAttribute('data-item-id', item.id);
+                row.addEventListener('contextmenu', (e) => handleContextOpen(e, 'wishlistItem', item.id));
+                CustomListReorder.attach(row, 'wishitem');
                 row.innerHTML = `
-                    <div class="flex-1 truncate">
-                        <div class="flex items-center gap-2 max-w-full">
-                            <p class="font-bold text-sm text-gray-200 truncate ${item.completed ? 'line-through text-gray-500' : ''}">${item.name}</p>
-                            ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-blue-400 text-xs shrink-0 transition p-0.5" title="Visit Link Checkout Source"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
-                        </div>
-                        <p class="text-xs font-mono font-semibold text-gray-400 mt-0.5">${formatCurrency(item.price)}</p>
-                    </div>
-                    <div class="flex items-center gap-1.5 self-end sm:self-center shrink-0 border-t border-gray-800/40 pt-2 sm:pt-0 sm:border-t-0 sm:pl-2">
-                        <button onclick="toggleWishItemCompletedState('${item.id}')" class="text-gray-500 hover:text-emerald-400 transition p-1" title="${item.completed ? 'Mark Active' : 'Mark Completed'}">
-                            <i class="fa-solid ${item.completed ? 'fa-square-check text-emerald-500' : 'fa-regular fa-square'} text-sm"></i>
-                        </button>
-                        <button onclick="dispatchItemToCoreLedger('${item.id}', 'spend')" class="text-gray-500 hover:text-emerald-400 transition p-1" title="Send to Spend (Log Transaction Outcome)"><i class="fa-solid fa-receipt text-xs"></i></button>
-                        <button onclick="dispatchItemToCoreLedger('${item.id}', 'planning')" class="text-gray-500 hover:text-indigo-400 transition p-1" title="Send to Planning (Schedule Budget)"><i class="fa-solid fa-calendar-plus text-xs"></i></button>
-                        <button onclick="openWishItemModal('${item.id}')" class="text-gray-500 hover:text-blue-400 transition p-1" title="Edit Item Spec"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button onclick="deleteWishItemFromFolder('${item.id}')" class="text-gray-500 hover:text-rose-400 transition p-1" title="Delete Item Spec"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                    </div>
-                `;
+        <div class="flex-1 truncate">
+            <div class="flex items-center gap-2 max-w-full">
+                <p class="font-bold text-sm text-gray-200 truncate ${item.completed ? 'line-through text-gray-500' : ''}">${item.name}</p>
+                ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-blue-400 text-xs shrink-0 transition p-0.5" title="Visit Link Checkout Source"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
+            </div>
+            <p class="text-xs font-mono font-semibold text-gray-400 mt-0.5">${formatCurrency(item.price)}</p>
+        </div>
+        <div class="flex items-center gap-1.5 self-end sm:self-center shrink-0 border-t border-gray-800/40 pt-2 sm:pt-0 sm:border-t-0 sm:pl-2" onclick="event.stopPropagation();">
+            <button onclick="toggleWishItemCompletedState('${item.id}')" class="text-gray-500 hover:text-emerald-400 transition p-1" title="${item.completed ? 'Mark Active' : 'Mark Completed'}">
+                <i class="fa-solid ${item.completed ? 'fa-square-check text-emerald-500' : 'fa-regular fa-square'} text-sm"></i>
+            </button>
+            <button onclick="dispatchItemToCoreLedger('${item.id}', 'spend')" class="text-gray-500 hover:text-emerald-400 transition p-1" title="Send to Spend (Log Transaction Outcome)"><i class="fa-solid fa-receipt text-xs"></i></button>
+            <button onclick="dispatchItemToCoreLedger('${item.id}', 'planning')" class="text-gray-500 hover:text-indigo-400 transition p-1" title="Send to Planning (Schedule Budget)"><i class="fa-solid fa-calendar-plus text-xs"></i></button>
+            <button onclick="openWishItemModal('${item.id}')" class="text-gray-500 hover:text-blue-400 transition p-1" title="Edit Item Spec"><i class="fa-solid fa-pen text-xs"></i></button>
+            <button onclick="deleteWishItemFromFolder('${item.id}')" class="text-gray-500 hover:text-rose-400 transition p-1" title="Delete Item Spec"><i class="fa-solid fa-trash-can text-xs"></i></button>
+        </div>
+    `;
                 feed.appendChild(row);
             });
         }
@@ -4623,6 +4859,64 @@ async function checkAndTriggerReminders() {
 
         function saveDebtSplitForm(e) {
             e.preventDefault();
+
+            if (!contextTarget) return;
+
+            if (contextTarget.type.startsWith('monthly_')) {
+                const listType = contextTarget.type.replace('monthly_', '');
+                const targetKey = `month_${selectedMonthIndex}`;
+                const activeArray = state.monthlyAutomations[targetKey][listType];
+                const sourceItem = activeArray.find(i => i.id === contextTarget.id);
+                if (!sourceItem) return;
+
+                const strategy = document.getElementById('splitStrategy').value;
+                const totalAmount = parseFloat(sourceItem.amount);
+                let partSpecs = [];
+
+                if (strategy === 'parts') {
+                    const partsCount = parseInt(document.getElementById('splitPartsCount').value, 10);
+                    if (isNaN(partsCount) || partsCount < 2) return;
+                    const exactSplitValue = parseFloat((totalAmount / partsCount).toFixed(2));
+                    let runningAccumulator = 0;
+                    for (let i = 0; i < partsCount - 1; i++) {
+                        partSpecs.push(exactSplitValue);
+                        runningAccumulator += exactSplitValue;
+                    }
+                    partSpecs.push(parseFloat((totalAmount - runningAccumulator).toFixed(2)));
+                } else {
+                    const targetBaseAmount = parseFloat(document.getElementById('splitBaseAmount').value);
+                    if (isNaN(targetBaseAmount) || targetBaseAmount <= 0) return;
+                    let runningBalance = totalAmount;
+                    while (runningBalance > 0) {
+                        if (runningBalance >= targetBaseAmount) {
+                            partSpecs.push(targetBaseAmount);
+                            runningBalance = parseFloat((runningBalance - targetBaseAmount).toFixed(2));
+                        } else {
+                            partSpecs.push(parseFloat(runningBalance.toFixed(2)));
+                            runningBalance = 0;
+                        }
+                    }
+                }
+
+                // Replace original item with split parts
+                state.monthlyAutomations[targetKey][listType] = activeArray.filter(i => i.id !== sourceItem.id);
+                partSpecs.forEach((amtValue, index) => {
+                    state.monthlyAutomations[targetKey][listType].push({
+                        id: crypto.randomUUID(),
+                        name: `${sourceItem.name} (Part ${index + 1}/${partSpecs.length})`,
+                        amount: amtValue,
+                        category: sourceItem.category,
+                        processed: false,
+                        lastProcessedYear: null
+                    });
+                });
+
+                saveState();
+                renderMonthlyWorkspacesUI();
+                closeDebtSplitModal();
+                return;
+            }
+
             if (!contextTarget || !['planification', 'expectedIncome', 'debtsPool'].includes(contextTarget.type)) return;
 
             const activeWorkspaceArray = state[contextTarget.type];
@@ -5112,15 +5406,6 @@ async function checkAndTriggerReminders() {
             }
         }
 
-        // Make sure the UI button styling corresponds exactly with state maps when the tab opens
-        // Append this tracking execution line inside your tab checking workflow block:
-        // FIND inside your switchTab(tabId) function:
-        if (tabId === 'settings') {
-            renderSettingsHistoryTimeline();
-            // ADD THIS CALL HERE:
-            updateCloudStorageStrategyModeUI();
-        }
-
         // ========================================================
         // RECONCILED HOST CONNECTION ENGINE UTILITIES
         // ========================================================
@@ -5203,6 +5488,674 @@ async function checkAndTriggerReminders() {
                 if (inputWrapper) inputWrapper.classList.add('hidden');
                 if (statusLabel) statusLabel.classList.add('hidden');
             }
+        }
+
+        function updateToggleLabel(chk) {
+            const lbl = document.getElementById('lblTypeToggle');
+            const typeInput = document.getElementById('mvType');
+            if (chk.checked) {
+                if (typeInput) typeInput.value = 'outcome';
+                lbl.className = "toggle-switch-label w-full bg-rose-600 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-center text-white cursor-pointer select-none transition-colors duration-200 flex items-center justify-center gap-2";
+                lbl.innerHTML = `<i class="fa-solid fa-circle-arrow-down"></i> Outcome`;
+            } else {
+                if (typeInput) typeInput.value = 'income';
+                lbl.className = "toggle-switch-label w-full bg-emerald-600 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider text-center text-white cursor-pointer select-none transition-colors duration-200 flex items-center justify-center gap-2";
+                lbl.innerHTML = `<i class="fa-solid fa-circle-arrow-up"></i> Income`;
+            }
+        }
+
+
+
+        // Extend saveProjectForm and openProjectModal handlers to support descriptions
+        const originalOpenProjectModal = openProjectModal;
+        openProjectModal = function (editId = null) {
+            originalOpenProjectModal(editId);
+            if (editId) {
+                const proj = state.projects.find(p => p.id === editId);
+                const descEl = document.getElementById('projDesc');
+                if (descEl) descEl.value = proj.description || "";
+            } else {
+                const descEl = document.getElementById('projDesc');
+                if (descEl) descEl.value = "";
+            }
+        };
+
+        const originalSaveProjectForm = saveProjectForm;
+        saveProjectForm = function (e) {
+            // STRICT FIX: Prevent the form from refreshing the page if a rendering lag occurs
+            e.preventDefault();
+
+            const id = document.getElementById('editProjectId').value;
+            const descEl = document.getElementById('projDesc');
+            const descVal = descEl ? descEl.value.trim().substring(0, 500) : "";
+
+            // Inject the raw description attribute payload into execution context parameters
+            if (!id) {
+                // Intercept creation step trace arrays
+                setTimeout(() => {
+                    if (state.projects && state.projects.length > 0 && !state.projects[state.projects.length - 1].description) {
+                        state.projects[state.projects.length - 1].description = descVal;
+                        saveState();
+                        renderWishlistsTabDeck();
+                    }
+                }, 20);
+            } else {
+                const proj = state.projects.find(p => p.id === id);
+                if (proj) proj.description = descVal;
+            }
+            originalSaveProjectForm(e);
+        };
+
+
+        // Update context tracking rules inside handleContextOpen function pipeline:
+        const originalHandleContextOpen = handleContextOpen;
+        handleContextOpen = function (e, type, id) {
+            originalHandleContextOpen(e, type, id);
+            
+            const isMonthly = type.startsWith('monthly_');
+            const cleanType = isMonthly ? type.replace('monthly_', '') : type;
+
+            document.getElementById('ctxDuplicateBtn').classList.toggle('hidden', false);
+            document.getElementById('ctxDispatchLedgerBtn').classList.toggle('hidden', false);
+            document.getElementById('ctxDebtSplitBtn').classList.toggle('hidden', false);
+        };
+
+        function triggerContextDuplicate() {
+            if (!contextTarget) return;
+            const now = Date.now();
+
+            if (contextTarget.type.startsWith('monthly_')) {
+                const listType = contextTarget.type.replace('monthly_', '');
+                const targetKey = `month_${selectedMonthIndex}`;
+                const orig = state.monthlyAutomations[targetKey][listType].find(i => i.id === contextTarget.id);
+                if (orig) {
+                    state.monthlyAutomations[targetKey][listType].push({
+                        ...orig,
+                        id: crypto.randomUUID(),
+                        name: `${orig.name} (Copy)`
+                    });
+                    saveState();
+                    renderMonthlyWorkspacesUI();
+                }
+                return;
+            }
+            if (contextTarget.type === 'movement') {
+                const orig = state.movements.find(m => m.id === contextTarget.id);
+                if (orig) state.movements.push({ ...orig, id: crypto.randomUUID(), name: `${orig.name} (Copy)`, updatedAt: now });
+            } else if (['planification', 'expectedIncome', 'debtsPool'].includes(contextTarget.type)) {
+                const orig = state[contextTarget.type].find(p => p.id === contextTarget.id);
+                if (orig) state[contextTarget.type].push({ ...orig, id: crypto.randomUUID(), name: `${orig.name} (Copy)`, updatedAt: now });
+            } else if (contextTarget.type === 'frequent') {
+                const orig = state.frequent.find(f => f.id === contextTarget.id);
+                if (orig) state.frequent.push({ ...orig, id: crypto.randomUUID(), name: `${orig.name} (Copy)`, updatedAt: now });
+            } else if (contextTarget.type === 'wishlistItem') {
+                const proj = state.projects.find(p => p.id === activeFocusedProjectId);
+                const orig = proj?.items?.find(i => i.id === contextTarget.id);
+                if (orig) proj.items.push({ ...orig, id: crypto.randomUUID(), name: `${orig.name} (Copy)`, updatedAt: now });
+            }
+            saveState();
+            renderAll();
+            if (typeof applyFilters === 'function') applyFilters();
+        }
+
+        function triggerContextSendToMovements() {
+            if (!contextTarget) return;
+            let name = "", amt = 0, cat = "Utilities";
+
+            if (contextTarget.type.startsWith('monthly_')) {
+                const listType = contextTarget.type.replace('monthly_', '');
+                const targetKey = `month_${selectedMonthIndex}`;
+                const orig = state.monthlyAutomations[targetKey][listType].find(i => i.id === contextTarget.id);
+                if (orig) {
+                    name = orig.name;
+                    amt = orig.amount;
+                    cat = orig.category;
+                    orig.processed = true;
+                }
+            } else if (['planification', 'debtsPool'].includes(contextTarget.type)) {
+                const orig = state[contextTarget.type].find(p => p.id === contextTarget.id);
+                if (orig) { name = orig.name; amt = orig.amount; cat = orig.category || "Debts"; }
+            }
+
+            if (name) {
+                state.movements.push({
+                    id: crypto.randomUUID(),
+                    name: name.substring(0, 30),
+                    amount: parseFloat(amt),
+                    category: cat,
+                    type: 'outcome',
+                    date: new Date().toISOString().split('T')[0],
+                    updatedAt: Date.now()
+                });
+                saveState();
+                renderAll();
+                renderMonthlyWorkspacesUI();
+                alert(`"${name}" successfully exported onto your live Movements tracking register!`);
+            }
+        }
+
+        // ========================================================
+        // CUSTOM VANILLA JS DRAG & DROP ENGINE
+        // ========================================================
+        const CustomListReorder = (function () {
+            let dragState = {
+                isDragging: false, type: null, id: null, clone: null, placeholder: null,
+                startX: 0, startY: 0, shiftX: 0, shiftY: 0, el: null
+            };
+            let wasDragging = false;
+
+            // Block accidental clicks from firing immediately after a drag finishes
+            document.addEventListener('click', (e) => {
+                if (wasDragging) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    wasDragging = false;
+                }
+            }, true);
+
+            function onDown(e, type, el) {
+                // Ignore initialization if clicking an action button or link
+                if (e.target.closest('button') || e.target.closest('a')) return;
+
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+                dragState = {
+                    isDragging: false,
+                    type: type,
+                    id: type === 'project' ? el.getAttribute('data-project-id') : el.getAttribute('data-item-id'),
+                    el: el,
+                    startX: clientX,
+                    startY: clientY,
+                    shiftX: clientX - el.getBoundingClientRect().left,
+                    shiftY: clientY - el.getBoundingClientRect().top
+                };
+
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('touchmove', onMove, { passive: false });
+                document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchend', onEnd);
+            }
+
+            function onMove(e) {
+                if (!dragState.el) return;
+
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+                if (!dragState.isDragging) {
+                    // Start dragging only if the cursor moves beyond a 5px threshold
+                    if (Math.abs(clientX - dragState.startX) > 5 || Math.abs(clientY - dragState.startY) > 5) {
+                        dragState.isDragging = true;
+                        createClone();
+                    } else {
+                        return;
+                    }
+                }
+
+                e.preventDefault(); // Prevent screen scrolling on touch devices while dragging
+
+                // Make the clone follow the cursor
+                dragState.clone.style.left = (clientX - dragState.shiftX) + 'px';
+                dragState.clone.style.top = (clientY - dragState.shiftY) + 'px';
+
+                // Hide clone temporarily to find the element underneath the cursor
+                dragState.clone.style.display = 'none';
+                const elemBelow = document.elementFromPoint(clientX, clientY);
+                dragState.clone.style.display = 'flex';
+
+                if (!elemBelow) return;
+
+                const targetSelector = dragState.type === 'project' ? '[data-project-id]' : '[data-item-id]';
+                const droppableBelow = elemBelow.closest(targetSelector);
+
+                // If hovering over a valid sibling target, calculate swap direction
+                if (droppableBelow && droppableBelow !== dragState.placeholder) {
+                    const rect = droppableBelow.getBoundingClientRect();
+                    const isGrid = dragState.type === 'project' && !document.getElementById('projectDeckGrid').classList.contains('flex-col');
+
+                    let shouldInsertAfter = false;
+                    if (isGrid) {
+                        const midX = rect.left + rect.width / 2;
+                        shouldInsertAfter = clientX > midX;
+                    } else {
+                        const midY = rect.top + rect.height / 2;
+                        shouldInsertAfter = clientY > midY;
+                    }
+
+                    const parent = droppableBelow.parentNode;
+                    if (shouldInsertAfter) {
+                        parent.insertBefore(dragState.placeholder, droppableBelow.nextSibling);
+                    } else {
+                        parent.insertBefore(dragState.placeholder, droppableBelow);
+                    }
+                }
+            }
+
+            function createClone() {
+                const el = dragState.el;
+                const rect = el.getBoundingClientRect();
+
+                // Build the drop-zone placeholder visually
+                dragState.placeholder = document.createElement('div');
+                dragState.placeholder.className = el.className + ' border-2 border-dashed border-blue-500 bg-blue-950/20 opacity-50 scale-[98%] transition-transform';
+                dragState.placeholder.style.width = rect.width + 'px';
+                dragState.placeholder.style.height = rect.height + 'px';
+                dragState.placeholder.setAttribute(dragState.type === 'project' ? 'data-project-id' : 'data-item-id', dragState.id);
+
+                // Build the floating clone element
+                dragState.clone = el.cloneNode(true);
+                dragState.clone.style.position = 'fixed';
+                dragState.clone.style.zIndex = '99999';
+                dragState.clone.style.left = rect.left + 'px';
+                dragState.clone.style.top = rect.top + 'px';
+                dragState.clone.style.width = rect.width + 'px';
+                dragState.clone.style.height = rect.height + 'px';
+                dragState.clone.style.margin = '0';
+                dragState.clone.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.7)';
+                dragState.clone.style.pointerEvents = 'none';
+                dragState.clone.style.transition = 'none';
+                dragState.clone.style.transform = 'scale(1.02)';
+
+                el.parentNode.replaceChild(dragState.placeholder, el);
+                document.body.appendChild(dragState.clone);
+            }
+
+            function onEnd(e) {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchend', onEnd);
+
+                if (!dragState.isDragging) {
+                    dragState = {};
+                    return;
+                }
+
+                wasDragging = true;
+
+                // Extract the new logical order mapped straight from the re-arranged DOM
+                const parent = dragState.placeholder.parentNode;
+                const newOrderIds = Array.from(parent.children)
+                    .map(child => child.getAttribute(dragState.type === 'project' ? 'data-project-id' : 'data-item-id'))
+                    .filter(id => id);
+
+                // Sort the memory array to match the DOM matrix
+                if (dragState.type === 'project') {
+                    state.projects.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+                    saveState();
+                    renderWishlistsTabDeck();
+                } else if (dragState.type === 'wishitem') {
+                    const proj = state.projects.find(p => p.id === activeFocusedProjectId);
+                    if (proj && proj.items) {
+                        proj.items.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+                        proj.updatedAt = Date.now();
+                        saveState();
+                        renderFocusedProjectDetailsList();
+                    }
+                }
+
+                if (dragState.clone) dragState.clone.remove();
+                dragState = {};
+            }
+
+            return {
+                attach: function (el, type) {
+                    el.addEventListener('mousedown', (e) => onDown(e, type, el));
+                    el.addEventListener('touchstart', (e) => onDown(e, type, el), { passive: false });
+                }
+            };
+        })();
+
+        const MoneycoDatePicker = {
+            months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+            activePrefix: null, // Tracks whether 'mv' or 'pl' is actively using the picker
+            state: {
+                mv: { viewDate: new Date(), selectedDate: new Date() },
+                pl: { viewDate: new Date(), selectedDate: new Date() }
+            },
+
+            init() {
+                // Bind navigation once to the shared UI
+                document.getElementById('sharedCalPrev').onclick = (e) => { e.stopPropagation(); this.changeMonth(-1); };
+                document.getElementById('sharedCalNext').onclick = (e) => { e.stopPropagation(); this.changeMonth(1); };
+
+                // Auto-close handling
+                document.addEventListener('click', (e) => {
+                    const popover = document.getElementById('sharedDatePopover');
+                    const trigger = this.activePrefix ? document.getElementById(`${this.activePrefix}DateTrigger`) : null;
+                    if (popover && !popover.classList.contains('hidden') && !popover.contains(e.target) && (!trigger || !trigger.contains(e.target))) {
+                        popover.classList.add('hidden');
+                    }
+                });
+            },
+
+            changeMonth(delta) {
+                const d = this.state[this.activePrefix].viewDate;
+                d.setMonth(d.getMonth() + delta);
+                this.renderCalendar();
+            },
+
+            renderCalendar() {
+                const prefix = this.activePrefix;
+                const viewDate = this.state[prefix].viewDate;
+                const selectedDate = this.state[prefix].selectedDate;
+                const grid = document.getElementById('sharedCalGrid');
+                const header = document.getElementById('sharedCalMonthYear');
+
+                header.innerText = `${viewDate.getFullYear()} ${this.months[viewDate.getMonth()]}`;
+                grid.innerHTML = '';
+
+                const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
+                const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+
+                // Padding offsets
+                for (let i = 0; i < firstDay; i++) {
+                    grid.appendChild(document.createElement('div'));
+                }
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const btn = document.createElement('button');
+                    btn.type = "button";
+                    const isSelected = selectedDate.getDate() === i && selectedDate.getMonth() === viewDate.getMonth() && selectedDate.getFullYear() === viewDate.getFullYear();
+
+                    let baseClass = "w-8 h-8 flex items-center justify-center rounded-full text-sm transition-colors ";
+                    baseClass += isSelected ? "bg-rose-500 text-white font-bold shadow-md transform scale-105" : "text-gray-300 hover:bg-gray-800 hover:text-white";
+
+                    btn.className = baseClass;
+                    btn.innerText = i;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.selectDate(viewDate.getFullYear(), viewDate.getMonth(), i);
+                    };
+                    grid.appendChild(btn);
+                }
+            },
+
+            selectDate(y, m, d) {
+                this.state[this.activePrefix].selectedDate = new Date(y, m, d);
+                this.renderCalendar();
+                this.confirm();
+            },
+
+            toggle(prefix) {
+                const popover = document.getElementById('sharedDatePopover');
+                const triggerWrapper = document.getElementById(`${prefix}DateTrigger`).parentElement;
+
+                // Dom Shifting: Move the shared popover to the active modal's wrapper
+                if (popover.parentElement !== triggerWrapper) {
+                    triggerWrapper.appendChild(popover);
+                }
+
+                if (popover.classList.contains('hidden') || this.activePrefix !== prefix) {
+                    this.activePrefix = prefix;
+                    const hiddenInputId = prefix === 'pl' ? 'plEstimatedDate' : `${prefix}Date`;
+                    const hiddenVal = document.getElementById(hiddenInputId)?.value;
+
+                    if (hiddenVal && hiddenVal.includes('-')) {
+                        const [yy, mm, dd] = hiddenVal.split('-');
+                        const parsed = new Date(parseInt(yy), parseInt(mm) - 1, parseInt(dd));
+                        this.state[prefix].viewDate = new Date(parsed);
+                        this.state[prefix].selectedDate = new Date(parsed);
+                    } else {
+                        this.state[prefix].viewDate = new Date();
+                        this.state[prefix].selectedDate = new Date();
+                    }
+
+                    if (!popover.getAttribute('data-initialized')) {
+                        this.init();
+                        popover.setAttribute('data-initialized', 'true');
+                    }
+
+                    this.renderCalendar();
+                    popover.classList.remove('hidden');
+                } else {
+                    popover.classList.add('hidden');
+                }
+            },
+
+            confirm() {
+                const prefix = this.activePrefix;
+                const sel = this.state[prefix].selectedDate;
+                const y = sel.getFullYear();
+                const m = String(sel.getMonth() + 1).padStart(2, '0');
+                const d = String(sel.getDate()).padStart(2, '0');
+
+                const hiddenInputId = prefix === 'pl' ? 'plEstimatedDate' : `${prefix}Date`;
+                const hiddenEl = document.getElementById(hiddenInputId);
+                if (hiddenEl) hiddenEl.value = `${y}-${m}-${d}`;
+
+                const displayEl = document.getElementById(`${prefix}DateDisplay`);
+                if (displayEl) displayEl.innerText = `${d} / ${m} / ${y}`;
+
+                document.getElementById('sharedDatePopover').classList.add('hidden');
+            }
+        };
+
+        // ==========================================
+        // MONTHLY AUTOMATED WORKSPACES LOGIC
+        // ==========================================
+
+        function processMonthlyAutomations() {
+            const currentMonthIdx = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const monthKey = `month_${currentMonthIdx}`;
+
+            if (!state.monthlyAutomations || !state.monthlyAutomations[monthKey]) return;
+
+            let dataChanged = false;
+            const targetMonthData = state.monthlyAutomations[monthKey];
+
+            const processList = (list, targetDashboardPool, defaultCategory) => {
+                (list || []).forEach(item => {
+                    // Check if it hasn't been processed yet OR if it was processed in a previous year
+                    if (!item.processed || (item.lastProcessedYear && item.lastProcessedYear < currentYear)) {
+
+                        // Map the type to match your main state arrays
+                        let targetArray = state.planification;
+                        if (targetDashboardPool === 'expectedIncome') targetArray = state.expectedIncome;
+                        if (targetDashboardPool === 'debts') targetArray = state.debtsPool;
+
+                        // Inject into main dashboard
+                        targetArray.push({
+                            id: crypto.randomUUID(),
+                            name: `${item.name} (Auto)`,
+                            amount: parseFloat(item.amount),
+                            category: item.category || defaultCategory,
+                            estimatedDate: new Date().toISOString().split('T')[0],
+                            updatedAt: Date.now()
+                        });
+
+                        // Deactivate it for this year
+                        item.processed = true;
+                        item.lastProcessedYear = currentYear;
+                        dataChanged = true;
+                    }
+                });
+            };
+
+            processList(targetMonthData.plans, 'plans', 'Utilities');
+            processList(targetMonthData.expectedIncome, 'expectedIncome', 'Salary');
+            processList(targetMonthData.debts, 'debts', 'Debts');
+
+            if (dataChanged) {
+                console.log(`[Automations] Triggered automated items for ${calendarMonthsNames[currentMonthIdx]}.`);
+                saveState();
+            }
+        }
+
+        // Intercept notes feed renderer to also render the workspace tables
+        const originalRenderMonthlyNotesFeed = renderMonthlyNotesFeed;
+        renderMonthlyNotesFeed = function () {
+            originalRenderMonthlyNotesFeed();
+            renderMonthlyWorkspacesUI();
+        };
+
+        function renderMonthlyWorkspacesUI() {
+            if (!state.monthlyAutomations) return;
+            const targetKey = `month_${selectedMonthIndex}`;
+            const monthData = state.monthlyAutomations[targetKey] || { plans: [], expectedIncome: [], debts: [] };
+
+            const renderList = (containerId, items, themeColorClass, listType) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = '';
+
+                if (items.length === 0) {
+                    container.innerHTML = `<div class="text-[10px] text-gray-600 italic text-center py-4">No items scheduled.</div>`;
+                    return;
+                }
+
+                items.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = `p-2.5 rounded-xl border flex justify-between items-center group transition cursor-grab active:cursor-grabbing select-none ${item.processed ? 'bg-gray-900/20 border-gray-900 opacity-50' : 'bg-gray-900 border-gray-800 hover:border-gray-700'}`;
+
+                    // Add Drag and Context Menu Attributes
+                    row.setAttribute('draggable', 'true');
+                    row.setAttribute('data-id', item.id);
+                    row.setAttribute('data-origin', `monthly_${listType}`);
+                    row.setAttribute('data-month-key', targetKey);
+
+                    // Context Menu Handler
+                    row.addEventListener('contextmenu', (e) => handleContextOpen(e, `monthly_${listType}`, item.id));
+
+                    // Drag Handler
+                    row.addEventListener('dragstart', handleDragStart);
+
+                    row.innerHTML = `
+                        <div class="flex-1 min-w-0 pr-2 pointer-events-none">
+                            <p class="text-xs font-bold text-gray-200 truncate ${item.processed ? 'line-through text-gray-600' : ''}">${item.name}</p>
+                            <p class="text-[9px] text-gray-500 flex items-center gap-2 mt-0.5">
+                                <span class="${themeColorClass} font-semibold">${formatCurrency(item.amount)}</span> 
+                                <span class="bg-gray-950 px-1.5 py-0.5 rounded border border-gray-800 uppercase tracking-wider font-medium">${item.category}</span>
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation();">
+                            <button onclick="toggleMonthlyWorkspaceProcessed('${targetKey}', '${item.id}')" class="text-gray-500 hover:text-white p-1" title="${item.processed ? 'Reactivate' : 'Deactivate'}">
+                                <i class="fa-solid ${item.processed ? 'fa-rotate-left' : 'fa-check'} text-[10px]"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(row);
+                });
+            };
+
+            renderList('mwPlansList', monthData.plans, 'text-indigo-400', 'plans');
+            renderList('mwIncomeList', monthData.expectedIncome, 'text-emerald-400', 'expectedIncome');
+            renderList('mwDebtsList', monthData.debts, 'text-rose-400', 'debts');
+        }
+
+        function openMonthlyWorkspaceModal(type) {
+            document.getElementById('monthlyWorkspaceForm').reset();
+            document.getElementById('mwEditId').value = "";
+            document.getElementById('mwTargetType').value = type;
+
+            const titles = { plans: "Plan", expectedIncome: "Expected Income", debts: "Debt" };
+            document.getElementById('mwModalTitle').innerText = `Add Automated ${titles[type]}`;
+
+            document.getElementById('monthlyWorkspaceModal').showModal();
+        }
+
+        function closeMonthlyWorkspaceModal() {
+            document.getElementById('monthlyWorkspaceModal').close();
+        }
+
+        function saveMonthlyWorkspaceForm(e) {
+            e.preventDefault();
+            const type = document.getElementById('mwTargetType').value;
+            const targetKey = `month_${selectedMonthIndex}`;
+
+            if (!state.monthlyAutomations[targetKey]) {
+                state.monthlyAutomations[targetKey] = { plans: [], expectedIncome: [], debts: [] };
+            }
+
+            state.monthlyAutomations[targetKey][type].push({
+                id: crypto.randomUUID(),
+                name: document.getElementById('mwName').value.trim(),
+                amount: parseFloat(document.getElementById('mwAmount').value),
+                category: document.getElementById('mwCategory').value,
+                processed: false,
+                lastProcessedYear: null
+            });
+
+            saveState();
+            renderMonthlyWorkspacesUI();
+            closeMonthlyWorkspaceModal();
+        }
+
+        function deleteMonthlyWorkspaceItem(monthKey, itemId) {
+            const data = state.monthlyAutomations[monthKey];
+            data.plans = data.plans.filter(i => i.id !== itemId);
+            data.expectedIncome = data.expectedIncome.filter(i => i.id !== itemId);
+            data.debts = data.debts.filter(i => i.id !== itemId);
+            saveState();
+            renderMonthlyWorkspacesUI();
+        }
+
+        function toggleMonthlyWorkspaceProcessed(monthKey, itemId) {
+            const data = state.monthlyAutomations[monthKey];
+            const toggleItem = (list) => {
+                const item = list.find(i => i.id === itemId);
+                if (item) item.processed = !item.processed;
+            };
+            toggleItem(data.plans);
+            toggleItem(data.expectedIncome);
+            toggleItem(data.debts);
+
+            saveState();
+            renderMonthlyWorkspacesUI();
+        }
+
+        function handleMonthlyDrop(event, targetType) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+            handleDragEndCleanup();
+
+            let origin = event.dataTransfer.getData('item-origin') || draggedItemOrigin;
+            let id = event.dataTransfer.getData('text/plain') || draggedItemId;
+
+            if (!id || !origin) return;
+
+            const targetKey = `month_${selectedMonthIndex}`;
+            if (!state.monthlyAutomations) state.monthlyAutomations = {};
+            if (!state.monthlyAutomations[targetKey]) {
+                state.monthlyAutomations[targetKey] = { plans: [], expectedIncome: [], debts: [] };
+            }
+
+            let sourceItem = null;
+
+            // Handle origin item lookup
+            if (origin.startsWith('monthly_')) {
+                const sourceType = origin.replace('monthly_', '');
+                if (sourceType === targetType) return; // Same list, skip
+                
+                const sourceList = state.monthlyAutomations[targetKey][sourceType] || [];
+                sourceItem = sourceList.find(i => i.id === id);
+                
+                // Remove from old monthly list
+                state.monthlyAutomations[targetKey][sourceType] = sourceList.filter(i => i.id !== id);
+            } else if (['planification', 'expectedIncome', 'debtsPool'].includes(origin)) {
+                sourceItem = state[origin].find(p => p.id === id);
+            } else if (origin === 'movement') {
+                sourceItem = state.movements.find(m => m.id === id);
+            } else if (origin === 'frequent') {
+                sourceItem = state.frequent.find(f => f.id === id);
+            }
+
+            if (!sourceItem) return;
+
+            // Push into target monthly list
+            state.monthlyAutomations[targetKey][targetType].push({
+                id: crypto.randomUUID(),
+                name: sourceItem.name,
+                amount: parseFloat(sourceItem.amount),
+                category: sourceItem.category || 'Utilities',
+                processed: false,
+                lastProcessedYear: null
+            });
+
+            saveState();
+            renderMonthlyWorkspacesUI();
         }
 
     </script>
