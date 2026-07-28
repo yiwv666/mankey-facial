@@ -1841,11 +1841,6 @@
             let savingsAccumulated = 0;
             let debtsAccumulated = 0;
 
-            state.movements.forEach(m => {
-                if (m.type === 'income') incomeSum += parseFloat(m.amount) || 0;
-                else expenseSum += parseFloat(m.amount) || 0;
-            });
-
             const baselineEpoch = state.metricsBaselineDate ? new Date(state.metricsBaselineDate).getTime() : 0;
 
             state.movements.forEach(m => {
