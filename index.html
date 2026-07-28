@@ -253,7 +253,7 @@
                     <div class="flex items-center justify-between border-b border-gray-900 pb-4">
                         <div>
                             <h2 class="text-base font-bold text-gray-100 tracking-wide">Dashboard Metrics</h2>
-                            <p class="text-xs text-gray-500">Overview based on your selected timeline</p>
+                            <p class="text-xs text-gray-500">All-time database overview</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <!-- Discrete Reset Baseline Button -->
@@ -1841,7 +1841,7 @@
             let savingsAccumulated = 0;
             let debtsAccumulated = 0;
 
-            recentItems.forEach(m => {
+            state.movements.forEach(m => {
                 if (m.type === 'income') incomeSum += parseFloat(m.amount) || 0;
                 else expenseSum += parseFloat(m.amount) || 0;
             });
@@ -1868,8 +1868,15 @@
 
             let planPoolSum = (state.planification || []).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
 
-            const targetDaysDelta = Math.ceil(computedDaysSpan);
-            const averageDailySpentValue = targetDaysDelta > 0 ? (expenseSum / targetDaysDelta) : 0;
+            // Calculate the total days between the very first movement and today
+            let targetDaysDelta = 1;
+            if (state.movements.length > 0) {
+                const oldestDate = new Date(Math.min(...state.movements.map(m => new Date(m.date).getTime())));
+                const daysDiff = Math.ceil((new Date() - oldestDate) / (1000 * 60 * 60 * 24));
+                targetDaysDelta = daysDiff > 0 ? daysDiff : 1;
+            }
+            
+            const averageDailySpentValue = expenseSum / targetDaysDelta;
 
             document.getElementById('statDailySpent').innerText = formatCurrency(averageDailySpentValue);
             document.getElementById('statDailySpentDaysCount').innerText = `(${targetDaysDelta}d)`;
