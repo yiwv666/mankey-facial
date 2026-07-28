@@ -255,18 +255,27 @@
                             <h2 class="text-base font-bold text-gray-100 tracking-wide">Dashboard Metrics</h2>
                             <p class="text-xs text-gray-500">Overview based on your selected timeline</p>
                         </div>
-                        <div
-                            class="flex items-center bg-gray-900 border border-gray-800 rounded-xl px-2 py-1 gap-1.5 shadow-inner">
-                            <input type="number" id="dashRangeValue" value="1" min="1" oninput="renderAll()"
-                                class="w-12 bg-transparent text-xs text-center text-gray-100 font-bold focus:outline-none">
-                            <select id="dashRangeUnit" onchange="renderAll()"
-                                class="bg-transparent text-xs font-semibold text-gray-400 focus:outline-none cursor-pointer">
-                                <option value="days">Days</option>
-                                <option value="weeks">Weeks</option>
-                                <option value="months" selected>Months</option>
-                                <option value="years">Years</option>
-                            </select>
+                        <div class="flex items-center gap-2">
+                            <!-- Discrete Reset Baseline Button -->
+                            <button onclick="resetDashboardMetricsBaseline()" 
+                                title="Reset Metrics Baseline to 0 from this moment onwards (Does not delete transactions)"
+                                class="bg-gray-900 hover:bg-rose-500/10 hover:text-rose-400 text-gray-500 border border-gray-800 hover:border-rose-500/30 px-2.5 py-1 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shadow-inner cursor-pointer">
+                                <i class="fa-solid fa-rotate text-[10px]"></i>
+                                <span class="hidden sm:inline">Reset Baseline</span>
+                            </button>
 
+                            <!-- Timeline Selector -->
+                            <div class="flex items-center bg-gray-900 border border-gray-800 rounded-xl px-2 py-1 gap-1.5 shadow-inner">
+                                <input type="number" id="dashRangeValue" value="1" min="1" oninput="renderAll()"
+                                    class="w-12 bg-transparent text-xs text-center text-gray-100 font-bold focus:outline-none">
+                                <select id="dashRangeUnit" onchange="renderAll()"
+                                    class="bg-transparent text-xs font-semibold text-gray-400 focus:outline-none cursor-pointer">
+                                    <option value="days">Days</option>
+                                    <option value="weeks">Weeks</option>
+                                    <option value="months" selected>Months</option>
+                                    <option value="years">Years</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -1609,6 +1618,7 @@
                 if (!state.categories.includes("Debts")) state.categories.push("Debts");
                 if (!state.categories.includes("Savings")) state.categories.push("Savings");
             }
+            if (state.metricsBaselineDate === undefined) state.metricsBaselineDate = null;
             if (!state.movements) state.movements = [];
             if (!state.planification) state.planification = [];
             if (!state.expectedIncome) state.expectedIncome = [];
@@ -1836,11 +1846,13 @@
                 else expenseSum += parseFloat(m.amount) || 0;
             });
 
+            const baselineEpoch = state.metricsBaselineDate ? new Date(state.metricsBaselineDate).getTime() : 0;
+
             state.movements.forEach(m => {
-                const amt = parseFloat(m.amount) || 0;
-                if (m.category === 'Savings') {
-                    if (m.type === 'income') savingsAccumulated += amt;
-                    else if (m.type === 'outcome') savingsAccumulated -= amt;
+                const itemTime = m.updatedAt || (m.date ? new Date(m.date).getTime() : 0);
+                if (itemTime >= baselineEpoch) {
+                    if (m.type === 'income') incomeSum += parseFloat(m.amount) || 0;
+                    else expenseSum += parseFloat(m.amount) || 0;
                 }
             });
 
@@ -6156,6 +6168,21 @@ async function checkAndTriggerReminders() {
 
             saveState();
             renderMonthlyWorkspacesUI();
+        }
+
+        function resetDashboardMetricsBaseline() {
+            if (confirm("Reset dashboard metrics to $0.00 starting from this moment?\n\nNote: All past movements and transactions will remain intact in your database and full ledgers.")) {
+                state.metricsBaselineDate = new Date().toISOString();
+                saveState();
+                renderDashboard();
+            }
+        }
+
+        // Optional helper if user ever wants to clear the baseline filter
+        function clearDashboardMetricsBaseline() {
+            state.metricsBaselineDate = null;
+            saveState();
+            renderDashboard();
         }
 
     </script>
